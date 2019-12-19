@@ -1,3 +1,8 @@
+#!/bin/bash
+MY_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+MY_DIR="$(dirname $MY_PATH)"
+cd $MY_DIR
+
 export NODE_ENV=development
 export GENERATE_ONLY=true
-node mock/generate-only
+node src/mock/generate-only
