@@ -3,6 +3,7 @@ MY_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE
 MY_DIR="$(dirname $MY_PATH)"
 cd $MY_DIR
 
+export LOG_TO_FILE=true
 export NODE_ENV=development
 # export DEBUG=express:*
 nodemon src/mock/index-mock
