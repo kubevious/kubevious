@@ -4,9 +4,8 @@ MY_DIR="$(dirname $MY_PATH)"
 cd $MY_DIR
 
 export NODE_ENV=development
-export DATA_SOURCE=gke
-export GKE_CREDENTIALS_PATH=mock/credentials.json
+export GKE_CREDENTIALS_PATH=credentials.json
 export GKE_REGION=us-west1-c
 export GKE_K8S_CLUSTER=gprod-uswest1c
 # export DEBUG=express:*
-nodemon src/.
+nodemon src/mock/index-gke

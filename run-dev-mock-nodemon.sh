@@ -4,6 +4,5 @@ MY_DIR="$(dirname $MY_PATH)"
 cd $MY_DIR
 
 export NODE_ENV=development
-export DATA_SOURCE=mock
 # export DEBUG=express:*
-nodemon src/.
+nodemon src/mock/index-mock

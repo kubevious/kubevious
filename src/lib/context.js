@@ -15,6 +15,8 @@ class Context
         this._k8sParser = new K8sParser(this);
 
         this._logicProcessor = new LogicProcessor(this);
+
+        this._server = null;
     }
 
     get logger() {
@@ -33,19 +35,15 @@ class Context
         return this._k8sParser;
     }
 
-    addGKELoader(credentials, name, region)
-    {
-        const Loader = require('./loaders/gke');
-        var loader = new Loader(this,
-            credentials,
-            name,
-            region);
-        this.addLoader(loader);
-    }
-
     addLoader(loader)
     {
         this._loaders.push(loader);
+    }
+
+    setupServer()
+    {
+        const Server = require("./server");
+        this._server = new Server(this);
     }
 
     run()
@@ -53,6 +51,13 @@ class Context
         return Promise.resolve()
             .then(() => this._setupParsers())
             .then(() => this._processLoaders())
+            .then(() => this._runServer())
+            .catch(reason => {
+                console.log("***** ERROR *****");
+                console.log(reason);
+                this.logger.error(reason);
+                process.exit(1);
+            });
     }
 
     _processLoaders()
@@ -65,6 +70,15 @@ class Context
     _setupParsers()
     {
 
+    }
+
+    _runServer()
+    {
+        if (!this._server) {
+            return;
+        }
+
+        this._server.run()
     }
 }
 

@@ -39,7 +39,7 @@ class Server
             context: this._context
         }
         
-        const module = require('./lib/routers/' + name)
+        const module = require('./routers/' + name)
         module(routerContext);
     }
 }
