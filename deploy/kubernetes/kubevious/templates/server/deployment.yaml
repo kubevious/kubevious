@@ -1,0 +1,27 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: kubevious
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: kubevious
+  template:
+    metadata:
+      labels:
+        k8s-app: kubevious
+    spec:
+      serviceAccountName: kubevious
+      containers:
+        - name: kubevious
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: NODE_ENV
+              value: "production"
+          ports:
+            - containerPort: 4000
+              name: http

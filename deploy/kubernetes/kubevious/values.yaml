@@ -1,0 +1,4 @@
+image:
+  repository: kubevious/kubevious
+  tag: latest
+  pullPolicy: Always
