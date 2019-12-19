@@ -3,25 +3,25 @@ kind: Deployment
 apiVersion: apps/v1
 metadata:
   namespace: {{ .Release.Namespace }}
-  name: kubevious
+  name: {{ .Values.kubevious.name }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      k8s-app: kubevious
+      k8s-app: {{ .Values.kubevious.name }}
   template:
     metadata:
       labels:
-        k8s-app: kubevious
+        k8s-app: {{ .Values.kubevious.name }}
     spec:
-      serviceAccountName: kubevious
+      serviceAccountName: {{ .Values.kubevious.name }}
       containers:
-        - name: kubevious
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+        - name: {{ .Values.kubevious.name }}
+          image: "{{ .Values.kubevious.image.repository }}:{{ .Values.kubevious.image.tag }}"
+          imagePullPolicy: {{ .Values.kubevious.image.pullPolicy }}
           env:
             - name: NODE_ENV
               value: "production"
           ports:
-            - containerPort: 4000
+            - containerPort: {{ .Values.kubevious.port }}
               name: http

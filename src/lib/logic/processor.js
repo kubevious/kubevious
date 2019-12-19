@@ -27,6 +27,7 @@ class LogicProcesorScope
     getNamespaceScope(name) {
         if (!this._namespaceScopes[name]) {
             this._namespaceScopes[name] = {
+                appLabels: [],
                 apps: {},
                 services: {}
             };
@@ -163,14 +164,17 @@ class LogicProcessor
         this._setK8sConfig(scope, k8sService, item.config);
         scopeInfo.items.push(k8sService);
 
-        var svcName = _.get(item.config, 'spec.selector.name');
-        if (svcName) {
-            var appItem = this._findAppItem(scope, item.config.metadata.namespace, svcName)
-            if (appItem) {
-                var appScope = namespaceScope.apps[svcName];
-                this.logger.info("[_processService] appscope name: %s" , svcName)
+        var appSelector = _.get(item.config, 'spec.selector');
+        this.logger.info("[_processService] appSelector: ", appSelector);
+        if (appSelector)
+        {
+            var appItems = this._findAppsByLabels(scope, item.config.metadata.namespace, appSelector);
+            for(var appItem of appItems)
+            {
+                var appScope = namespaceScope.apps[appItem.naming];
+                this.logger.info("[_processService] appscope name: %s" , appItem.naming)
 
-                scopeInfo.microserviceName = svcName;
+                scopeInfo.microserviceName = appItem.naming;
                 var serviceCount = appItem.getChildrenByKind('service').length;
                 var serviceItemName = "Service";
                 if (serviceCount != 0) {
@@ -200,6 +204,30 @@ class LogicProcessor
                 }
             }
         }
+    }
+
+    _findAppsByLabels(scope, namespace, selector)
+    {
+        var result = [];
+        var namespaceScope = scope.getNamespaceScope(namespace);
+        for(var appLabelInfo of namespaceScope.appLabels)
+        {
+            if (this._labelsMatch(appLabelInfo.labels, selector))
+            {
+                result.push(appLabelInfo.appItem);
+            }
+        }
+        return result;
+    }
+
+    _labelsMatch(labels, selector)
+    {
+        for(var key of _.keys(selector)) {
+            if (selector[key] != labels[key]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     _processIngresses(scope)
@@ -266,20 +294,6 @@ class LogicProcessor
             }
         }
 
-        // var svcName = _.get(item.config, 'spec.backend.serviceName');
-        // if (svcName) {
-        //     var svcItem = this._findAppItem(scope, item.config.metadata.namespace, svcName)
-        //     if (svcItem) {
-        //         var serviceCount = svcItem.getChildrenByKind('service');
-        //         var serviceItemName = "Service";
-        //         if (serviceCount != 0) {
-        //             serviceItemName += " " + (serviceCount + 1);
-        //         }
-        //         var k8sService2 = svcItem.fetchByNaming("service", serviceItemName);
-        //         this._setK8sConfig(scope, k8sService2, item.config);
-        //         k8sService2.order = 200;
-        //     }
-        // }
     }
 
 
@@ -361,6 +375,15 @@ class LogicProcessor
         var namespace = scope.root.fetchByNaming("ns", item.config.metadata.namespace);
 
         var app = namespace.fetchByNaming("app", item.config.metadata.name);
+
+        var labelsMap = _.get(item.config, 'spec.template.metadata.labels');
+        if (labelsMap) {
+            namespaceScope.appLabels.push({
+                labels: labelsMap,
+                name: item.config.metadata.name,
+                appItem: app
+            });
+        }
 
         var launcher = app.fetchByNaming("launcher", item.config.kind);
         this._setK8sConfig(scope, launcher, item.config);

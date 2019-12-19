@@ -1,0 +1,19 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: kubevious
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths:
+        - path: /backend/*
+          backend:
+            serviceName: {{ .Values.kubevious.svcName }}
+            servicePort: {{ .Values.kubevious.port }}
+        - path: /*
+          backend:
+            serviceName: {{ .Values.ui.svcName }}
+            servicePort: {{ .Values.ui.port }}

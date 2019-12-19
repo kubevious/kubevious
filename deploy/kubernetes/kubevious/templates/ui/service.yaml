@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ .Values.ui.svcName }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    k8s-app: {{ .Values.ui.svcName }}
+spec:
+  type: NodePort
+  selector:
+    k8s-app: {{ .Values.ui.name }}
+  ports:
+  - targetPort: {{ .Values.ui.port }}
+    protocol: TCP
+    port: {{ .Values.ui.port }}

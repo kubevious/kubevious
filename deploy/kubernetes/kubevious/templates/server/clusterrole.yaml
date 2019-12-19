@@ -1,0 +1,36 @@
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: kubevious
+rules:
+
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+      - services
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+      - statefulsets
+      - daemonsets
+    verbs:
+      - get
+      - list
+      - watch
+      
+  - apiGroups:
+      - extensions
+    resources:
+      - ingresses
+    verbs:
+      - get
+      - list
+      - watch

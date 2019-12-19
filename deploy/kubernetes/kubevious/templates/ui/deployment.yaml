@@ -1,0 +1,29 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: {{ .Values.ui.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: {{ .Values.ui.name }}
+  template:
+    metadata:
+      labels:
+        k8s-app: {{ .Values.ui.name }}
+    spec:
+      serviceAccountName: {{ .Values.ui.name }}
+      containers:
+        - name: {{ .Values.ui.name }}
+          image: "{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag }}"
+          imagePullPolicy: {{ .Values.ui.image.pullPolicy }}
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: BACKEND_URL
+              value: "http://{{ .Values.kubevious.svcName }}.{{ .Release.Namespace }}.svc.cluster.local:4000"
+          ports:
+            - containerPort: {{ .Values.ui.port }}
+              name: http
