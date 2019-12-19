@@ -1,14 +1,13 @@
 const logger = require('./logger');
 logger.info("init");
 
-const express = require('express');
-const app = express();
-const PromiseRouter = require('express-promise-router');
+const Promise = require("the-promise");
 
 const Context = require("./lib/context");
 const context = new Context(logger);
 
-logger.info(process.env);
+const Server = require("./server");
+const server = new Server(context);
 
 if (process.env.DATA_SOURCE == "mock") {
     const MockLoader = require('./lib/loaders/k8s-mock');
@@ -25,42 +24,14 @@ if (process.env.DATA_SOURCE == "mock") {
     throw new Error("No Loader Specified.");
 }
 
-function loadRouter(name)
-{
-    logger.info("Loading router %s...", name);
-
-    const router = PromiseRouter();
-
-    var routerContext = {
-        logger: logger.sublogger(name),
-        router,
-        app,
-        context
-    }
-    
-    const module = require('./lib/routers/' + name)
-    module(routerContext);
-}
-
-loadRouter('top');
-loadRouter('api');
-
-if (process.env.NODE_ENV === "development") {
-}
-
-
-return context.run()
-    .then(() => {
-        logger.info("context is running.");
-
-        const port = 4000;
-        app.listen(port, () => {
-            logger.info("listening on port %s", port);
-        });
-    })
+return Promise.resolve()
+    .then(() => context.run())
+    .then(() => server.run())
     .catch(reason => {
         console.log("***** ERROR *****");
         console.log(reason);
-    })
+        logger.error(reason);
+        process.exit(1);
+    });
 
 
