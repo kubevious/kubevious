@@ -1,0 +1,28 @@
+version: "1.0"
+stages:
+  - "clone"
+  - "build"
+  - "push"
+steps:
+  main_clone:
+    type: "git-clone"
+    description: "Cloning main repository..."
+    repo: "kubevious/kubevious"
+    revision: "${{CF_BRANCH}}"
+    stage: "clone"
+  build:
+    title: "Building Docker Image"
+    type: "build"
+    image_name: "kubevious/kubevious"
+    tag: "${{CF_BRANCH_TAG_NORMALIZED}}"
+    stage: "build"
+  push:
+    title: "Pushing image to DockerHub"
+    type: "push"
+    stage: "push"
+    image_name: "kubevious/kubevious"
+    registry: "dockerhub"
+    candidate: "${{build}}"
+    tags:
+      - "${{CF_BRANCH_TAG_NORMALIZED}}"
+      - "${{CF_REVISION}}"
