@@ -1,5 +1,5 @@
 {
-  "name": "berlioz-appview",
+  "name": "kubevious",
   "version": "1.0.1",
   "description": "",
   "main": "index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://berlioz-the@github.com/berlioz-the/appview.git"
+    "url": "git+https://kubevious@github.com/kubevious/kubevious.git"
   },
   "directories": {
     "lib": "./lib"
@@ -16,9 +16,9 @@
   "author": "Ruben Hakopian",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/berlioz-the/appview.git/issues"
+    "url": "https://github.com/kubevious/kubevious/issues"
   },
-  "homepage": "https://github.com/berlioz-the/appview.git#readme",
+  "homepage": "https://github.com/kubevious/kubevious#readme",
   "dependencies": {
     "express": "^4.17.1",
     "express-promise-router": "^3.0.3",
