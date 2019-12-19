@@ -1,0 +1,39 @@
+{
+    "kind": "Service",
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "gprod-sprt-main-dtrace-client",
+        "namespace": "sprt",
+        "selfLink": "/api/v1/namespaces/sprt/services/gprod-sprt-main-dtrace-client",
+        "uid": "6ddc421e-1091-11ea-9c04-42010a8a00bb",
+        "resourceVersion": "963",
+        "creationTimestamp": "2019-11-26T21:12:18Z",
+        "labels": {
+            "berlioz_managed": "true",
+            "cluster": "sprt",
+            "deployment": "gprod",
+            "endpoint": "client",
+            "name": "gprod-sprt-main-dtrace-client",
+            "sector": "main",
+            "service": "dtrace"
+        }
+    },
+    "spec": {
+        "ports": [
+            {
+                "protocol": "TCP",
+                "port": 80,
+                "targetPort": 9411
+            }
+        ],
+        "selector": {
+            "name": "gprod-sprt-main-dtrace"
+        },
+        "clusterIP": "10.11.247.123",
+        "type": "ClusterIP",
+        "sessionAffinity": "None"
+    },
+    "status": {
+        "loadBalancer": {}
+    }
+}

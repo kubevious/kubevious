@@ -1,0 +1,206 @@
+{
+    "kind": "Deployment",
+    "apiVersion": "apps/v1",
+    "metadata": {
+        "name": "gprod-berlioz-main-ctlr",
+        "namespace": "berlioz",
+        "selfLink": "/apis/apps/v1/namespaces/berlioz/deployments/gprod-berlioz-main-ctlr",
+        "uid": "63e75940-1091-11ea-9c04-42010a8a00bb",
+        "resourceVersion": "1088",
+        "generation": 3,
+        "creationTimestamp": "2019-11-26T21:12:02Z",
+        "labels": {
+            "berlioz_managed": "true",
+            "cluster": "berlioz",
+            "deployment": "gprod",
+            "name": "gprod-berlioz-main-ctlr",
+            "sector": "main",
+            "service": "ctlr"
+        },
+        "annotations": {
+            "deployment.kubernetes.io/revision": "1"
+        }
+    },
+    "spec": {
+        "replicas": 1,
+        "selector": {
+            "matchLabels": {
+                "name": "gprod-berlioz-main-ctlr"
+            }
+        },
+        "template": {
+            "metadata": {
+                "creationTimestamp": null,
+                "labels": {
+                    "berlioz_managed": "true",
+                    "cluster": "berlioz",
+                    "deployment": "gprod",
+                    "name": "gprod-berlioz-main-ctlr",
+                    "sector": "main",
+                    "service": "ctlr"
+                }
+            },
+            "spec": {
+                "volumes": [
+                    {
+                        "name": "google-cloud-key",
+                        "secret": {
+                            "secretName": "gprod-berlioz-main-ctlr",
+                            "defaultMode": 420
+                        }
+                    }
+                ],
+                "containers": [
+                    {
+                        "name": "gprod-berlioz-main-ctlr",
+                        "image": "berliozcloud/k8s-controller",
+                        "env": [
+                            {
+                                "name": "BERLIOZ_TASK_ID",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.uid"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "BERLIOZ_IDENTITY",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.name"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "BERLIOZ_ADDRESS",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "status.podIP"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "BERLIOZ_INSTANCE_ID",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "spec.nodeName"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "BERLIOZ_HOST_IP",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "status.hostIP"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "BERLIOZ_CONSUMES_PATH",
+                                "value": "/etc/berlioz/consumes"
+                            },
+                            {
+                                "name": "BERLIOZ_AGENT_PATH",
+                                "value": "ws://${BERLIOZ_HOST_IP}:55555/${BERLIOZ_TASK_ID}"
+                            },
+                            {
+                                "name": "BERLIOZ_LISTEN_ADDRESS",
+                                "value": "0.0.0.0"
+                            },
+                            {
+                                "name": "BERLIOZ_INFRA",
+                                "value": "k8s"
+                            },
+                            {
+                                "name": "BERLIOZ_REGION",
+                                "value": "us-west1"
+                            },
+                            {
+                                "name": "BERLIOZ_CLUSTER",
+                                "value": "berlioz"
+                            },
+                            {
+                                "name": "BERLIOZ_SECTOR",
+                                "value": "main"
+                            },
+                            {
+                                "name": "BERLIOZ_SERVICE",
+                                "value": "ctlr"
+                            },
+                            {
+                                "name": "BERLIOZ_IDENTITY_PREFIX",
+                                "value": "gprod-berlioz-main-ctlr-"
+                            },
+                            {
+                                "name": "GOOGLE_APPLICATION_CREDENTIALS",
+                                "value": "/var/secrets/google/service-key.json"
+                            }
+                        ],
+                        "resources": {
+                            "requests": {
+                                "cpu": "100m",
+                                "memory": "100Mi"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "name": "google-cloud-key",
+                                "mountPath": "/var/secrets/google"
+                            }
+                        ],
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "imagePullPolicy": "Always"
+                    }
+                ],
+                "restartPolicy": "Always",
+                "terminationGracePeriodSeconds": 30,
+                "dnsPolicy": "ClusterFirst",
+                "serviceAccountName": "gprod-berlioz-main-ctlr",
+                "serviceAccount": "gprod-berlioz-main-ctlr",
+                "securityContext": {},
+                "schedulerName": "default-scheduler",
+                "priorityClassName": "berlioz-normal-priority"
+            }
+        },
+        "strategy": {
+            "type": "RollingUpdate",
+            "rollingUpdate": {
+                "maxUnavailable": "25%",
+                "maxSurge": "25%"
+            }
+        },
+        "revisionHistoryLimit": 10,
+        "progressDeadlineSeconds": 600
+    },
+    "status": {
+        "observedGeneration": 3,
+        "replicas": 1,
+        "updatedReplicas": 1,
+        "readyReplicas": 1,
+        "availableReplicas": 1,
+        "conditions": [
+            {
+                "type": "Available",
+                "status": "True",
+                "lastUpdateTime": "2019-11-26T21:12:23Z",
+                "lastTransitionTime": "2019-11-26T21:12:23Z",
+                "reason": "MinimumReplicasAvailable",
+                "message": "Deployment has minimum availability."
+            },
+            {
+                "type": "Progressing",
+                "status": "True",
+                "lastUpdateTime": "2019-11-26T21:12:23Z",
+                "lastTransitionTime": "2019-11-26T21:12:02Z",
+                "reason": "NewReplicaSetAvailable",
+                "message": "ReplicaSet \"gprod-berlioz-main-ctlr-6664d965cf\" has successfully progressed."
+            }
+        ]
+    }
+}

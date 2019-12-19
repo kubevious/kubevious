@@ -1,0 +1,39 @@
+{
+    "kind": "Service",
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "gprod-sprt-main-prmts-push",
+        "namespace": "sprt",
+        "selfLink": "/api/v1/namespaces/sprt/services/gprod-sprt-main-prmts-push",
+        "uid": "6dcff62a-1091-11ea-9c04-42010a8a00bb",
+        "resourceVersion": "964",
+        "creationTimestamp": "2019-11-26T21:12:18Z",
+        "labels": {
+            "berlioz_managed": "true",
+            "cluster": "sprt",
+            "deployment": "gprod",
+            "endpoint": "push",
+            "name": "gprod-sprt-main-prmts-push",
+            "sector": "main",
+            "service": "prmts"
+        }
+    },
+    "spec": {
+        "ports": [
+            {
+                "protocol": "TCP",
+                "port": 80,
+                "targetPort": 9091
+            }
+        ],
+        "selector": {
+            "name": "gprod-sprt-main-prmts"
+        },
+        "clusterIP": "10.11.253.232",
+        "type": "ClusterIP",
+        "sessionAffinity": "None"
+    },
+    "status": {
+        "loadBalancer": {}
+    }
+}

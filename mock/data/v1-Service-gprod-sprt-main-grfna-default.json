@@ -1,0 +1,47 @@
+{
+    "kind": "Service",
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "gprod-sprt-main-grfna-default",
+        "namespace": "sprt",
+        "selfLink": "/api/v1/namespaces/sprt/services/gprod-sprt-main-grfna-default",
+        "uid": "6e12c45a-1091-11ea-9c04-42010a8a00bb",
+        "resourceVersion": "1251",
+        "creationTimestamp": "2019-11-26T21:12:19Z",
+        "labels": {
+            "berlioz_managed": "true",
+            "cluster": "sprt",
+            "deployment": "gprod",
+            "endpoint": "default",
+            "name": "gprod-sprt-main-grfna-default",
+            "sector": "main",
+            "service": "grfna"
+        }
+    },
+    "spec": {
+        "ports": [
+            {
+                "protocol": "TCP",
+                "port": 80,
+                "targetPort": 3000,
+                "nodePort": 31004
+            }
+        ],
+        "selector": {
+            "name": "gprod-sprt-main-grfna"
+        },
+        "clusterIP": "10.11.253.204",
+        "type": "LoadBalancer",
+        "sessionAffinity": "None",
+        "externalTrafficPolicy": "Cluster"
+    },
+    "status": {
+        "loadBalancer": {
+            "ingress": [
+                {
+                    "ip": "104.196.237.68"
+                }
+            ]
+        }
+    }
+}

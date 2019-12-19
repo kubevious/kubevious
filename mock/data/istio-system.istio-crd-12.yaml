@@ -1,0 +1,35 @@
+apiVersion: v1
+data:
+  crd-12.yaml: |-
+    kind: CustomResourceDefinition
+    apiVersion: apiextensions.k8s.io/v1beta1
+    metadata:
+      name: authorizationpolicies.rbac.istio.io
+      labels:
+        app: istio-pilot
+        istio: rbac
+        heritage: Tiller
+        release: istio
+    spec:
+      group: rbac.istio.io
+      names:
+        kind: AuthorizationPolicy
+        plural: authorizationpolicies
+        singular: authorizationpolicy
+        categories:
+          - istio-io
+          - rbac-istio-io
+      scope: Namespaced
+      versions:
+        - name: v1alpha1
+          served: true
+          storage: true
+    ---
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2019-11-11T21:29:18Z"
+  name: istio-crd-12
+  namespace: istio-system
+  resourceVersion: "1634"
+  selfLink: /api/v1/namespaces/istio-system/configmaps/istio-crd-12
+  uid: 5133c728-04ca-11ea-b9e5-42010a8a0197

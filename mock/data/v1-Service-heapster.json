@@ -1,0 +1,38 @@
+{
+    "kind": "Service",
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "heapster",
+        "namespace": "kube-system",
+        "selfLink": "/api/v1/namespaces/kube-system/services/heapster",
+        "uid": "43e7e585-1091-11ea-9c04-42010a8a00bb",
+        "resourceVersion": "374",
+        "creationTimestamp": "2019-11-26T21:11:08Z",
+        "labels": {
+            "addonmanager.kubernetes.io/mode": "Reconcile",
+            "kubernetes.io/cluster-service": "true",
+            "kubernetes.io/name": "Heapster"
+        },
+        "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Service\",\"metadata\":{\"annotations\":{},\"labels\":{\"addonmanager.kubernetes.io/mode\":\"Reconcile\",\"kubernetes.io/cluster-service\":\"true\",\"kubernetes.io/name\":\"Heapster\"},\"name\":\"heapster\",\"namespace\":\"kube-system\"},\"spec\":{\"ports\":[{\"port\":80,\"targetPort\":8082}],\"selector\":{\"k8s-app\":\"heapster\"}}}\n"
+        }
+    },
+    "spec": {
+        "ports": [
+            {
+                "protocol": "TCP",
+                "port": 80,
+                "targetPort": 8082
+            }
+        ],
+        "selector": {
+            "k8s-app": "heapster"
+        },
+        "clusterIP": "10.11.251.8",
+        "type": "ClusterIP",
+        "sessionAffinity": "None"
+    },
+    "status": {
+        "loadBalancer": {}
+    }
+}

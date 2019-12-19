@@ -1,0 +1,221 @@
+{
+    "kind": "Deployment",
+    "apiVersion": "apps/v1",
+    "metadata": {
+        "name": "heapster",
+        "namespace": "kube-system",
+        "selfLink": "/apis/apps/v1/namespaces/kube-system/deployments/heapster",
+        "uid": "43b4600c-1091-11ea-9c04-42010a8a00bb",
+        "resourceVersion": "852",
+        "generation": 1,
+        "creationTimestamp": "2019-11-26T21:11:08Z",
+        "labels": {
+            "addonmanager.kubernetes.io/mode": "Reconcile",
+            "k8s-app": "heapster",
+            "kubernetes.io/cluster-service": "true",
+            "version": "v1.7.0"
+        },
+        "annotations": {
+            "deployment.kubernetes.io/revision": "1",
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"extensions/v1beta1\",\"kind\":\"Deployment\",\"metadata\":{\"annotations\":{},\"labels\":{\"addonmanager.kubernetes.io/mode\":\"Reconcile\",\"k8s-app\":\"heapster\",\"kubernetes.io/cluster-service\":\"true\",\"version\":\"v1.7.0\"},\"name\":\"heapster\",\"namespace\":\"kube-system\"},\"spec\":{\"replicas\":1,\"selector\":{\"matchLabels\":{\"k8s-app\":\"heapster\",\"version\":\"v1.7.0\"}},\"template\":{\"metadata\":{\"annotations\":{\"scheduler.alpha.kubernetes.io/critical-pod\":\"\",\"seccomp.security.alpha.kubernetes.io/pod\":\"docker/default\"},\"labels\":{\"k8s-app\":\"heapster\",\"version\":\"v1.7.0\"}},\"spec\":{\"containers\":[{\"command\":[\"/heapster\",\"--source=kubernetes.summary_api:?host_id_annotation=container.googleapis.com/instance_id\",\"--sink=stackdriver:?cluster_name=gprod-uswest1c\\u0026use_old_resources=true\\u0026use_new_resources=false\\u0026min_interval_sec=100\\u0026batch_export_timeout_sec=110\\u0026cluster_location=us-west1-c\"],\"image\":\"gke.gcr.io/heapster:v1.7.0\",\"livenessProbe\":{\"httpGet\":{\"path\":\"/healthz\",\"port\":8082,\"scheme\":\"HTTP\"},\"initialDelaySeconds\":180,\"timeoutSeconds\":5},\"name\":\"heapster\"},{\"command\":[\"/monitor\",\"--source=heapster:http://localhost:8082?whitelisted=stackdriver_requests_count,stackdriver_timeseries_count\",\"--stackdriver-prefix=container.googleapis.com/internal/addons\",\"--api-override=https://monitoring.googleapis.com/\",\"--pod-id=$(POD_NAME)\",\"--namespace-id=$(POD_NAMESPACE)\"],\"env\":[{\"name\":\"POD_NAME\",\"valueFrom\":{\"fieldRef\":{\"fieldPath\":\"metadata.name\"}}},{\"name\":\"POD_NAMESPACE\",\"valueFrom\":{\"fieldRef\":{\"fieldPath\":\"metadata.namespace\"}}}],\"image\":\"k8s.gcr.io/prometheus-to-sd:v0.5.0\",\"name\":\"prom-to-sd\"},{\"command\":[\"/pod_nanny\",\"--config-dir=/etc/config\",\"--cpu=10m\",\"--extra-cpu=0.5m\",\"--memory=100Mi\",\"--extra-memory=4Mi\",\"--threshold=5\",\"--deployment=heapster-v1.7.0\",\"--container=heapster\",\"--poll-period=300000\",\"--estimator=exponential\",\"--minClusterSize=5\"],\"env\":[{\"name\":\"MY_POD_NAME\",\"valueFrom\":{\"fieldRef\":{\"fieldPath\":\"metadata.name\"}}},{\"name\":\"MY_POD_NAMESPACE\",\"valueFrom\":{\"fieldRef\":{\"fieldPath\":\"metadata.namespace\"}}}],\"image\":\"k8s.gcr.io/addon-resizer:1.8.3\",\"name\":\"heapster-nanny\",\"resources\":{\"limits\":{\"cpu\":\"50m\",\"memory\":\"92960Ki\"},\"requests\":{\"cpu\":\"50m\",\"memory\":\"92960Ki\"}},\"volumeMounts\":[{\"mountPath\":\"/etc/config\",\"name\":\"heapster-config-volume\"}]}],\"priorityClassName\":\"system-cluster-critical\",\"securityContext\":{\"fsGroup\":65534,\"supplementalGroups\":[65534]},\"serviceAccountName\":\"heapster\",\"tolerations\":[{\"key\":\"CriticalAddonsOnly\",\"operator\":\"Exists\"}],\"volumes\":[{\"configMap\":{\"name\":\"heapster-config\"},\"name\":\"heapster-config-volume\"}]}}}}\n"
+        }
+    },
+    "spec": {
+        "replicas": 1,
+        "selector": {
+            "matchLabels": {
+                "k8s-app": "heapster",
+                "version": "v1.7.0"
+            }
+        },
+        "template": {
+            "metadata": {
+                "creationTimestamp": null,
+                "labels": {
+                    "k8s-app": "heapster",
+                    "version": "v1.7.0"
+                },
+                "annotations": {
+                    "scheduler.alpha.kubernetes.io/critical-pod": "",
+                    "seccomp.security.alpha.kubernetes.io/pod": "docker/default"
+                }
+            },
+            "spec": {
+                "volumes": [
+                    {
+                        "name": "heapster-config-volume",
+                        "configMap": {
+                            "name": "heapster-config",
+                            "defaultMode": 420
+                        }
+                    }
+                ],
+                "containers": [
+                    {
+                        "name": "heapster",
+                        "image": "gke.gcr.io/heapster:v1.7.0",
+                        "command": [
+                            "/heapster",
+                            "--source=kubernetes.summary_api:?host_id_annotation=container.googleapis.com/instance_id",
+                            "--sink=stackdriver:?cluster_name=gprod-uswest1c&use_old_resources=true&use_new_resources=false&min_interval_sec=100&batch_export_timeout_sec=110&cluster_location=us-west1-c"
+                        ],
+                        "resources": {},
+                        "livenessProbe": {
+                            "httpGet": {
+                                "path": "/healthz",
+                                "port": 8082,
+                                "scheme": "HTTP"
+                            },
+                            "initialDelaySeconds": 180,
+                            "timeoutSeconds": 5,
+                            "periodSeconds": 10,
+                            "successThreshold": 1,
+                            "failureThreshold": 3
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "imagePullPolicy": "IfNotPresent"
+                    },
+                    {
+                        "name": "prom-to-sd",
+                        "image": "k8s.gcr.io/prometheus-to-sd:v0.5.0",
+                        "command": [
+                            "/monitor",
+                            "--source=heapster:http://localhost:8082?whitelisted=stackdriver_requests_count,stackdriver_timeseries_count",
+                            "--stackdriver-prefix=container.googleapis.com/internal/addons",
+                            "--api-override=https://monitoring.googleapis.com/",
+                            "--pod-id=$(POD_NAME)",
+                            "--namespace-id=$(POD_NAMESPACE)"
+                        ],
+                        "env": [
+                            {
+                                "name": "POD_NAME",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.name"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "POD_NAMESPACE",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.namespace"
+                                    }
+                                }
+                            }
+                        ],
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "imagePullPolicy": "IfNotPresent"
+                    },
+                    {
+                        "name": "heapster-nanny",
+                        "image": "k8s.gcr.io/addon-resizer:1.8.3",
+                        "command": [
+                            "/pod_nanny",
+                            "--config-dir=/etc/config",
+                            "--cpu=10m",
+                            "--extra-cpu=0.5m",
+                            "--memory=100Mi",
+                            "--extra-memory=4Mi",
+                            "--threshold=5",
+                            "--deployment=heapster-v1.7.0",
+                            "--container=heapster",
+                            "--poll-period=300000",
+                            "--estimator=exponential",
+                            "--minClusterSize=5"
+                        ],
+                        "env": [
+                            {
+                                "name": "MY_POD_NAME",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.name"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "MY_POD_NAMESPACE",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.namespace"
+                                    }
+                                }
+                            }
+                        ],
+                        "resources": {
+                            "limits": {
+                                "cpu": "50m",
+                                "memory": "92960Ki"
+                            },
+                            "requests": {
+                                "cpu": "50m",
+                                "memory": "92960Ki"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "name": "heapster-config-volume",
+                                "mountPath": "/etc/config"
+                            }
+                        ],
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "imagePullPolicy": "IfNotPresent"
+                    }
+                ],
+                "restartPolicy": "Always",
+                "terminationGracePeriodSeconds": 30,
+                "dnsPolicy": "ClusterFirst",
+                "serviceAccountName": "heapster",
+                "serviceAccount": "heapster",
+                "securityContext": {
+                    "supplementalGroups": [
+                        65534
+                    ],
+                    "fsGroup": 65534
+                },
+                "schedulerName": "default-scheduler",
+                "tolerations": [
+                    {
+                        "key": "CriticalAddonsOnly",
+                        "operator": "Exists"
+                    }
+                ],
+                "priorityClassName": "system-cluster-critical"
+            }
+        },
+        "strategy": {
+            "type": "RollingUpdate",
+            "rollingUpdate": {
+                "maxUnavailable": 1,
+                "maxSurge": 1
+            }
+        },
+        "revisionHistoryLimit": 2147483647,
+        "progressDeadlineSeconds": 2147483647
+    },
+    "status": {
+        "observedGeneration": 1,
+        "replicas": 1,
+        "updatedReplicas": 1,
+        "readyReplicas": 1,
+        "availableReplicas": 1,
+        "conditions": [
+            {
+                "type": "Available",
+                "status": "True",
+                "lastUpdateTime": "2019-11-26T21:11:08Z",
+                "lastTransitionTime": "2019-11-26T21:11:08Z",
+                "reason": "MinimumReplicasAvailable",
+                "message": "Deployment has minimum availability."
+            }
+        ]
+    }
+}

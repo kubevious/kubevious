@@ -1,0 +1,39 @@
+{
+    "kind": "Service",
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "gprod-sprt-main-prmts-server",
+        "namespace": "sprt",
+        "selfLink": "/api/v1/namespaces/sprt/services/gprod-sprt-main-prmts-server",
+        "uid": "6de8bc8e-1091-11ea-9c04-42010a8a00bb",
+        "resourceVersion": "967",
+        "creationTimestamp": "2019-11-26T21:12:18Z",
+        "labels": {
+            "berlioz_managed": "true",
+            "cluster": "sprt",
+            "deployment": "gprod",
+            "endpoint": "server",
+            "name": "gprod-sprt-main-prmts-server",
+            "sector": "main",
+            "service": "prmts"
+        }
+    },
+    "spec": {
+        "ports": [
+            {
+                "protocol": "TCP",
+                "port": 80,
+                "targetPort": 9090
+            }
+        ],
+        "selector": {
+            "name": "gprod-sprt-main-prmts"
+        },
+        "clusterIP": "10.11.245.157",
+        "type": "ClusterIP",
+        "sessionAffinity": "None"
+    },
+    "status": {
+        "loadBalancer": {}
+    }
+}

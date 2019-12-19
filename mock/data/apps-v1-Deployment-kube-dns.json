@@ -1,0 +1,303 @@
+{
+    "kind": "Deployment",
+    "apiVersion": "apps/v1",
+    "metadata": {
+        "name": "kube-dns",
+        "namespace": "kube-system",
+        "selfLink": "/apis/apps/v1/namespaces/kube-system/deployments/kube-dns",
+        "uid": "4339e6aa-1091-11ea-9c04-42010a8a00bb",
+        "resourceVersion": "903",
+        "generation": 2,
+        "creationTimestamp": "2019-11-26T21:11:07Z",
+        "labels": {
+            "addonmanager.kubernetes.io/mode": "Reconcile",
+            "k8s-app": "kube-dns",
+            "kubernetes.io/cluster-service": "true"
+        },
+        "annotations": {
+            "deployment.kubernetes.io/revision": "1",
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"extensions/v1beta1\",\"kind\":\"Deployment\",\"metadata\":{\"annotations\":{},\"labels\":{\"addonmanager.kubernetes.io/mode\":\"Reconcile\",\"k8s-app\":\"kube-dns\",\"kubernetes.io/cluster-service\":\"true\"},\"name\":\"kube-dns\",\"namespace\":\"kube-system\"},\"spec\":{\"selector\":{\"matchLabels\":{\"k8s-app\":\"kube-dns\"}},\"strategy\":{\"rollingUpdate\":{\"maxSurge\":\"10%\",\"maxUnavailable\":0}},\"template\":{\"metadata\":{\"annotations\":{\"scheduler.alpha.kubernetes.io/critical-pod\":\"\",\"seccomp.security.alpha.kubernetes.io/pod\":\"docker/default\"},\"labels\":{\"k8s-app\":\"kube-dns\"}},\"spec\":{\"containers\":[{\"args\":[\"--domain=cluster.local.\",\"--dns-port=10053\",\"--config-dir=/kube-dns-config\",\"--v=2\"],\"env\":[{\"name\":\"PROMETHEUS_PORT\",\"value\":\"10055\"}],\"image\":\"k8s.gcr.io/k8s-dns-kube-dns-amd64:1.15.4\",\"livenessProbe\":{\"failureThreshold\":5,\"httpGet\":{\"path\":\"/healthcheck/kubedns\",\"port\":10054,\"scheme\":\"HTTP\"},\"initialDelaySeconds\":60,\"successThreshold\":1,\"timeoutSeconds\":5},\"name\":\"kubedns\",\"ports\":[{\"containerPort\":10053,\"name\":\"dns-local\",\"protocol\":\"UDP\"},{\"containerPort\":10053,\"name\":\"dns-tcp-local\",\"protocol\":\"TCP\"},{\"containerPort\":10055,\"name\":\"metrics\",\"protocol\":\"TCP\"}],\"readinessProbe\":{\"httpGet\":{\"path\":\"/readiness\",\"port\":8081,\"scheme\":\"HTTP\"},\"initialDelaySeconds\":3,\"timeoutSeconds\":5},\"resources\":{\"limits\":{\"memory\":\"170Mi\"},\"requests\":{\"cpu\":\"100m\",\"memory\":\"70Mi\"}},\"volumeMounts\":[{\"mountPath\":\"/kube-dns-config\",\"name\":\"kube-dns-config\"}]},{\"args\":[\"-v=2\",\"-logtostderr\",\"-configDir=/etc/k8s/dns/dnsmasq-nanny\",\"-restartDnsmasq=true\",\"--\",\"-k\",\"--cache-size=1000\",\"--no-negcache\",\"--log-facility=-\",\"--server=/cluster.local/127.0.0.1#10053\",\"--server=/in-addr.arpa/127.0.0.1#10053\",\"--server=/ip6.arpa/127.0.0.1#10053\"],\"image\":\"k8s.gcr.io/k8s-dns-dnsmasq-nanny-amd64:1.15.4\",\"livenessProbe\":{\"failureThreshold\":5,\"httpGet\":{\"path\":\"/healthcheck/dnsmasq\",\"port\":10054,\"scheme\":\"HTTP\"},\"initialDelaySeconds\":60,\"successThreshold\":1,\"timeoutSeconds\":5},\"name\":\"dnsmasq\",\"ports\":[{\"containerPort\":53,\"name\":\"dns\",\"protocol\":\"UDP\"},{\"containerPort\":53,\"name\":\"dns-tcp\",\"protocol\":\"TCP\"}],\"resources\":{\"requests\":{\"cpu\":\"150m\",\"memory\":\"20Mi\"}},\"volumeMounts\":[{\"mountPath\":\"/etc/k8s/dns/dnsmasq-nanny\",\"name\":\"kube-dns-config\"}]},{\"args\":[\"--v=2\",\"--logtostderr\",\"--probe=kubedns,127.0.0.1:10053,kubernetes.default.svc.cluster.local,5,SRV\",\"--probe=dnsmasq,127.0.0.1:53,kubernetes.default.svc.cluster.local,5,SRV\"],\"image\":\"k8s.gcr.io/k8s-dns-sidecar-amd64:1.15.4\",\"livenessProbe\":{\"failureThreshold\":5,\"httpGet\":{\"path\":\"/metrics\",\"port\":10054,\"scheme\":\"HTTP\"},\"initialDelaySeconds\":60,\"successThreshold\":1,\"timeoutSeconds\":5},\"name\":\"sidecar\",\"ports\":[{\"containerPort\":10054,\"name\":\"metrics\",\"protocol\":\"TCP\"}],\"resources\":{\"requests\":{\"cpu\":\"10m\",\"memory\":\"20Mi\"}}},{\"command\":[\"/monitor\",\"--source=kubedns:http://localhost:10054?whitelisted=probe_kubedns_latency_ms,probe_kubedns_errors,dnsmasq_misses,dnsmasq_hits\",\"--stackdriver-prefix=container.googleapis.com/internal/addons\",\"--api-override=https://monitoring.googleapis.com/\",\"--pod-id=$(POD_NAME)\",\"--namespace-id=$(POD_NAMESPACE)\",\"--v=2\"],\"env\":[{\"name\":\"POD_NAME\",\"valueFrom\":{\"fieldRef\":{\"fieldPath\":\"metadata.name\"}}},{\"name\":\"POD_NAMESPACE\",\"valueFrom\":{\"fieldRef\":{\"fieldPath\":\"metadata.namespace\"}}}],\"image\":\"k8s.gcr.io/prometheus-to-sd:v0.4.2\",\"name\":\"prometheus-to-sd\"}],\"dnsPolicy\":\"Default\",\"priorityClassName\":\"system-cluster-critical\",\"serviceAccountName\":\"kube-dns\",\"tolerations\":[{\"key\":\"CriticalAddonsOnly\",\"operator\":\"Exists\"}],\"volumes\":[{\"configMap\":{\"name\":\"kube-dns\",\"optional\":true},\"name\":\"kube-dns-config\"}]}}}}\n"
+        }
+    },
+    "spec": {
+        "replicas": 2,
+        "selector": {
+            "matchLabels": {
+                "k8s-app": "kube-dns"
+            }
+        },
+        "template": {
+            "metadata": {
+                "creationTimestamp": null,
+                "labels": {
+                    "k8s-app": "kube-dns"
+                },
+                "annotations": {
+                    "scheduler.alpha.kubernetes.io/critical-pod": "",
+                    "seccomp.security.alpha.kubernetes.io/pod": "docker/default"
+                }
+            },
+            "spec": {
+                "volumes": [
+                    {
+                        "name": "kube-dns-config",
+                        "configMap": {
+                            "name": "kube-dns",
+                            "defaultMode": 420,
+                            "optional": true
+                        }
+                    }
+                ],
+                "containers": [
+                    {
+                        "name": "kubedns",
+                        "image": "k8s.gcr.io/k8s-dns-kube-dns-amd64:1.15.4",
+                        "args": [
+                            "--domain=cluster.local.",
+                            "--dns-port=10053",
+                            "--config-dir=/kube-dns-config",
+                            "--v=2"
+                        ],
+                        "ports": [
+                            {
+                                "name": "dns-local",
+                                "containerPort": 10053,
+                                "protocol": "UDP"
+                            },
+                            {
+                                "name": "dns-tcp-local",
+                                "containerPort": 10053,
+                                "protocol": "TCP"
+                            },
+                            {
+                                "name": "metrics",
+                                "containerPort": 10055,
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "env": [
+                            {
+                                "name": "PROMETHEUS_PORT",
+                                "value": "10055"
+                            }
+                        ],
+                        "resources": {
+                            "limits": {
+                                "memory": "170Mi"
+                            },
+                            "requests": {
+                                "cpu": "100m",
+                                "memory": "70Mi"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "name": "kube-dns-config",
+                                "mountPath": "/kube-dns-config"
+                            }
+                        ],
+                        "livenessProbe": {
+                            "httpGet": {
+                                "path": "/healthcheck/kubedns",
+                                "port": 10054,
+                                "scheme": "HTTP"
+                            },
+                            "initialDelaySeconds": 60,
+                            "timeoutSeconds": 5,
+                            "periodSeconds": 10,
+                            "successThreshold": 1,
+                            "failureThreshold": 5
+                        },
+                        "readinessProbe": {
+                            "httpGet": {
+                                "path": "/readiness",
+                                "port": 8081,
+                                "scheme": "HTTP"
+                            },
+                            "initialDelaySeconds": 3,
+                            "timeoutSeconds": 5,
+                            "periodSeconds": 10,
+                            "successThreshold": 1,
+                            "failureThreshold": 3
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "imagePullPolicy": "IfNotPresent"
+                    },
+                    {
+                        "name": "dnsmasq",
+                        "image": "k8s.gcr.io/k8s-dns-dnsmasq-nanny-amd64:1.15.4",
+                        "args": [
+                            "-v=2",
+                            "-logtostderr",
+                            "-configDir=/etc/k8s/dns/dnsmasq-nanny",
+                            "-restartDnsmasq=true",
+                            "--",
+                            "-k",
+                            "--cache-size=1000",
+                            "--no-negcache",
+                            "--log-facility=-",
+                            "--server=/cluster.local/127.0.0.1#10053",
+                            "--server=/in-addr.arpa/127.0.0.1#10053",
+                            "--server=/ip6.arpa/127.0.0.1#10053"
+                        ],
+                        "ports": [
+                            {
+                                "name": "dns",
+                                "containerPort": 53,
+                                "protocol": "UDP"
+                            },
+                            {
+                                "name": "dns-tcp",
+                                "containerPort": 53,
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "resources": {
+                            "requests": {
+                                "cpu": "150m",
+                                "memory": "20Mi"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "name": "kube-dns-config",
+                                "mountPath": "/etc/k8s/dns/dnsmasq-nanny"
+                            }
+                        ],
+                        "livenessProbe": {
+                            "httpGet": {
+                                "path": "/healthcheck/dnsmasq",
+                                "port": 10054,
+                                "scheme": "HTTP"
+                            },
+                            "initialDelaySeconds": 60,
+                            "timeoutSeconds": 5,
+                            "periodSeconds": 10,
+                            "successThreshold": 1,
+                            "failureThreshold": 5
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "imagePullPolicy": "IfNotPresent"
+                    },
+                    {
+                        "name": "sidecar",
+                        "image": "k8s.gcr.io/k8s-dns-sidecar-amd64:1.15.4",
+                        "args": [
+                            "--v=2",
+                            "--logtostderr",
+                            "--probe=kubedns,127.0.0.1:10053,kubernetes.default.svc.cluster.local,5,SRV",
+                            "--probe=dnsmasq,127.0.0.1:53,kubernetes.default.svc.cluster.local,5,SRV"
+                        ],
+                        "ports": [
+                            {
+                                "name": "metrics",
+                                "containerPort": 10054,
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "resources": {
+                            "requests": {
+                                "cpu": "10m",
+                                "memory": "20Mi"
+                            }
+                        },
+                        "livenessProbe": {
+                            "httpGet": {
+                                "path": "/metrics",
+                                "port": 10054,
+                                "scheme": "HTTP"
+                            },
+                            "initialDelaySeconds": 60,
+                            "timeoutSeconds": 5,
+                            "periodSeconds": 10,
+                            "successThreshold": 1,
+                            "failureThreshold": 5
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "imagePullPolicy": "IfNotPresent"
+                    },
+                    {
+                        "name": "prometheus-to-sd",
+                        "image": "k8s.gcr.io/prometheus-to-sd:v0.4.2",
+                        "command": [
+                            "/monitor",
+                            "--source=kubedns:http://localhost:10054?whitelisted=probe_kubedns_latency_ms,probe_kubedns_errors,dnsmasq_misses,dnsmasq_hits",
+                            "--stackdriver-prefix=container.googleapis.com/internal/addons",
+                            "--api-override=https://monitoring.googleapis.com/",
+                            "--pod-id=$(POD_NAME)",
+                            "--namespace-id=$(POD_NAMESPACE)",
+                            "--v=2"
+                        ],
+                        "env": [
+                            {
+                                "name": "POD_NAME",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.name"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "POD_NAMESPACE",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.namespace"
+                                    }
+                                }
+                            }
+                        ],
+                        "resources": {},
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "imagePullPolicy": "IfNotPresent"
+                    }
+                ],
+                "restartPolicy": "Always",
+                "terminationGracePeriodSeconds": 30,
+                "dnsPolicy": "Default",
+                "serviceAccountName": "kube-dns",
+                "serviceAccount": "kube-dns",
+                "securityContext": {},
+                "schedulerName": "default-scheduler",
+                "tolerations": [
+                    {
+                        "key": "CriticalAddonsOnly",
+                        "operator": "Exists"
+                    }
+                ],
+                "priorityClassName": "system-cluster-critical"
+            }
+        },
+        "strategy": {
+            "type": "RollingUpdate",
+            "rollingUpdate": {
+                "maxUnavailable": 0,
+                "maxSurge": "10%"
+            }
+        },
+        "revisionHistoryLimit": 2147483647,
+        "progressDeadlineSeconds": 2147483647
+    },
+    "status": {
+        "observedGeneration": 2,
+        "replicas": 2,
+        "updatedReplicas": 2,
+        "readyReplicas": 2,
+        "availableReplicas": 2,
+        "conditions": [
+            {
+                "type": "Available",
+                "status": "True",
+                "lastUpdateTime": "2019-11-26T21:12:04Z",
+                "lastTransitionTime": "2019-11-26T21:12:04Z",
+                "reason": "MinimumReplicasAvailable",
+                "message": "Deployment has minimum availability."
+            }
+        ]
+    }
+}

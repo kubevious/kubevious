@@ -1,0 +1,121 @@
+{
+    "kind": "Deployment",
+    "apiVersion": "apps/v1",
+    "metadata": {
+        "name": "kube-dns-autoscaler",
+        "namespace": "kube-system",
+        "selfLink": "/apis/apps/v1/namespaces/kube-system/deployments/kube-dns-autoscaler",
+        "uid": "4349ee58-1091-11ea-9c04-42010a8a00bb",
+        "resourceVersion": "680",
+        "generation": 1,
+        "creationTimestamp": "2019-11-26T21:11:07Z",
+        "labels": {
+            "addonmanager.kubernetes.io/mode": "Reconcile",
+            "k8s-app": "kube-dns-autoscaler",
+            "kubernetes.io/cluster-service": "true"
+        },
+        "annotations": {
+            "deployment.kubernetes.io/revision": "1",
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"apps/v1\",\"kind\":\"Deployment\",\"metadata\":{\"annotations\":{},\"labels\":{\"addonmanager.kubernetes.io/mode\":\"Reconcile\",\"k8s-app\":\"kube-dns-autoscaler\",\"kubernetes.io/cluster-service\":\"true\"},\"name\":\"kube-dns-autoscaler\",\"namespace\":\"kube-system\"},\"spec\":{\"selector\":{\"matchLabels\":{\"k8s-app\":\"kube-dns-autoscaler\"}},\"template\":{\"metadata\":{\"annotations\":{\"scheduler.alpha.kubernetes.io/critical-pod\":\"\",\"seccomp.security.alpha.kubernetes.io/pod\":\"docker/default\"},\"labels\":{\"k8s-app\":\"kube-dns-autoscaler\"}},\"spec\":{\"containers\":[{\"command\":[\"/cluster-proportional-autoscaler\",\"--namespace=kube-system\",\"--configmap=kube-dns-autoscaler\",\"--target=Deployment/kube-dns\",\"--default-params={\\\"linear\\\":{\\\"coresPerReplica\\\":256,\\\"nodesPerReplica\\\":16,\\\"preventSinglePointFailure\\\":true}}\",\"--logtostderr=true\",\"--v=2\"],\"image\":\"k8s.gcr.io/cluster-proportional-autoscaler-amd64:1.3.0\",\"name\":\"autoscaler\",\"resources\":{\"requests\":{\"cpu\":\"20m\",\"memory\":\"10Mi\"}}}],\"priorityClassName\":\"system-cluster-critical\",\"securityContext\":{\"fsGroup\":65534,\"supplementalGroups\":[65534]},\"serviceAccountName\":\"kube-dns-autoscaler\",\"tolerations\":[{\"key\":\"CriticalAddonsOnly\",\"operator\":\"Exists\"}]}}}}\n"
+        }
+    },
+    "spec": {
+        "replicas": 1,
+        "selector": {
+            "matchLabels": {
+                "k8s-app": "kube-dns-autoscaler"
+            }
+        },
+        "template": {
+            "metadata": {
+                "creationTimestamp": null,
+                "labels": {
+                    "k8s-app": "kube-dns-autoscaler"
+                },
+                "annotations": {
+                    "scheduler.alpha.kubernetes.io/critical-pod": "",
+                    "seccomp.security.alpha.kubernetes.io/pod": "docker/default"
+                }
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "name": "autoscaler",
+                        "image": "k8s.gcr.io/cluster-proportional-autoscaler-amd64:1.3.0",
+                        "command": [
+                            "/cluster-proportional-autoscaler",
+                            "--namespace=kube-system",
+                            "--configmap=kube-dns-autoscaler",
+                            "--target=Deployment/kube-dns",
+                            "--default-params={\"linear\":{\"coresPerReplica\":256,\"nodesPerReplica\":16,\"preventSinglePointFailure\":true}}",
+                            "--logtostderr=true",
+                            "--v=2"
+                        ],
+                        "resources": {
+                            "requests": {
+                                "cpu": "20m",
+                                "memory": "10Mi"
+                            }
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "imagePullPolicy": "IfNotPresent"
+                    }
+                ],
+                "restartPolicy": "Always",
+                "terminationGracePeriodSeconds": 30,
+                "dnsPolicy": "ClusterFirst",
+                "serviceAccountName": "kube-dns-autoscaler",
+                "serviceAccount": "kube-dns-autoscaler",
+                "securityContext": {
+                    "supplementalGroups": [
+                        65534
+                    ],
+                    "fsGroup": 65534
+                },
+                "schedulerName": "default-scheduler",
+                "tolerations": [
+                    {
+                        "key": "CriticalAddonsOnly",
+                        "operator": "Exists"
+                    }
+                ],
+                "priorityClassName": "system-cluster-critical"
+            }
+        },
+        "strategy": {
+            "type": "RollingUpdate",
+            "rollingUpdate": {
+                "maxUnavailable": "25%",
+                "maxSurge": "25%"
+            }
+        },
+        "revisionHistoryLimit": 10,
+        "progressDeadlineSeconds": 600
+    },
+    "status": {
+        "observedGeneration": 1,
+        "replicas": 1,
+        "updatedReplicas": 1,
+        "readyReplicas": 1,
+        "availableReplicas": 1,
+        "conditions": [
+            {
+                "type": "Available",
+                "status": "True",
+                "lastUpdateTime": "2019-11-26T21:11:33Z",
+                "lastTransitionTime": "2019-11-26T21:11:33Z",
+                "reason": "MinimumReplicasAvailable",
+                "message": "Deployment has minimum availability."
+            },
+            {
+                "type": "Progressing",
+                "status": "True",
+                "lastUpdateTime": "2019-11-26T21:11:33Z",
+                "lastTransitionTime": "2019-11-26T21:11:07Z",
+                "reason": "NewReplicaSetAvailable",
+                "message": "ReplicaSet \"kube-dns-autoscaler-bb58c6784\" has successfully progressed."
+            }
+        ]
+    }
+}

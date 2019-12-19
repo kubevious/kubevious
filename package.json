@@ -1,0 +1,36 @@
+{
+  "name": "berlioz-appview",
+  "version": "1.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://berlioz-the@github.com/berlioz-the/appview.git"
+  },
+  "directories": {
+    "lib": "./lib"
+  },
+  "author": "Ruben Hakopian",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/berlioz-the/appview.git/issues"
+  },
+  "homepage": "https://github.com/berlioz-the/appview.git#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "express-promise-router": "^3.0.3",
+    "js-yaml": "^3.13.1",
+    "k8s-super-client": "^1.0.2",
+    "the-lodash": "^1.0.15",
+    "the-logger": "^1.1.20",
+    "the-promise": "^1.1.4",
+    "yargs": "^15.0.2"
+  },
+  "devDependencies": {
+    "mocha": "^6.2.2",
+    "should": "^13.2.3"
+  }
+}

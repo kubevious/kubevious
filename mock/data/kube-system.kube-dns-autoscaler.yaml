@@ -1,0 +1,11 @@
+apiVersion: v1
+data:
+  linear: '{"coresPerReplica":256,"nodesPerReplica":16,"preventSinglePointFailure":true}'
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2019-11-11T21:22:53Z"
+  name: kube-dns-autoscaler
+  namespace: kube-system
+  resourceVersion: "1250"
+  selfLink: /api/v1/namespaces/kube-system/configmaps/kube-dns-autoscaler
+  uid: 6be5be06-04c9-11ea-bc78-42010a8a0172
