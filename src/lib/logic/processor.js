@@ -1,40 +1,7 @@
 const _ = require("the-lodash");
-const yaml = require('js-yaml');
-const LogicItem = require("./item");
-
-class LogicProcesorScope
-{
-    constructor()
-    {
-        this._root = LogicItem.constructTop();
-        this._configMap = {};
-        this._propertiesMap = {};
-        this._namespaceScopes = {};
-    }
-
-    get root() {
-        return this._root;
-    }
-
-    get configMap() {
-        return this._configMap;
-    }
-
-    get propertiesMap() {
-        return this._propertiesMap;
-    }
-    
-    getNamespaceScope(name) {
-        if (!this._namespaceScopes[name]) {
-            this._namespaceScopes[name] = {
-                appLabels: [],
-                apps: {},
-                services: {}
-            };
-        }
-        return this._namespaceScopes[name];
-    }
-}
+const fs = require("fs");
+const path = require("path");
+const Scope = require("./scope");
 
 class LogicProcessor 
 {
@@ -43,6 +10,9 @@ class LogicProcessor
         this._context = context;
         this._logger = context.logger.sublogger("LogicProcessor");
 
+        this._handlers = [];
+        this._extractHandlers();
+
         this._context.concreteRegistry.onChanged(this._process.bind(this));
     }
 
@@ -50,27 +20,115 @@ class LogicProcessor
         return this._logger;
     }
 
+    _extractHandlers()
+    {
+        this.logger.info('[_extractHandlers] ...');
+        var files = fs.readdirSync(path.join(__dirname, "handlers"));
+        files = _.filter(files, x => x.endsWith('.js'));
+        for(var x of files)
+        {
+            this.logger.info('[_extractHandlers] %s', x);
+            this._loadHandler(x);
+        }
+
+        this._handlers = _.orderBy(this._handlers, [
+            x => x.order,
+            x => _.stableStringify(x.target)
+        ]);
+
+        for(var handlerInfo of this._handlers)
+        {
+            this._logger.info("[_extractHandlers] HANDLER: %s -> %s, target:", 
+                handlerInfo.order, 
+                handlerInfo.name, 
+                handlerInfo.target)
+        }
+    }
+
+    _loadHandler(name)
+    {
+        this.logger.info('[_loadHandler] %s...', name);
+        const handler = require('./handlers/' + name);
+
+        var targets = null;
+        if (handler.target) {
+            targets = [handler.target];
+        } else if (handler.targets) {
+            targets = handler.targets;
+        }
+
+        var order = 0;
+        if (handler.order) {
+            order = handler.order;
+        }
+
+        for(var target of targets)
+        {
+            this.logger.info('[_loadHandler] Adding %s...', name, target);
+
+            var info = {
+                name: name,
+                order: order,
+                target: target,
+                handler: handler.handler
+            }
+            this._handlers.push(info);
+        }
+    }
+
     _process()
     {
         this._logger.info("Process...");
 
-        var scope = new LogicProcesorScope();
+        var scope = new Scope(this._context);
 
-        this._processNamespaces(scope);
-
-        this._processConfigMaps(scope);
-
-        this._processApps(scope);
-
-        this._processServices(scope);
-
-        this._processIngresses(scope);
+        this._processHandlers(scope);
 
         this._context.facadeRegistry.updateLogicTree(scope.root.exportTree());
         this._context.facadeRegistry.updateConfigTree(scope.configMap);
         this._context.facadeRegistry.updatePropertiesMap(scope.propertiesMap);
 
        return this._dumpToFile(scope);
+    }
+
+    _processHandlers(scope)
+    {
+        for(var handlerInfo of this._handlers)
+        {
+            this._logger.info("[_extractHandlers] HANDLER: %s, target:", 
+                handlerInfo.name, 
+                handlerInfo.target);
+            this._processHandler(scope, handlerInfo);
+        }
+    }
+
+    _processHandler(scope, handlerInfo)
+    {
+        this._logger.info("[_processHandler] Handler: %s -> %s, target:", 
+            handlerInfo.order, 
+            handlerInfo.name, 
+            handlerInfo.target);
+
+        var items = this._context.concreteRegistry.filterItems(handlerInfo.target);
+        for(var item of items)
+        {
+            this._processHandlerItem(scope, handlerInfo, item);
+        }
+    }
+
+    _processHandlerItem(scope, handlerInfo, item)
+    {
+        this._logger.info("[_processHandlerItem] Handler: %s, Item: ", 
+            handlerInfo.name, 
+            item.id);
+
+        var handlerArgs = {
+            scope: scope,
+            logger: this.logger,
+            item: item,
+            context: this.context
+        }
+        handlerInfo.handler(handlerArgs);
     }
 
     _dumpToFile(scope)
@@ -99,407 +157,6 @@ class LogicProcessor
             });
     }
 
-    _processNamespaces(scope)
-    {
-        var filter = {
-            api: "v1",
-            kind: "Namespace"
-        }
-        for (var item of this._context.concreteRegistry.filterItems(filter))
-        {
-            this._processNamespace(scope, item);
-        }
-    }
-
-    _processNamespace(scope, item)
-    {
-        var namespace = scope.root.fetchByNaming("ns", item.config.metadata.name);
-        this._setK8sConfig(scope, namespace, item.config);
-    }
-
-    _processConfigMaps(scope)
-    {
-        var filter = {
-            api: "v1",
-            kind: "ConfigMap"
-        }
-        for (var item of this._context.concreteRegistry.filterItems(filter))
-        {
-            this._processConfigMap(scope, item);
-        }
-    }
-
-    _processConfigMap(scope, item)
-    {
-        var rawConfigMaps = this._fetchRawContainer(scope, item, "ConfigMaps");
-        var configmap = rawConfigMaps.fetchByNaming("configmap", item.config.metadata.name);
-        this._setK8sConfig(scope, configmap, item.config);
-    }
-
-    _processServices(scope)
-    {
-        var filter = {
-            api: "v1",
-            kind: "Service"
-        }
-        for (var item of this._context.concreteRegistry.filterItems(filter))
-        {
-            this._processService(scope, item);
-        }
-    }
-
-    _processService(scope, item)
-    {
-        this.logger.info("[_processService] %s", item.config.metadata.name);
-
-        var scopeInfo = {
-            name: item.config.metadata.name,
-            items: []
-        };
-        var namespaceScope = scope.getNamespaceScope(item.config.metadata.namespace);
-        namespaceScope.services[scopeInfo.name] = scopeInfo;
-
-        var rawConfigMaps = this._fetchRawContainer(scope, item, "Services");
-        var k8sService = rawConfigMaps.fetchByNaming("service", item.config.metadata.name);
-        this._setK8sConfig(scope, k8sService, item.config);
-        scopeInfo.items.push(k8sService);
-
-        var appSelector = _.get(item.config, 'spec.selector');
-        this.logger.info("[_processService] appSelector: ", appSelector);
-        if (appSelector)
-        {
-            var appItems = this._findAppsByLabels(scope, item.config.metadata.namespace, appSelector);
-            for(var appItem of appItems)
-            {
-                var appScope = namespaceScope.apps[appItem.naming];
-                this.logger.info("[_processService] appscope name: %s" , appItem.naming)
-
-                scopeInfo.microserviceName = appItem.naming;
-                var serviceCount = appItem.getChildrenByKind('service').length;
-                var serviceItemName = "Service";
-                if (serviceCount != 0) {
-                    serviceItemName += " " + (serviceCount + 1);
-                }
-                var k8sService2 = appItem.fetchByNaming("service", serviceItemName);
-                this._setK8sConfig(scope, k8sService2, item.config);
-                k8sService2.order = 200;
-                scopeInfo.items.push(k8sService2);
-
-                var portsConfig = _.get(item.config, 'spec.ports');
-                if (portsConfig) {
-                    this.logger.info("[_processService] portsConfig: ", portsConfig);
-                    for(var portConfig of portsConfig) {      
-                        this.logger.info("[_processService] portConfig: ", portConfig);
-                        var appPort = portConfig.targetPort;                   
-                        var appPortInfo = appScope.ports[appPort];
-                        if (appPortInfo) {
-                            this.logger.info("[_processService] found port %s :: %s", appPortInfo.name, appPort);
-                            var k8sService3 = appPortInfo.portItem.fetchByNaming("service", serviceItemName);
-                            this._setK8sConfig(scope, k8sService3, item.config);
-                            scopeInfo.items.push(k8sService3);
-                        } else {
-                            this.logger.error("[_processService] missing app %s port %s", appScope.name, appPort);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    _findAppsByLabels(scope, namespace, selector)
-    {
-        var result = [];
-        var namespaceScope = scope.getNamespaceScope(namespace);
-        for(var appLabelInfo of namespaceScope.appLabels)
-        {
-            if (this._labelsMatch(appLabelInfo.labels, selector))
-            {
-                result.push(appLabelInfo.appItem);
-            }
-        }
-        return result;
-    }
-
-    _labelsMatch(labels, selector)
-    {
-        for(var key of _.keys(selector)) {
-            if (selector[key] != labels[key]) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    _processIngresses(scope)
-    {
-        var filter = {
-            api: "extensions",
-            kind: "Ingress"
-        }
-        for (var item of this._context.concreteRegistry.filterItems(filter))
-        {
-            this._processIngress(scope, item);
-        }
-    }
-
-    _processIngress(scope, item)
-    {
-        var namespaceScope = scope.getNamespaceScope(item.config.metadata.namespace);
-
-        var rawConfigMaps = this._fetchRawContainer(scope, item, "Ingresses");
-        var k8sIngress = rawConfigMaps.fetchByNaming("ingress", item.config.metadata.name);
-        this._setK8sConfig(scope, k8sIngress, item.config);
-
-        var _processIngressBackend = (backendConfig) => {
-            this.logger.info("[_processIngress]", backendConfig)
-            if (!backendConfig.serviceName) {
-                return;
-            }
-
-            var serviceScopeInfo = namespaceScope.services[backendConfig.serviceName];
-            if (serviceScopeInfo) {
-
-                for(var serviceItem of serviceScopeInfo.items) {
-                    var nestedIngress = serviceItem.fetchByNaming("ingress", item.config.metadata.name);
-                    this._setK8sConfig(scope, nestedIngress, item.config);
-                }
-
-                if (serviceScopeInfo.microserviceName) {
-                    var svcItem = this._findAppItem(scope, item.config.metadata.namespace, serviceScopeInfo.microserviceName);
-                    var svcItemIngress = svcItem.fetchByNaming("ingress", item.config.metadata.name);
-                    this._setK8sConfig(scope, svcItemIngress, item.config);
-                    svcItemIngress.order = 250;
-                }
-            }
-        }
-
-        var defaultBackend = _.get(item.config, "spec.backend");
-        if (defaultBackend) {
-            _processIngressBackend(defaultBackend);
-        }
-
-        var rulesConfig = _.get(item.config, "spec.rules");
-        for(var ruleConfig of rulesConfig)
-        {
-            var host = ruleConfig.host;
-            if (!host) {
-                host = null;
-            }
-            if (ruleConfig.http && ruleConfig.http.paths) {
-                for(var pathConfig of ruleConfig.http.paths) {
-                    if (pathConfig.backend) {
-                        _processIngressBackend(pathConfig.backend);
-                    }
-                }
-            }
-        }
-
-    }
-
-
-    _findAppItem(scope, namespace, name)
-    {
-        this.logger.info("[_findAppItem] %s :: %s...", namespace, name)
-        return this._findItem(scope, [
-            {
-                kind: "ns",
-                name: namespace
-            },
-            {
-                kind: "app",
-                name: name
-            }
-        ]);
-    }
-
-    _findItem(scope, itemPath)
-    {
-        var item = scope.root;
-        for(var x of itemPath) {
-            item = item.findByNaming(x.kind, x.name);
-            if (!item) {
-                return null;
-            }
-        }
-        return item;
-    }
-
-    _fetchRawContainer(scope, item, name)
-    {
-        var namespace = scope.root.fetchByNaming("ns", item.config.metadata.namespace);
-        var rawContainer = namespace.fetchByNaming("raw", "Raw Configs");
-        rawContainer.order = 1000;
-        var container = rawContainer.fetchByNaming("raw", name);
-        return container;
-    }
-
-    _processApps(scope)
-    {
-        var filter = {
-            api: "apps",
-            kind: "Deployment"
-        }
-        for (var item of this._context.concreteRegistry.filterItems(filter))
-        {
-            this._processApp(scope, item);
-        }
-
-        filter = {
-            api: "apps",
-            kind: "StatefulSet"
-        }
-        for (var item of this._context.concreteRegistry.filterItems(filter))
-        {
-            this._processApp(scope, item);
-        }
-
-        filter = {
-            api: "apps",
-            kind: "DaemonSet"
-        }
-        for (var item of this._context.concreteRegistry.filterItems(filter))
-        {
-            this._processApp(scope, item);
-        }
-    }
-
-    _processApp(scope, item)
-    {
-        var namespaceScope = scope.getNamespaceScope(item.config.metadata.namespace);
-        var appScope = {
-            name: item.config.metadata.name,
-            ports: {}
-        };
-        namespaceScope.apps[appScope.name] = appScope;
-
-        var namespace = scope.root.fetchByNaming("ns", item.config.metadata.namespace);
-
-        var app = namespace.fetchByNaming("app", item.config.metadata.name);
-
-        var labelsMap = _.get(item.config, 'spec.template.metadata.labels');
-        if (labelsMap) {
-            namespaceScope.appLabels.push({
-                labels: labelsMap,
-                name: item.config.metadata.name,
-                appItem: app
-            });
-        }
-
-        var launcher = app.fetchByNaming("launcher", item.config.kind);
-        this._setK8sConfig(scope, launcher, item.config);
-
-        var volumesConfig = _.get(item.config, 'spec.template.spec.volumes');
-        var containersConfig = _.get(item.config, 'spec.template.spec.containers');
-
-        var volumesMap = _.makeDict(volumesConfig, x => x.name);
-        var containersMap = _.makeDict(containersConfig, x => x.name);
-
-        if (_.isArray(containersConfig)) {
-            for(var containerConfig of containersConfig) {
-                var container = app.fetchByNaming("cont", containerConfig.name);
-                this._setK8sConfig(scope, container, containerConfig);
-
-                var envVars = {
-                }
-
-                if (containerConfig.env) {
-                    for(var envObj of containerConfig.env) {
-                        var value = null;
-                        if (envObj.value) {
-                            value = envObj.value;
-                        } else if (envObj.valueFrom) {
-                            value = "<pre>" + yaml.safeDump(envObj.valueFrom) + "</pre>";
-                        }
-                        envVars[envObj.name] = value;
-                    }
-                }
-
-                scope.propertiesMap[container.dn].push({
-                    kind: "key-value",
-                    name: "Environment Variables",
-                    order: 10,
-                    config: envVars
-                });
-
-                if (_.isArray(containerConfig.volumeMounts)) {
-                    for(var volumeRefConfig of containerConfig.volumeMounts) {
-                        var volumeConfig = volumesMap[volumeRefConfig.name];
-                        if (volumeConfig) {
-                            this._processVolumeConfig(
-                                scope, 
-                                container, 
-                                item.config.metadata.namespace, 
-                                volumeConfig);
-                        }
-                    }
-                }
-
-                if (_.isArray(containerConfig.ports)) {
-                    for(var portConfig of containerConfig.ports) {
-                        var portName = portConfig.name + " (" + portConfig.protocol + "-" + portConfig.containerPort + ")";
-                        var portItem = container.fetchByNaming("port", portName);
-                        this._setK8sConfig(scope, portItem, portConfig);
-                        appScope.ports[portConfig.containerPort] = {
-                            name: portConfig.name,
-                            containerName: containerConfig.name,
-                            portItem: portItem,
-                            containerItem: container
-                        };
-                    }
-                }
-            }
-        }
-
-        if (_.isArray(volumesConfig) && (volumesConfig.length > 0)) {
-            var volumes = app.fetchByNaming("vol", "Volumes");
-
-            for(var volumeConfig of volumesConfig) {
-                this._processVolumeConfig(
-                    scope, 
-                    volumes, 
-                    item.config.metadata.namespace, 
-                    volumeConfig);
-            }
-        }
-    }
-
-    _processVolumeConfig(scope, parent, namespace, volumeConfig)
-    {
-        var volume = parent.fetchByNaming("vol", volumeConfig.name);
-        this._setK8sConfig(scope, volume, volumeConfig);
-
-        if (volumeConfig.configMap) {
-            this._findAndProcessConfigMap(scope, volume, namespace, volumeConfig.configMap.name)
-        }
-    }
-
-    _findAndProcessConfigMap(scope, parent, namespace, name)
-    {
-        var indexFilter = {
-            kind: "ConfigMap",
-            namespace: namespace,
-            name: name
-        }
-        var configMapItem = this._context.concreteRegistry.findByIndex(indexFilter);
-        if (configMapItem) {
-            var configmap = parent.fetchByNaming("configmap", name);
-            this._setK8sConfig(scope, configmap, configMapItem.config);
-        }
-    }
-
-    _setK8sConfig(scope, logicItem, config)
-    {
-        logicItem.setConfig(config);
-        scope.configMap[logicItem.dn] = config;
-        if (!scope.propertiesMap[logicItem.dn]) {
-            scope.propertiesMap[logicItem.dn] = [];
-        }
-        scope.propertiesMap[logicItem.dn].push({
-            kind: "yaml",
-            name: "Config",
-            config: config
-        });
-    }
 
 }
 
