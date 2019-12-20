@@ -91,12 +91,16 @@ module.exports = {
                         var portName = portConfig.name + " (" + portConfig.protocol + "-" + portConfig.containerPort + ")";
                         var portItem = container.fetchByNaming("port", portName);
                         scope.setK8sConfig(portItem, portConfig);
-                        appScope.ports[portConfig.containerPort] = {
+
+                        var portConfigScope = {
                             name: portConfig.name,
                             containerName: containerConfig.name,
                             portItem: portItem,
                             containerItem: container
                         };
+
+                        appScope.ports[portConfig.name] = portConfigScope;
+                        appScope.ports[portConfig.containerPort] = portConfigScope;
                     }
                 }
             }

@@ -1,0 +1,12 @@
+#!/bin/bash
+MY_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+MY_DIR="$(dirname $MY_PATH)"
+cd $MY_DIR
+
+export LOG_TO_FILE=true
+export NODE_ENV=development
+export GKE_CREDENTIALS_PATH=credentials.json
+export GKE_REGION=us-west1-c
+export GKE_K8S_CLUSTER=gprod-uswest1c
+# export DEBUG=express:*
+node src/mock/index-gke
