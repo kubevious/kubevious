@@ -25,9 +25,10 @@ class K8sLoader
             this._client.DaemonSet,
             this._client.Service,
             this._client.Ingress,
-            this._client.ConfigMap
+            this._client.ConfigMap,
+            this._client.ReplicaSet,
+            this._client.Pod
         ]
-
 
         return Promise.serial(targets, x => {
             return this._watch(x);
