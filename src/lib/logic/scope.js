@@ -54,7 +54,8 @@ class LogicScope
         }
         this.propertiesMap[logicItem.dn].push({
             kind: "yaml",
-            name: "Config",
+            id: "config",
+            title: "Config",
             config: config
         });
     }

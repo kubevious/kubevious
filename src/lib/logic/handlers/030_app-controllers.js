@@ -68,7 +68,8 @@ module.exports = {
 
                 scope.propertiesMap[container.dn].push({
                     kind: "key-value",
-                    name: "Environment Variables",
+                    id: "env",
+                    title: "Environment Variables",
                     order: 10,
                     config: envVars
                 });
