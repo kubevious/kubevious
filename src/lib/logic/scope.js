@@ -36,11 +36,7 @@ class LogicScope
     
     getNamespaceScope(name) {
         if (!this._namespaceScopes[name]) {
-            this._namespaceScopes[name] = {
-                appLabels: [],
-                apps: {},
-                services: {}
-            };
+            this._namespaceScopes[name] = new NamespaceScope(name);
         }
         return this._namespaceScopes[name];
     }
@@ -118,6 +114,37 @@ class LogicScope
             }
         }
         return item;
+    }
+}
+
+class NamespaceScope
+{
+    constructor(name)
+    {
+        this._name = name;
+
+        this.appLabels = [];
+        this.apps = {};
+        this.services = {};
+        this.appControllers = {};
+        this.launchers = {};
+        this.replicaSets = {};
+    }
+
+    get name() {
+        return this._name;
+    }
+
+    findLauncher(kind, name)
+    {
+        if (!this.launchers[kind]) {
+            return null;
+        }
+        var launcher = this.launchers[kind][name];
+        if (!launcher) {
+            return null;
+        }
+        return launcher;
     }
 }
 

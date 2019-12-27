@@ -40,6 +40,11 @@ module.exports = {
         var launcher = app.fetchByNaming("launcher", item.config.kind);
         scope.setK8sConfig(launcher, item.config);
 
+        if (!namespaceScope.launchers[item.config.kind]) {
+            namespaceScope.launchers[item.config.kind] = {};
+        }
+        namespaceScope.launchers[item.config.kind][item.config.metadata.name] = launcher;
+
         var volumesConfig = _.get(item.config, 'spec.template.spec.volumes');
         var containersConfig = _.get(item.config, 'spec.template.spec.containers');
 
