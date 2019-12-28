@@ -19,9 +19,11 @@ module.exports = {
         if (conditions) {
             for(var condition of conditions) {
                 if (condition.status != 'True') {
-                    k8sPod.addAlert(condition.type, 'error', condition.lastTransitionTime, 'something happened');
-                } else {
-                    k8sPod.addAlert(condition.type, 'warn', condition.lastTransitionTime, 'something happened');
+                    var msg = 'There was error with ' + condition.type + '. ';
+                    if (condition.message) {
+                        msg += condition.message;
+                    }
+                    k8sPod.addAlert(condition.type, 'error', condition.lastTransitionTime, msg);
                 }
             }
         }
@@ -39,6 +41,7 @@ module.exports = {
                             var shortName = NameHelpers.makeRelativeName(replicaSet.config.metadata.name, item.config.metadata.name);
                             var rsPod = replicaSet.fetchByNaming("pod", shortName);
                             scope.setK8sConfig(rsPod, item.config);
+                            rsPod.cloneAlertsFrom(k8sPod);
                         }
                     }
                 }

@@ -137,6 +137,13 @@ class LogicItem
         this._alerts[id] = info;
     }
 
+    cloneAlertsFrom(other)
+    {
+        for(var x of _.values(other._alerts)) {
+            this._alerts[x.id] = x;
+        }
+    }
+
     extractProperties() {
         return _.values(this._properties);
     }
@@ -177,9 +184,9 @@ class LogicItem
         var node = {};
         node.rn = this.rn;
         node.name = this.naming;
-        node.id = this.dn;
         node.kind = this.kind;
         node.order = this.order;
+        node.errorCount = _.keys(this._alerts).length;
         node.children = [];
         for(var child of this.getChildren())
         {
