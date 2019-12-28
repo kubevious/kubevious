@@ -17,7 +17,6 @@ module.exports = {
         scope.setK8sConfig(k8sIngress, item.config);
 
         var _processIngressBackend = (backendConfig) => {
-            logger.info("[_processIngress]", backendConfig)
             if (!backendConfig.serviceName) {
                 return;
             }

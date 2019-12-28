@@ -23,15 +23,15 @@ module.exports = {
         scopeInfo.items.push(k8sService);
 
         var appSelector = _.get(item.config, 'spec.selector');
-        logger.info("[_processService] appSelector: ", appSelector);
+        logger.debug("[_processService] appSelector: ", appSelector);
         if (appSelector)
         {
             var appItems = scope.findAppsByLabels(item.config.metadata.namespace, appSelector);
-            logger.info("[_processService] appSelector results: " , appItems.map(x => x.naming));
+            logger.debug("[_processService] appSelector results: " , appItems.map(x => x.naming));
             for(var appItem of appItems)
             {
                 var appScope = namespaceScope.apps[appItem.naming];
-                logger.info("[_processService] appscope name: %s" , appItem.naming)
+                logger.debug("[_processService] appscope name: %s" , appItem.naming)
 
                 scopeInfo.microserviceName = appItem.naming;
                 var serviceCount = appItem.getChildrenByKind('service').length;
@@ -46,18 +46,18 @@ module.exports = {
 
                 var portsConfig = _.get(item.config, 'spec.ports');
                 if (portsConfig) {
-                    logger.info("[_processService] portsConfig: ", portsConfig);
+                    logger.debug("[_processService] portsConfig: ", portsConfig);
                     for(var portConfig of portsConfig) {      
-                        logger.info("[_processService] portConfig: ", portConfig);
+                        logger.debug("[_processService] portConfig: ", portConfig);
                         var appPort = portConfig.targetPort;                   
                         var appPortInfo = appScope.ports[appPort];
                         if (appPortInfo) {
-                            logger.info("[_processService] found port %s :: %s", appPortInfo.name, appPort);
+                            logger.debug("[_processService] found port %s :: %s", appPortInfo.name, appPort);
                             var k8sService3 = appPortInfo.portItem.fetchByNaming("service", serviceItemName);
                             scope.setK8sConfig(k8sService3, item.config);
                             scopeInfo.items.push(k8sService3);
                         } else {
-                            logger.error("[_processService] missing app %s port %s", appScope.name, appPort);
+                            logger.debug("[_processService] missing app %s port %s", appScope.name, appPort);
                             k8sService2.addAlert('Port-' + appPort, 'warn', null, 'Missing port ' + appPort + ' definition.');
                         }
                     }

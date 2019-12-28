@@ -20,7 +20,7 @@ class EventDampener {
             return;
         }
         this._isTriggered = true;
-        process.nextTick(() => {
+        this._runNext(() => {
             this._isTriggered = false;
             return Promise.parallel(this._handlers, cb => {
                 return this._processCb(cb);
@@ -29,6 +29,13 @@ class EventDampener {
                 this._logger.error("[_triggerChanged]", reason);
             });
         });
+    }
+
+    _runNext(cb)
+    {
+        //process.nextTick(cb)
+        Promise.timeout(1000)
+            .then(() => cb());
     }
 
     _processCb(cb) {

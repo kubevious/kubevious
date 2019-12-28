@@ -101,7 +101,6 @@ class LogicScope
     
     findAppItem(namespace, name)
     {
-        this.logger.info("[_findAppItem] %s :: %s...", namespace, name)
         return this._findItem([
             {
                 kind: "ns",

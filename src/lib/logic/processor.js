@@ -78,15 +78,19 @@ class LogicProcessor
 
     _process()
     {
-        this._logger.info("Process...");
+        this._logger.info("[_proces] BEGIN");
 
         var scope = new Scope(this._context);
 
         this._processHandlers(scope);
 
+        this._logger.info("[_proces] READY");
+
         this._context.facadeRegistry.acceptItems(scope.extractItems());
         this._context.facadeRegistry.updateLogicTree(scope.root.exportTree());
         this._context.facadeRegistry.updateConfigTree(scope.configMap);
+
+        this._logger.info("[_proces] END");
 
        return this._dumpToFile(scope);
     }
@@ -95,7 +99,7 @@ class LogicProcessor
     {
         for(var handlerInfo of this._handlers)
         {
-            this._logger.info("[_extractHandlers] HANDLER: %s, target:", 
+            this._logger.verbose("[_extractHandlers] HANDLER: %s, target:", 
                 handlerInfo.name, 
                 handlerInfo.target);
             this._processHandler(scope, handlerInfo);
@@ -104,7 +108,7 @@ class LogicProcessor
 
     _processHandler(scope, handlerInfo)
     {
-        this._logger.info("[_processHandler] Handler: %s -> %s, target:", 
+        this._logger.debug("[_processHandler] Handler: %s -> %s, target:", 
             handlerInfo.order, 
             handlerInfo.name, 
             handlerInfo.target);
@@ -118,7 +122,7 @@ class LogicProcessor
 
     _processHandlerItem(scope, handlerInfo, item)
     {
-        this._logger.info("[_processHandlerItem] Handler: %s, Item: ", 
+        this._logger.silly("[_processHandlerItem] Handler: %s, Item: ", 
             handlerInfo.name, 
             item.id);
 

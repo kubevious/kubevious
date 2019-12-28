@@ -38,7 +38,7 @@ class ConcreteRegistry
             item._indexKey = indexKey;
             this._itemIndex[indexKey] = item;
         }
-        this._changeEvent.trigger();
+        this._triggerChange();
     }
 
     remove(id)
@@ -53,8 +53,14 @@ class ConcreteRegistry
                 delete this._itemIndex[item._indexKey];
             }
             delete this._items[rawId];
-            this._changeEvent.trigger();
+            this._triggerChange();
         }
+    }
+
+    _triggerChange()
+    {
+        this.logger.info("[_triggerChange]");
+        this._changeEvent.trigger();
     }
 
     findById(id)
@@ -101,10 +107,11 @@ class ConcreteRegistry
 
     debugOutputToFile()
     {
-        this.logger.info("[debugOutputToFile] ...");
+        this.logger.info("[debugOutputToFile] BEGIN");
 
         var writer = this.logger.outputStream("dump-concrete-registry");
         if (!writer) {
+            this.logger.info("[debugOutputToFile] skipped");
             return Promise.resolve();
         }
 
@@ -130,8 +137,11 @@ class ConcreteRegistry
         for(var id of ids) {
             writer.write(id + " => " + this._makeDictId(this._itemIndex[id].id));
         }
-      
-        return writer.close();
+
+        return Promise.resolve(writer.close())
+            .then(() => {
+                this.logger.info("[debugOutputToFile] END");
+            });
     }
 
     dump() {
