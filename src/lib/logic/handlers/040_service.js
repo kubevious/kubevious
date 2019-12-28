@@ -58,6 +58,7 @@ module.exports = {
                             scopeInfo.items.push(k8sService3);
                         } else {
                             logger.error("[_processService] missing app %s port %s", appScope.name, appPort);
+                            k8sService2.addAlert('Port-' + appPort, 'warn', null, 'Missing port ' + appPort + ' definition.');
                         }
                     }
                 }
