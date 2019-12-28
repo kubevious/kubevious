@@ -9,4 +9,5 @@ export GKE_CREDENTIALS_PATH=credentials.json
 export GKE_REGION=us-west1-c
 export GKE_K8S_CLUSTER=gprod-uswest1c
 # export DEBUG=express:*
-node src/mock/index-gke
+#  --max_old_space_size=2048
+node --max_old_space_size=2048 src/mock/index-gke
