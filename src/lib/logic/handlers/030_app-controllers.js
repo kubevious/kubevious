@@ -71,7 +71,7 @@ module.exports = {
                     }
                 }
 
-                scope.propertiesMap[container.dn].push({
+                container.addProperties({
                     kind: "key-value",
                     id: "env",
                     title: "Environment Variables",

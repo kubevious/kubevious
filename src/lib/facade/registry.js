@@ -8,9 +8,10 @@ class FacadeRegistry
         this._context = context;
         this._logger = context.logger.sublogger("FacadeRegistry");
 
+        this._itemsMap = {};
+
         this._logicTree = {};
         this._configMap = {};
-        this._propertiesMap = {};
     }
 
     get logger() {
@@ -28,7 +29,6 @@ class FacadeRegistry
     updateLogicTree(value)
     {
         this._logger.info("[updateLogicTree] ...");
-
         this._logicTree = value;
     }
     
@@ -38,10 +38,10 @@ class FacadeRegistry
         this._configMap = value;
     }
 
-    updatePropertiesMap(value) 
+    acceptItems(value)
     {
-        this._logger.info("[updatePropertiesMap] ...");
-        this._propertiesMap = value;
+        this._logger.info("[acceptItems] ...");
+        this._itemsMap = value;
     }
 
     getConfig(dn) {
@@ -52,15 +52,46 @@ class FacadeRegistry
         return value;
     }
 
-    getProperties(dn)
-    {
-        var value = this._propertiesMap[dn];
+    getItemList() {
+        return _.keys(this._itemsMap);
+    }
+
+    getItem(dn) {
+        var value = this._itemsMap[dn];
+        if (!value) {
+            return {};
+        }
+        return {
+            dn: value.dn
+        };
+    }
+    
+    getItemChildren(dn) {
+        var value = this._itemsMap[dn];
         if (!value) {
             return [];
         }
-        return value;
+        return value.getChildren().map(x => ({
+            dn: x.dn,
+            order: x.order
+        }));
     }
-    
+
+    getItemProperties(dn) {
+        var value = this._itemsMap[dn];
+        if (!value) {
+            return [];
+        }
+        return value.extractProperties();
+    }
+
+    getItemAlerts(dn) {
+        var value = this._itemsMap[dn];
+        if (!value) {
+            return [];
+        }
+        return value.extractAlerts();
+    }
 
 }
 

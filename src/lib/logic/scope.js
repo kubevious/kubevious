@@ -8,9 +8,11 @@ class LogicScope
         this._context = context;
         this._logger = context.logger.sublogger("LogicScope");
 
-        this._root = LogicItem.constructTop();
+        this._itemMap = {}
+        this._root = LogicItem.constructTop(this);
+        this._acceptItem(this._root);
+
         this._configMap = {};
-        this._propertiesMap = {};
         this._namespaceScopes = {};
     }
 
@@ -30,8 +32,18 @@ class LogicScope
         return this._configMap;
     }
 
-    get propertiesMap() {
-        return this._propertiesMap;
+    _acceptItem(item) 
+    {
+        this._itemMap[item.dn] = item;
+    }
+
+    _dropItem(item) 
+    {
+        delete this._itemMap[item.dn];
+    }
+
+    extractItems() {
+        return this._itemMap;
     }
     
     getNamespaceScope(name) {
@@ -45,10 +57,8 @@ class LogicScope
     {
         logicItem.setConfig(config);
         this.configMap[logicItem.dn] = config;
-        if (!this.propertiesMap[logicItem.dn]) {
-            this.propertiesMap[logicItem.dn] = [];
-        }
-        this.propertiesMap[logicItem.dn].push({
+
+        logicItem.addProperties({
             kind: "yaml",
             id: "config",
             title: "Config",

@@ -16,6 +16,8 @@ getMockLoader();
 // getGKELoader();
 
 return context.run()
+    .then(result => {
+    })
     .catch(reason => {
         console.log("***** ERROR *****");
         console.log(reason);

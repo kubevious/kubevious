@@ -6,6 +6,28 @@ module.exports = ({router, app, logger, context}) => {
         res.send(context.facadeRegistry.logicTree);
     })
 
+    router.get('/names', function (req, res) {
+        res.send(context.facadeRegistry.getItemList());
+    })
+
+    router.get('/get', function (req, res) {
+        if (!req.query.dn) {
+            return res.status(400).send({
+                message: 'Missing dn.'
+             });
+        }
+        res.send(context.facadeRegistry.getItem(req.query.dn));
+    })
+
+    router.get('/children', function (req, res) {
+        if (!req.query.dn) {
+            return res.status(400).send({
+                message: 'Missing dn.'
+             });
+        }
+        res.send(context.facadeRegistry.getItemChildren(req.query.dn));
+    })
+
     router.get('/config', function (req, res) {
         if (!req.query.dn) {
             return res.status(400).send({
@@ -21,7 +43,16 @@ module.exports = ({router, app, logger, context}) => {
                 message: 'Missing dn.'
              });
         }
-        res.send(context.facadeRegistry.getProperties(req.query.dn));
+        res.send(context.facadeRegistry.getItemProperties(req.query.dn));
+    })
+
+    router.get('/alerts', function (req, res) {
+        if (!req.query.dn) {
+            return res.status(400).send({
+                message: 'Missing dn.'
+             });
+        }
+        res.send(context.facadeRegistry.getItemAlerts(req.query.dn));
     })
 
     router.get('/config-tree', function (req, res) {

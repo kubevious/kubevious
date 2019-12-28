@@ -1,3 +1,4 @@
+const _ = require("the-lodash");
 const NameHelpers = require("../../utils/name-helpers.js");
 
 module.exports = {
@@ -13,6 +14,17 @@ module.exports = {
         var rawPods = scope.fetchRawContainer(item, "Pods");
         var k8sPod = rawPods.fetchByNaming("pod", item.config.metadata.name);
         scope.setK8sConfig(k8sPod, item.config);
+
+        var conditions = _.get(item.config, 'status.conditions');
+        if (conditions) {
+            for(var condition of conditions) {
+                if (condition.status != 'True') {
+                    k8sPod.addAlert(condition.type, 'error', condition.lastTransitionTime, 'something happened');
+                } else {
+                    k8sPod.addAlert(condition.type, 'warn', condition.lastTransitionTime, 'something happened');
+                }
+            }
+        }
 
         var namespaceScope = scope.getNamespaceScope(item.config.metadata.namespace);
 

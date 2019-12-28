@@ -84,9 +84,9 @@ class LogicProcessor
 
         this._processHandlers(scope);
 
+        this._context.facadeRegistry.acceptItems(scope.extractItems());
         this._context.facadeRegistry.updateLogicTree(scope.root.exportTree());
         this._context.facadeRegistry.updateConfigTree(scope.configMap);
-        this._context.facadeRegistry.updatePropertiesMap(scope.propertiesMap);
 
        return this._dumpToFile(scope);
     }
