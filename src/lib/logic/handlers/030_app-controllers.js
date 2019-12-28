@@ -71,13 +71,15 @@ module.exports = {
                     }
                 }
 
-                container.addProperties({
-                    kind: "key-value",
-                    id: "env",
-                    title: "Environment Variables",
-                    order: 10,
-                    config: envVars
-                });
+                if (_.keys(envVars).length > 0) {
+                    container.addProperties({
+                        kind: "key-value",
+                        id: "env",
+                        title: "Environment Variables",
+                        order: 10,
+                        config: envVars
+                    });    
+                }
 
                 if (_.isArray(containerConfig.volumeMounts)) {
                     for(var volumeRefConfig of containerConfig.volumeMounts) {
