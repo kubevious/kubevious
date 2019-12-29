@@ -15,7 +15,7 @@ module.exports = {
 
     order: 30,
 
-    handler: ({scope, item}) =>
+    handler: ({scope, item, createK8sItem, createAlert, hasCreatedItems}) =>
     {
         var namespaceScope = scope.getNamespaceScope(item.config.metadata.namespace);
         var appScope = {
@@ -39,11 +39,7 @@ module.exports = {
 
         var launcher = app.fetchByNaming("launcher", item.config.kind);
         scope.setK8sConfig(launcher, item.config);
-
-        if (!namespaceScope.launchers[item.config.kind]) {
-            namespaceScope.launchers[item.config.kind] = {};
-        }
-        namespaceScope.launchers[item.config.kind][item.config.metadata.name] = launcher;
+        namespaceScope.registerAppOwner(launcher);
 
         var volumesConfig = _.get(item.config, 'spec.template.spec.volumes');
         var containersConfig = _.get(item.config, 'spec.template.spec.containers');
@@ -146,6 +142,11 @@ module.exports = {
             if (configMapItem) {
                 var configmap = parent.fetchByNaming("configmap", name);
                 scope.setK8sConfig(configmap, configMapItem.config);
+
+                if (!namespaceScope.configMaps[name]) {
+                    namespaceScope.configMaps[name] = {};
+                }
+                namespaceScope.configMaps[name].used = true;
             }
         }
     }

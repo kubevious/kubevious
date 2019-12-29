@@ -68,6 +68,7 @@ class LogicProcessor
 
             var info = {
                 name: name,
+                kind: handler.kind,
                 order: order,
                 target: target,
                 handler: handler.handler
@@ -130,9 +131,59 @@ class LogicProcessor
             scope: scope,
             logger: this.logger,
             item: item,
-            context: this.context
+            context: this.context,
+
+            createdItems: [],
+            createdAlerts: []
         }
+
+        handlerArgs.hasCreatedItems = () => {
+            return handlerArgs.createdItems.length > 0;
+        }
+
+        handlerArgs.createItem = (parent, name, params) => {
+            if (!handlerInfo.kind) {
+                throw new Error("Missing handler kind.")
+            }
+            params = params || {};
+            var newObj = parent.fetchByNaming(handlerInfo.kind, name);
+            if (params.order) {
+                newObj.order = params.order;
+            }
+            handlerArgs.createdItems.push(newObj);
+            return newObj;
+        }
+
+        handlerArgs.createK8sItem = (parent, params) => {
+            params = params || {};
+            var name = params.name || item.config.metadata.name;
+            var newObj = handlerArgs.createItem(parent, name, params);
+            scope.setK8sConfig(newObj, item.config);
+            return newObj;
+        }
+
+        handlerArgs.createAlert = (kind, severity, date, msg) => {
+            handlerArgs.createdAlerts.push({
+                kind,
+                severity,
+                date,
+                msg
+            });
+        }
+
         handlerInfo.handler(handlerArgs);
+
+        for(var alertInfo of handlerArgs.createdAlerts)
+        {
+            for(var createdItem of handlerArgs.createdItems)
+            {
+                createdItem.addAlert(
+                    alertInfo.kind, 
+                    alertInfo.severity, 
+                    alertInfo.date, 
+                    alertInfo.msg);
+            }
+        }
     }
 
     _dumpToFile(scope)

@@ -6,14 +6,13 @@ module.exports = {
         kind: "Ingress"
     },
 
+    kind: 'ingress',
+
     order: 50,
 
-    handler: ({scope, item, logger}) =>
+    handler: ({scope, item, createK8sItem, createAlert, hasCreatedItems}) =>
     {
         var namespaceScope = scope.getNamespaceScope(item.config.metadata.namespace);
-
-        var rawConfigMaps = scope.fetchRawContainer(item, "Ingresses");
-        createIngress(rawConfigMaps);
 
         var defaultBackend = _.get(item.config, "spec.backend");
         if (defaultBackend) {
@@ -36,6 +35,12 @@ module.exports = {
             }
         }
 
+        if (!hasCreatedItems()) {
+            var rawContainer = scope.fetchRawContainer(item, "Ingresses");
+            createIngress(rawContainer);
+            createAlert('Missing', 'error', null, 'Could not match Ingress to Services.');
+        }
+
         /*** HELPERS ***/
         function processIngressBackend(backendConfig)
         {
@@ -55,16 +60,15 @@ module.exports = {
                     createIngress(svcItem, { order: 250 });
                 }
             }
+            else
+            {
+                createAlert('MissingSvc-' + backendConfig.serviceName, 'error', null, 'Service ' + backendConfig.serviceName + ' is missing.');
+            }
         }
 
         function createIngress(parent, params)
         {
-            params = params || {};
-            var k8sIngress = parent.fetchByNaming("ingress", item.config.metadata.name);
-            scope.setK8sConfig(k8sIngress, item.config);
-            if (params.order) {
-                k8sIngress.order = params.order;
-            }
+            var k8sIngress = createK8sItem(parent, params);
             return k8sIngress;
         }
     }

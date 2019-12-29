@@ -6,42 +6,38 @@ module.exports = {
         kind: "ReplicaSet"
     },
 
+    kind: 'replicaset',
+
     order: 90,
 
-    handler: ({scope, item}) =>
+    handler: ({scope, item, createK8sItem, createAlert, hasCreatedItems}) =>
     {
         var namespaceScope = scope.getNamespaceScope(item.config.metadata.namespace);
-
-        var rawReplicaSets = scope.fetchRawContainer(item, "ReplicaSets");
-        createReplicaSet(rawReplicaSets);
 
         if (item.config.metadata.ownerReferences)
         {
             for(var ref of item.config.metadata.ownerReferences)
             {
-                var launcher = namespaceScope.findLauncher(ref.kind, ref.name);
-                if (launcher)
+                var ownerItems =  namespaceScope.getAppOwners(ref.kind, ref.name);
+                for(var ownerItem of ownerItems) 
                 {
-                    var shortName = NameHelpers.makeRelativeName(launcher.config.metadata.name, item.config.metadata.name);
-                    createReplicaSet(launcher, { name: shortName });
+                    var shortName = NameHelpers.makeRelativeName(ownerItem.config.metadata.name, item.config.metadata.name);
+                    createReplicaSet(ownerItem, { name: shortName });
                 }
             }
+        }
+
+        if (!hasCreatedItems()) {
+            var rawContainer = scope.fetchRawContainer(item, "ReplicaSets");
+            createReplicaSet(rawContainer);
+            createAlert('BestPractice', 'warn', null, 'Directly using ReplicaSet. Use Deploment, StatefulSet or DaemonSet instead.');
         }
 
         /*** HELPERS ***/
         function createReplicaSet(parent, params)
         {
-            params = params || {};
-            var name = params.name || item.config.metadata.name;
-            var k8sReplicaSet = parent.fetchByNaming("replicaset", name);
-            scope.setK8sConfig(k8sReplicaSet, item.config);
-            if (params.order) {
-                k8sReplicaSet.order = params.order;
-            }
-            if (!namespaceScope.replicaSets[item.config.metadata.name]) {
-                namespaceScope.replicaSets[item.config.metadata.name] = [];
-            }
-            namespaceScope.replicaSets[item.config.metadata.name].push(k8sReplicaSet);
+            var k8sReplicaSet = createK8sItem(parent, params);
+            namespaceScope.registerAppOwner(k8sReplicaSet);
             return k8sReplicaSet;
         }
     }

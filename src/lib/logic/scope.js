@@ -48,7 +48,7 @@ class LogicScope
     
     getNamespaceScope(name) {
         if (!this._namespaceScopes[name]) {
-            this._namespaceScopes[name] = new NamespaceScope(name);
+            this._namespaceScopes[name] = new NamespaceScope(this, name);
         }
         return this._namespaceScopes[name];
     }
@@ -128,32 +128,48 @@ class LogicScope
 
 class NamespaceScope
 {
-    constructor(name)
+    constructor(parent, name)
     {
+        this._parent = parent;
+        this._logger = parent.logger;
         this._name = name;
 
         this.appLabels = [];
         this.apps = {};
         this.services = {};
         this.appControllers = {};
-        this.launchers = {};
-        this.replicaSets = {};
+        this.appOwners = {};
+        this.configMaps = {};
+    }
+
+    get logger() {
+        return this._logger;
     }
 
     get name() {
         return this._name;
     }
 
-    findLauncher(kind, name)
+    registerAppOwner(owner)
     {
-        if (!this.launchers[kind]) {
-            return null;
+        if (!this.appOwners[owner.config.kind]) {
+            this.appOwners[owner.config.kind] = {};
         }
-        var launcher = this.launchers[kind][name];
-        if (!launcher) {
-            return null;
+        if (!this.appOwners[owner.config.kind][owner.config.metadata.name]) {
+            this.appOwners[owner.config.kind][owner.config.metadata.name] = [];
         }
-        return launcher;
+        this.appOwners[owner.config.kind][owner.config.metadata.name].push(owner);
+    }
+
+    getAppOwners(kind, name)
+    {
+        if (!this.appOwners[kind]) {
+            return []
+        }
+        if (!this.appOwners[kind][name]) {
+            return []
+        }
+        return this.appOwners[kind][name];
     }
 }
 
