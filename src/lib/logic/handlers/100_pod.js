@@ -12,8 +12,7 @@ module.exports = {
     handler: ({scope, item}) =>
     {
         var rawPods = scope.fetchRawContainer(item, "Pods");
-        var k8sPod = rawPods.fetchByNaming("pod", item.config.metadata.name);
-        scope.setK8sConfig(k8sPod, item.config);
+        var k8sPod = createPod(rawPods);
 
         var conditions = _.get(item.config, 'status.conditions');
         if (conditions) {
@@ -39,13 +38,25 @@ module.exports = {
                         for(var replicaSet of namespaceScope.replicaSets[ref.name]) 
                         {
                             var shortName = NameHelpers.makeRelativeName(replicaSet.config.metadata.name, item.config.metadata.name);
-                            var rsPod = replicaSet.fetchByNaming("pod", shortName);
-                            scope.setK8sConfig(rsPod, item.config);
+                            var rsPod = createPod(replicaSet, { name: shortName });
                             rsPod.cloneAlertsFrom(k8sPod);
                         }
                     }
                 }
             }
+        }
+
+        /*** HELPERS ***/
+        function createPod(parent, params)
+        {
+            params = params || {};
+            var name = params.name || item.config.metadata.name;
+            var k8sPod = parent.fetchByNaming("pod", name);
+            scope.setK8sConfig(k8sPod, item.config);
+            if (params.order) {
+                k8sPod.order = params.order;
+            }
+            return k8sPod;
         }
     }
 }

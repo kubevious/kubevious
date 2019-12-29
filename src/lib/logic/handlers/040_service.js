@@ -18,9 +18,7 @@ module.exports = {
         namespaceScope.services[scopeInfo.name] = scopeInfo;
 
         var rawConfigMaps = scope.fetchRawContainer(item, "Services");
-        var k8sService = rawConfigMaps.fetchByNaming("service", item.config.metadata.name);
-        scope.setK8sConfig(k8sService, item.config);
-        scopeInfo.items.push(k8sService);
+        createService(rawConfigMaps);
 
         var appSelector = _.get(item.config, 'spec.selector');
         logger.debug("[_processService] appSelector: ", appSelector);
@@ -39,11 +37,8 @@ module.exports = {
                 if (serviceCount != 0) {
                     serviceItemName += " " + (serviceCount + 1);
                 }
-                var k8sService2 = appItem.fetchByNaming("service", serviceItemName);
-                scope.setK8sConfig(k8sService2, item.config);
-                k8sService2.order = 200;
-                scopeInfo.items.push(k8sService2);
-
+                var k8sService2 = createService(appItem, { name: serviceItemName, order: 200 });
+                
                 var portsConfig = _.get(item.config, 'spec.ports');
                 if (portsConfig) {
                     logger.debug("[_processService] portsConfig: ", portsConfig);
@@ -53,9 +48,7 @@ module.exports = {
                         var appPortInfo = appScope.ports[appPort];
                         if (appPortInfo) {
                             logger.debug("[_processService] found port %s :: %s", appPortInfo.name, appPort);
-                            var k8sService3 = appPortInfo.portItem.fetchByNaming("service", serviceItemName);
-                            scope.setK8sConfig(k8sService3, item.config);
-                            scopeInfo.items.push(k8sService3);
+                            createService(appPortInfo.portItem, { name: serviceItemName })
                         } else {
                             logger.debug("[_processService] missing app %s port %s", appScope.name, appPort);
                             k8sService2.addAlert('Port-' + appPort, 'warn', null, 'Missing port ' + appPort + ' definition.');
@@ -64,5 +57,20 @@ module.exports = {
                 }
             }
         }
+
+        /*** HELPERS ***/
+        function createService(parent, params)
+        {
+            params = params || {};
+            var name = params.name || item.config.metadata.name;
+            var k8sService = parent.fetchByNaming("service", name);
+            scope.setK8sConfig(k8sService, item.config);
+            if (params.order) {
+                k8sService.order = params.order;
+            }
+            scopeInfo.items.push(k8sService);
+            return k8sService;
+        }
+
     }
 }

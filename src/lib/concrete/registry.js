@@ -59,7 +59,7 @@ class ConcreteRegistry
 
     _triggerChange()
     {
-        this.logger.info("[_triggerChange]");
+        this.logger.debug("[_triggerChange]");
         this._changeEvent.trigger();
     }
 

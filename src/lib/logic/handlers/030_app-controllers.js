@@ -86,9 +86,7 @@ module.exports = {
                         var volumeConfig = volumesMap[volumeRefConfig.name];
                         if (volumeConfig) {
                             processVolumeConfig(
-                                scope, 
                                 container, 
-                                item.config.metadata.namespace, 
                                 volumeConfig);
                         }
                     }
@@ -119,35 +117,38 @@ module.exports = {
 
             for(var volumeConfig of volumesConfig) {
                 processVolumeConfig(
-                    scope, 
                     volumes, 
-                    item.config.metadata.namespace, 
                     volumeConfig);
+            }
+        }
+
+
+
+        /*** HELPERS ***/
+        function processVolumeConfig(parent, volumeConfig)
+        {
+            var volume = parent.fetchByNaming("vol", volumeConfig.name);
+            scope.setK8sConfig(volume, volumeConfig);
+        
+            if (volumeConfig.configMap) {
+                findAndProcessConfigMap(volume, volumeConfig.configMap.name)
+            }
+        }
+        
+        function findAndProcessConfigMap(parent, name)
+        {
+            var indexFilter = {
+                kind: "ConfigMap",
+                namespace: item.config.metadata.namespace,
+                name: name
+            }
+            var configMapItem = scope.concreteRegistry.findByIndex(indexFilter);
+            if (configMapItem) {
+                var configmap = parent.fetchByNaming("configmap", name);
+                scope.setK8sConfig(configmap, configMapItem.config);
             }
         }
     }
 }
 
-function processVolumeConfig(scope, parent, namespace, volumeConfig)
-{
-    var volume = parent.fetchByNaming("vol", volumeConfig.name);
-    scope.setK8sConfig(volume, volumeConfig);
 
-    if (volumeConfig.configMap) {
-        findAndProcessConfigMap(scope, volume, namespace, volumeConfig.configMap.name)
-    }
-}
-
-function findAndProcessConfigMap(scope, parent, namespace, name)
-{
-    var indexFilter = {
-        kind: "ConfigMap",
-        namespace: namespace,
-        name: name
-    }
-    var configMapItem = scope.concreteRegistry.findByIndex(indexFilter);
-    if (configMapItem) {
-        var configmap = parent.fetchByNaming("configmap", name);
-        scope.setK8sConfig(configmap, configMapItem.config);
-    }
-}

@@ -10,13 +10,10 @@ module.exports = {
 
     handler: ({scope, item}) =>
     {
-        var rawReplicaSets = scope.fetchRawContainer(item, "ReplicaSets");
-        var k8sReplicaSet = rawReplicaSets.fetchByNaming("replicaset", item.config.metadata.name);
-        scope.setK8sConfig(k8sReplicaSet, item.config);
-
         var namespaceScope = scope.getNamespaceScope(item.config.metadata.namespace);
 
-        namespaceScope.replicaSets[item.config.metadata.name] = [k8sReplicaSet];
+        var rawReplicaSets = scope.fetchRawContainer(item, "ReplicaSets");
+        createReplicaSet(rawReplicaSets);
 
         if (item.config.metadata.ownerReferences)
         {
@@ -26,12 +23,26 @@ module.exports = {
                 if (launcher)
                 {
                     var shortName = NameHelpers.makeRelativeName(launcher.config.metadata.name, item.config.metadata.name);
-                    var launcherReplicaSet = launcher.fetchByNaming("replicaset", shortName);
-                    scope.setK8sConfig(launcherReplicaSet, item.config);
-
-                    namespaceScope.replicaSets[item.config.metadata.name].push(launcherReplicaSet);
+                    createReplicaSet(launcher, { name: shortName });
                 }
             }
+        }
+
+        /*** HELPERS ***/
+        function createReplicaSet(parent, params)
+        {
+            params = params || {};
+            var name = params.name || item.config.metadata.name;
+            var k8sReplicaSet = parent.fetchByNaming("replicaset", name);
+            scope.setK8sConfig(k8sReplicaSet, item.config);
+            if (params.order) {
+                k8sReplicaSet.order = params.order;
+            }
+            if (!namespaceScope.replicaSets[item.config.metadata.name]) {
+                namespaceScope.replicaSets[item.config.metadata.name] = [];
+            }
+            namespaceScope.replicaSets[item.config.metadata.name].push(k8sReplicaSet);
+            return k8sReplicaSet;
         }
     }
 }

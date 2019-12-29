@@ -39,7 +39,7 @@ class K8sLoader
     {
         this.logger.info("Watching %s...", target);
         return target.watchAll(null, (action, obj) => {
-            this._logger.info("%s %s", action, obj.kind);
+            this._logger.verbose("%s %s", action, obj.kind);
             this._logger.silly("%s %s :: ", action, obj.kind, obj);
             var isPresent = this._parseAction(action);
 
@@ -50,7 +50,7 @@ class K8sLoader
 
     _handle(isPresent, obj)
     {
-        this._logger.info("Handle: %s, present: %s", obj.kind, isPresent);
+        this._logger.verbose("Handle: %s, present: %s", obj.kind, isPresent);
 
         this._context.k8sParser.parse(isPresent, obj);
     }
