@@ -4,11 +4,12 @@ module.exports = {
         kind: "Namespace"
     },
 
+    kind: 'ns',
+
     order: 10,
 
-    handler: ({scope, item}) =>
+    handler: ({scope, item, createK8sItem}) =>
     {
-        var namespace = scope.root.fetchByNaming("ns", item.config.metadata.name);
-        scope.setK8sConfig(namespace, item.config);
+        createK8sItem(scope.root);
     }
 }

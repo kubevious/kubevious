@@ -67,6 +67,31 @@ module.exports = {
                     }
                 }
 
+                if (containerConfig.envFrom) {
+                    for(var envFromObj of containerConfig.envFrom) {
+                        if (envFromObj.configMapRef) {
+                            var configMapScope = findAndProcessConfigMap(container, envFromObj.configMapRef.name);
+                            if (configMapScope) {
+                                if (configMapScope.config.data) {
+                                    for(var dataKey of _.keys(configMapScope.config.data)) {
+                                        envVars[dataKey] = configMapScope.config.data[dataKey];
+                                    }
+                                } else {
+                                    container.addAlert("EmptyConfig", "warn", null, 'ConfigMap has no data: ' + envFromObj.configMapRef.name);
+                                }
+                            }
+                        }
+                        var value = null;
+                        if (envObj.value) {
+                            value = envObj.value;
+                        } else if (envObj.valueFrom) {
+                            value = "<pre>" + yaml.safeDump(envObj.valueFrom) + "</pre>";
+                        }
+                        envVars[envObj.name] = value;
+                    }
+                }
+
+
                 if (_.keys(envVars).length > 0) {
                     container.addProperties({
                         kind: "key-value",
@@ -118,8 +143,6 @@ module.exports = {
             }
         }
 
-
-
         /*** HELPERS ***/
         function processVolumeConfig(parent, volumeConfig)
         {
@@ -133,21 +156,18 @@ module.exports = {
         
         function findAndProcessConfigMap(parent, name)
         {
-            var indexFilter = {
-                kind: "ConfigMap",
-                namespace: item.config.metadata.namespace,
-                name: name
-            }
-            var configMapItem = scope.concreteRegistry.findByIndex(indexFilter);
-            if (configMapItem) {
+            var configMapScope = namespaceScope.configMaps[name];
+            if (configMapScope)
+            {
                 var configmap = parent.fetchByNaming("configmap", name);
-                scope.setK8sConfig(configmap, configMapItem.config);
-
-                if (!namespaceScope.configMaps[name]) {
-                    namespaceScope.configMaps[name] = {};
-                }
-                namespaceScope.configMaps[name].used = true;
+                scope.setK8sConfig(configmap, configMapScope.config);
+                configMapScope.used = true;
             }
+            else
+            {
+                parent.addAlert("MissingConfig", "error", null, 'Could not find ConfigMap ' + name);
+            }
+            return configMapScope;
         }
     }
 }
