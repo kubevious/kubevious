@@ -10,6 +10,7 @@ rules:
       - namespaces
       - services
       - configmaps
+      - pods
     verbs:
       - get
       - list
@@ -21,6 +22,7 @@ rules:
       - deployments
       - statefulsets
       - daemonsets
+      - replicasets
     verbs:
       - get
       - list
