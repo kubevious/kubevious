@@ -48,7 +48,7 @@ steps:
     stage: build
   process_versioning:
     title: Process Versioning
-    stage: build
+    stage: push
     image: codefresh/cli
     shell: bash
     working_directory: "${{CICD_INFO_PATH}}"
@@ -56,6 +56,7 @@ steps:
       - pwd
       - ls -la
       - ../process-version-bump.sh
+      - source version.sh
       - echo "PRODUCT_VERSION=${PRODUCT_VERSION}"
   push:
     title: "Pushing image to DockerHub"
