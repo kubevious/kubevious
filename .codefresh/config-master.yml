@@ -19,7 +19,7 @@ steps:
     type: "git-clone"
     title: Clone Main Repo
     description: "Cloning main repository..."
-    repo: "kubevious/kubevious"
+    repo: "kubevious/${{CF_REPO_NAME}}"
     revision: "${{CF_BRANCH}}"
     stage: clone
   cicd_clone:
