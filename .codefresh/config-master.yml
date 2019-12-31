@@ -58,6 +58,7 @@ steps:
       - ../process-version-bump.sh
       - source version.sh
       - echo "PRODUCT_VERSION=${PRODUCT_VERSION}"
+      - cf_export DOCKER_TAG="/codefresh/volume/cicd.git/${{CF_REPO_NAME}}"
   push:
     title: "Pushing image to DockerHub"
     type: "push"
@@ -67,4 +68,4 @@ steps:
     candidate: "${{build}}"
     tags:
       - latest
-      - "${{CF_BRANCH_TAG_NORMALIZED}}"
+      - "${{DOCKER_TAG}}"
