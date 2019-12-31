@@ -11,9 +11,10 @@ steps:
     image: codefresh/cli
     shell: bash
     commands:
-      - cf_export PRODUCT_NAME="kubevious"
+      - export PRODUCT_NAME="kubevious"
+      - cf_export PRODUCT_NAME="${PRODUCT_NAME}"
       - cf_export GITHUB_TOKEN=$(codefresh get context github --decrypt -o yaml | yq -y .spec.data.auth.password)
-      - cf_export CICD_INFO_PATH="/codefresh/volume/cicd.git/${{PRODUCT_NAME}}"
+      - cf_export CICD_INFO_PATH="/codefresh/volume/cicd.git/${PRODUCT_NAME}"
   main_clone:
     type: "git-clone"
     title: Clone Main Repo
