@@ -12,7 +12,7 @@ steps:
     shell: bash
     commands:
       - cf_export GITHUB_TOKEN=$(codefresh get context github --decrypt -o yaml | yq -y .spec.data.auth.password)
-      - cf_export CICD_INFO_PATH="${{main_clone}}/../cicd.git/${{CF_REPO_NAME}}"
+      - cf_export CICD_INFO_PATH="/codefresh/volume/cicd.git/${{CF_REPO_NAME}}"
   main_clone:
     type: "git-clone"
     title: Clone Main Repo
