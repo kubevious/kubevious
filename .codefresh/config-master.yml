@@ -11,8 +11,9 @@ steps:
     image: codefresh/cli
     shell: bash
     commands:
+      - cf_export PRODUCT_NAME="kubevious"
       - cf_export GITHUB_TOKEN=$(codefresh get context github --decrypt -o yaml | yq -y .spec.data.auth.password)
-      - cf_export CICD_INFO_PATH="/codefresh/volume/cicd.git/${{CF_REPO_NAME}}"
+      - cf_export CICD_INFO_PATH="/codefresh/volume/cicd.git/${{PRODUCT_NAME}}"
   main_clone:
     type: "git-clone"
     title: Clone Main Repo
@@ -43,7 +44,7 @@ steps:
   build:
     title: "Building Docker Image"
     type: build
-    image_name: "kubevious/kubevious"
+    image_name: "kubevious/${{PRODUCT_NAME}}"
     tag: "${{CF_BRANCH_TAG_NORMALIZED}}"
     stage: build
   process_versioning:
@@ -58,12 +59,12 @@ steps:
       - ../process-version-bump.sh
       - source version.sh
       - echo "PRODUCT_VERSION=${PRODUCT_VERSION}"
-      - cf_export DOCKER_TAG="/codefresh/volume/cicd.git/${{CF_REPO_NAME}}"
+      - cf_export DOCKER_TAG="${PRODUCT_VERSION}"
   push:
     title: "Pushing image to DockerHub"
     type: "push"
     stage: "push"
-    image_name: "kubevious/kubevious"
+    image_name: "kubevious/${{PRODUCT_NAME}}"
     registry: "dockerhub"
     candidate: "${{build}}"
     tags:
