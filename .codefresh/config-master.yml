@@ -5,6 +5,13 @@ stages:
   - versioning
   - "push"
 steps:
+  setup_variables:
+    title: Setup Variables
+    stage: clone
+    image: codefresh/cli
+    shell: bash
+    commands:
+      - cf_export GITHUB_TOKEN=$(codefresh get context github --decrypt -o yaml | yq -y .spec.data.auth.password)
   main_clone:
     type: "git-clone"
     description: "Cloning main repository..."
@@ -15,7 +22,9 @@ steps:
     title: Clone CI/CD Repo
     stage: clone
     image: 'alpine/git:latest'
+    working_directory: "${{main_clone}}/.."
     commands:
+      - pwd
       - ls -la
       - rm -rf cicd.git
       - 'git clone https://${{CF_REPO_OWNER}}:$GITHUB_TOKEN@github.com/${{CF_REPO_OWNER}}/cicd.git cicd.git'
