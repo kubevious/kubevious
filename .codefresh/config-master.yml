@@ -5,8 +5,8 @@ stages:
   - versioning
   - "push"
 steps:
-  setup_variables:
-    title: Setup Variables
+  clone_init:
+    title: Init Clone
     stage: clone
     image: codefresh/cli
     shell: bash
@@ -30,7 +30,7 @@ steps:
       - 'git clone https://${{CF_REPO_OWNER}}:$GITHUB_TOKEN@github.com/${{CF_REPO_OWNER}}/cicd.git cicd.git'
       - ls -la
       - ls -la cicd.git/
-  setup_variables:
+  debug_output:
     title: Setup Variables
     stage: build
     image: codefresh/cli
