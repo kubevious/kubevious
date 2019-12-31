@@ -12,8 +12,10 @@ steps:
     shell: bash
     commands:
       - cf_export GITHUB_TOKEN=$(codefresh get context github --decrypt -o yaml | yq -y .spec.data.auth.password)
+      - cf_export CICD_INFO_PATH="${{main_clone}}/../cicd.git/${{CF_REPO_NAME}}"
   main_clone:
     type: "git-clone"
+    title: Clone Main Repo
     description: "Cloning main repository..."
     repo: "kubevious/kubevious"
     revision: "${{CF_BRANCH}}"
@@ -31,7 +33,7 @@ steps:
       - ls -la
       - ls -la cicd.git/
   debug_output:
-    title: Setup Variables
+    title: Debug Output
     stage: build
     image: codefresh/cli
     shell: bash
@@ -44,6 +46,17 @@ steps:
     image_name: "kubevious/kubevious"
     tag: "${{CF_BRANCH_TAG_NORMALIZED}}"
     stage: build
+  process_versioning:
+    title: Process Versioning
+    stage: build
+    image: codefresh/cli
+    shell: bash
+    working_directory: "${{CICD_INFO_PATH}}"
+    commands:
+      - pwd
+      - ls -la
+      - ../process-version-bump.sh
+      - echo "PRODUCT_VERSION=${PRODUCT_VERSION}"
   push:
     title: "Pushing image to DockerHub"
     type: "push"
