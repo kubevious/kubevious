@@ -64,6 +64,7 @@ steps:
       - git status
       - git config --global user.email 'cicd@kubevious.io'
       - git config --global user.name 'Kubevious CICD'
+      - git add version.sh
       - git commit -m "Version bump for ${PRODUCT_NAME} to ${PRODUCT_VERSION}"
       - git pull origin master
       - 'CONFLICTS=$(git ls-files -u | wc -l); if [ "$CONFLICTS" -gt 0 ] ; then echo "ERROR: There is a merge conflict. Please resolve the conflict manually."; git status; exit 1; fi'
