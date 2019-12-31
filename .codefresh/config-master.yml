@@ -10,12 +10,20 @@ steps:
     repo: "kubevious/kubevious"
     revision: "${{CF_BRANCH}}"
     stage: "clone"
+  setup_variables:
+    title: Setup Variables
+    stage: build
+    image: codefresh/cli
+    shell: bash
+    commands:
+      - env
+      - echo "$CF_BRANCH_TAG_NORMALIZED"
   build:
     title: "Building Docker Image"
-    type: "build"
+    type: build
     image_name: "kubevious/kubevious"
     tag: "${{CF_BRANCH_TAG_NORMALIZED}}"
-    stage: "build"
+    stage: build
   push:
     title: "Pushing image to DockerHub"
     type: "push"
