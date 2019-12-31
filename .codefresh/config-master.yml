@@ -34,19 +34,10 @@ steps:
       - 'git clone https://${{CF_REPO_OWNER}}:$GITHUB_TOKEN@github.com/${{CF_REPO_OWNER}}/cicd.git cicd.git'
       - ls -la
       - ls -la cicd.git/
-  debug_output:
-    title: Debug Output
-    stage: build
-    image: codefresh/cli
-    shell: bash
-    commands:
-      - env
-      - echo "$CF_BRANCH_TAG_NORMALIZED"
   build:
     title: "Building Docker Image"
     type: build
     image_name: "kubevious/${{PRODUCT_NAME}}"
-    tag: "${{CF_BRANCH_TAG_NORMALIZED}}"
     stage: build
   process_versioning:
     title: Process Versioning
