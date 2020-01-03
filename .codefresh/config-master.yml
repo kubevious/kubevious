@@ -51,6 +51,7 @@ steps:
       - ../process-version-bump.sh
       - source version.sh
       - echo "PRODUCT_VERSION=${PRODUCT_VERSION}"
+      - cf_export DOCKER_TAG="${PRODUCT_VERSION}"
       - /codefresh/volume/cicd.git/git-commit-push.sh "Version bump for ${PRODUCT_NAME} to ${PRODUCT_VERSION}"
   push:
     title: "Pushing image to DockerHub"
