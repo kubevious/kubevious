@@ -1,6 +1,7 @@
 # Kubevious
 
-[![Codefresh build status]( https://g.codefresh.io/api/badges/pipeline/kubevious/default%2Fkubevious-master?type=cf-1)]( https%3A%2F%2Fg.codefresh.io%2Fpublic%2Faccounts%2Fkubevious%2Fpipelines%2F5dfac9226e1ebecb0fd3775d)
+[![Codefresh build status](https://g.codefresh.io/api/badges/pipeline/kubevious/default%2Fkubevious-master?type=cf-1)](https://g.codefresh.io/public/accounts/kubevious/pipelines/5dfac9226e1ebecb0fd3775d)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 Modern application deployments are very complex. It is hard to make sense
 of existing deployments. **Kubevious** is made to help operators to navigate  infrastructure and deployment configurations.
