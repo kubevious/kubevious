@@ -11,7 +11,8 @@ Deploy using Helm:
 ```sh
 kubectl create namespace kubevious
 
-cd deploy/kubernetes
+git clone https://github.com/kubevious/deploy.git kubevious-deploy.git
+cd kubevious-deploy.git/kubernetes
 
 helm template kubevious \
     --namespace kubevious \
@@ -27,3 +28,15 @@ kubectl port-forward $(kubectl get pod -l k8s-app=kubevious-ui -n kubevious -o j
 ```
 
 Access from browser: http://localhost:3000
+
+For more details on installation options visit [Deployment Repository].
+
+# Authors
+Everyone is welcome to contribute. See [CONTRIBUTING] for instructions on how to contribute.
+
+# License
+Kubevious is an open source project licensed under the [Apache License]. 
+
+[Deployment Repository]: https://github.com/kubevious/deploy
+[Apache License]: https://www.apache.org/licenses/LICENSE-2.0
+[CONTRIBUTING]: CONTRIBUTING.md
