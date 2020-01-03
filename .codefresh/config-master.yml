@@ -51,16 +51,7 @@ steps:
       - ../process-version-bump.sh
       - source version.sh
       - echo "PRODUCT_VERSION=${PRODUCT_VERSION}"
-      - cf_export DOCKER_TAG="${PRODUCT_VERSION}"
-      - git status
-      - git config --global user.email 'cicd@kubevious.io'
-      - git config --global user.name 'Kubevious CICD'
-      - git add version.sh
-      - git commit -m "Version bump for ${PRODUCT_NAME} to ${PRODUCT_VERSION}"
-      - git pull origin master
-      - 'CONFLICTS=$(git ls-files -u | wc -l); if [ "$CONFLICTS" -gt 0 ] ; then echo "ERROR: There is a merge conflict. Please resolve the conflict manually."; git status; exit 1; fi'
-      - git push origin master
-      - git status
+      - /codefresh/volume/cicd.git/git-commit-push.sh "Version bump for ${PRODUCT_NAME} to ${PRODUCT_VERSION}"
   push:
     title: "Pushing image to DockerHub"
     type: "push"
