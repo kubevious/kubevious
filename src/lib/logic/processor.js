@@ -93,7 +93,7 @@ class LogicProcessor
 
         this._logger.info("[_proces] END");
 
-       return this._dumpToFile(scope);
+        return this._dumpToFile(scope);
     }
 
     _processHandlers(scope)

@@ -63,5 +63,14 @@ module.exports = ({router, app, logger, context}) => {
         res.send(context.concreteRegistry.dump());
     })
 
+    router.get('/search', function (req, res) {
+        if (!req.query.criteria) {
+            return res.status(400).send({
+                message: 'Missing criteria.'
+             });
+        }
+        res.send(context.searchEngine.search(req.query.criteria));
+    })
+
     app.use('/api', router);
 };

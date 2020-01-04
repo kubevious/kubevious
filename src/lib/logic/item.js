@@ -1,5 +1,14 @@
 const _ = require('lodash');
 
+const KIND_TO_USER_MAPPING = {
+    'ns': 'Namespace',
+    'app': 'Application',
+    'cont': 'Container',
+    'vol': 'Volume',
+    'configMap': 'ConfigMap',
+    'replicaSet': 'ReplicaSet',
+}
+
 class LogicItem
 {
     constructor(scope, kind, naming)
@@ -18,6 +27,14 @@ class LogicItem
 
     get kind() {
         return this._kind;
+    }
+
+    get prettyKind() {
+        var kind = KIND_TO_USER_MAPPING[this.kind];
+        if (!kind) {
+            kind = _.upperFirst(this.kind);
+        }
+        return kind;
     }
 
     get naming() {

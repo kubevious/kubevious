@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/kubevious/kubevious#readme",
   "dependencies": {
+    "elasticlunr": "^0.9.5",
     "express": "^4.17.1",
     "express-promise-router": "^3.0.3",
     "js-yaml": "^3.13.1",

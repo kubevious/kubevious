@@ -3,6 +3,7 @@ const K8sParser = require('./parsers/k8s');
 const ConcreteRegistry = require('./concrete/registry');
 const FacadeRegistry = require('./facade/registry');
 const LogicProcessor = require('./logic/processor');
+const SearchEngine = require('./search/engine');
 
 class Context
 {
@@ -13,8 +14,10 @@ class Context
         this._facadeRegistry = new FacadeRegistry(this);
         this._concreteRegistry = new ConcreteRegistry(this);
         this._k8sParser = new K8sParser(this);
+        this._searchEngine = new SearchEngine(this);
 
         this._logicProcessor = new LogicProcessor(this);
+
 
         this._server = null;
     }
@@ -33,6 +36,10 @@ class Context
 
     get k8sParser() {
         return this._k8sParser;
+    }
+
+    get searchEngine() {
+        return this._searchEngine;
     }
 
     addLoader(loader)
