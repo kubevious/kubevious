@@ -13,6 +13,7 @@ module.exports = {
         var namespaceScope = scope.getNamespaceScope(item.config.metadata.namespace);
         namespaceScope.configMaps[item.config.metadata.name] = {
             used: false,
+            usedBy: {},
             config: item.config
         }
     }

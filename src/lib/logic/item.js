@@ -23,6 +23,9 @@ class LogicItem
         this._children = {};
         this._properties = {};
         this._alerts = {};
+        this._flags = {};
+        this._usedBy = {
+        };
     }
 
     get kind() {
@@ -49,6 +52,10 @@ class LogicItem
         return this._config;
     }
 
+    get flags() {
+        return this._flags;
+    }
+
     get parent() {
         return this._parent;
     }
@@ -66,6 +73,16 @@ class LogicItem
 
     set order(value) {
         this._order = value;
+    }
+
+    setFlag(name)
+    {
+        this._flags[name] = true;
+    }
+
+    setUsedBy(dn)
+    {
+        this._usedBy[dn] = true;
     }
 
     setConfig(value) 
@@ -162,7 +179,29 @@ class LogicItem
     }
 
     extractProperties() {
-        return _.values(this._properties);
+        var myProps = _.values(this._properties);
+
+        if (_.keys(this._flags).length > 0) {
+            myProps.push({
+                kind: "key-value",
+                id: "flags",
+                title: "Flags",
+                order: 1,
+                config: this._flags
+            });   
+        }
+
+        if (_.keys(this._usedBy).length > 0) {
+            myProps.push({
+                kind: "key-value",
+                id: "usedBy",
+                title: "Used By",
+                order: 5,
+                config: this._usedBy
+            });   
+        }
+
+        return myProps;
     }
 
     extractAlerts() {
@@ -204,6 +243,7 @@ class LogicItem
         node.kind = this.kind;
         node.order = this.order;
         node.errorCount = _.keys(this._alerts).length;
+        node.flags = this._flags;
         node.children = [];
         for(var child of this.getChildren())
         {

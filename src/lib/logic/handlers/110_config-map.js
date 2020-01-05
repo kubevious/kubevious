@@ -1,3 +1,5 @@
+const _ = require("the-lodash");
+
 module.exports = {
     target: {
         api: "v1",
@@ -8,11 +10,31 @@ module.exports = {
 
     order: 110,
 
-    handler: ({scope, item, createK8sItem, createAlert}) =>
+    handler: ({logger, scope, item, createK8sItem, createAlert}) =>
     {
         var namespaceScope = scope.getNamespaceScope(item.config.metadata.namespace);
         var configMapScope = namespaceScope.configMaps[item.config.metadata.name];
-        if (!configMapScope.used) {
+
+        if (_.keys(configMapScope.usedBy).length > 0) 
+        {
+            if (_.keys(configMapScope.usedBy).length > 1)
+            {
+                for(var userDn of _.keys(configMapScope.usedBy))
+                {
+                    var user = scope.findItem(userDn);
+                    if (!user) {
+                        logger.error("Missing DN: %s", dn);
+                    }
+                    user.setFlag("shared");
+                    for(var dn of _.keys(configMapScope.usedBy))
+                    {
+                        user.setUsedBy(dn);
+                    }
+                }
+            } 
+        }
+        else
+        {
             var rawContainer = scope.fetchRawContainer(item, "ConfigMaps");
             createK8sItem(rawContainer);
             createAlert('Unused', 'warn', null, 'ConfigMap not used.');

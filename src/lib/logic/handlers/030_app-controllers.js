@@ -161,7 +161,7 @@ module.exports = {
             {
                 var configmap = parent.fetchByNaming("configmap", name);
                 scope.setK8sConfig(configmap, configMapScope.config);
-                configMapScope.used = true;
+                configMapScope.usedBy[configmap.dn] = true;
             }
             else
             {

@@ -45,6 +45,15 @@ class LogicScope
     extractItems() {
         return this._itemMap;
     }
+
+    findItem(dn)
+    {
+        var item = this._itemMap[dn];
+        if (!item) {
+            item = null;
+        }
+        return item;
+    }
     
     getNamespaceScope(name) {
         if (!this._namespaceScopes[name]) {
