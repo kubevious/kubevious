@@ -181,23 +181,23 @@ class LogicItem
     extractProperties() {
         var myProps = _.values(this._properties);
 
-        if (_.keys(this._flags).length > 0) {
-            myProps.push({
-                kind: "key-value",
-                id: "flags",
-                title: "Flags",
-                order: 1,
-                config: this._flags
-            });   
-        }
+        // if (_.keys(this._flags).length > 0) {
+        //     myProps.push({
+        //         kind: "key-value",
+        //         id: "flags",
+        //         title: "Flags",
+        //         order: 1,
+        //         config: this._flags
+        //     });   
+        // }
 
         if (_.keys(this._usedBy).length > 0) {
             myProps.push({
-                kind: "key-value",
+                kind: "dn-list",
                 id: "usedBy",
                 title: "Used By",
                 order: 5,
-                config: this._usedBy
+                config: _.keys(this._usedBy)
             });   
         }
 

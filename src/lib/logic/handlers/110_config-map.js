@@ -28,7 +28,9 @@ module.exports = {
                     user.setFlag("shared");
                     for(var dn of _.keys(configMapScope.usedBy))
                     {
-                        user.setUsedBy(dn);
+                        if (dn != userDn) {
+                            user.setUsedBy(dn);
+                        }
                     }
                 }
             } 
