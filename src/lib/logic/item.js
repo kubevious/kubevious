@@ -194,8 +194,8 @@ class LogicItem
         if (_.keys(this._usedBy).length > 0) {
             myProps.push({
                 kind: "dn-list",
-                id: "usedBy",
-                title: "Used By",
+                id: "shared-with",
+                title: "Shared With",
                 order: 5,
                 config: _.keys(this._usedBy)
             });   

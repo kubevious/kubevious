@@ -70,7 +70,7 @@ module.exports = {
                 if (containerConfig.envFrom) {
                     for(var envFromObj of containerConfig.envFrom) {
                         if (envFromObj.configMapRef) {
-                            var configMapScope = findAndProcessConfigMap(container, envFromObj.configMapRef.name);
+                            var configMapScope = findAndProcessConfigMap(container, envFromObj.configMapRef.name, true);
                             if (configMapScope) {
                                 if (configMapScope.config.data) {
                                     for(var dataKey of _.keys(configMapScope.config.data)) {
@@ -108,7 +108,8 @@ module.exports = {
                         if (volumeConfig) {
                             processVolumeConfig(
                                 container, 
-                                volumeConfig);
+                                volumeConfig,
+                                true);
                         }
                     }
                 }
@@ -139,29 +140,32 @@ module.exports = {
             for(var volumeConfig of volumesConfig) {
                 processVolumeConfig(
                     volumes, 
-                    volumeConfig);
+                    volumeConfig,
+                    false);
             }
         }
 
         /*** HELPERS ***/
-        function processVolumeConfig(parent, volumeConfig)
+        function processVolumeConfig(parent, volumeConfig, markUsedBy)
         {
             var volume = parent.fetchByNaming("vol", volumeConfig.name);
             scope.setK8sConfig(volume, volumeConfig);
         
             if (volumeConfig.configMap) {
-                findAndProcessConfigMap(volume, volumeConfig.configMap.name)
+                findAndProcessConfigMap(volume, volumeConfig.configMap.name, markUsedBy)
             }
         }
         
-        function findAndProcessConfigMap(parent, name)
+        function findAndProcessConfigMap(parent, name, markUsedBy)
         {
             var configMapScope = namespaceScope.configMaps[name];
             if (configMapScope)
             {
                 var configmap = parent.fetchByNaming("configmap", name);
                 scope.setK8sConfig(configmap, configMapScope.config);
-                configMapScope.usedBy[configmap.dn] = true;
+                if (markUsedBy) {
+                    configMapScope.usedBy[configmap.dn] = true;
+                }
             }
             else
             {
