@@ -106,11 +106,18 @@ module.exports = {
                     for(var volumeRefConfig of containerConfig.volumeMounts) {
                         var volumeConfig = volumesMap[volumeRefConfig.name];
                         if (volumeConfig) {
-                            // TODO: Also Show Mount Path in "Mount Config".
-                            processVolumeConfig(
+                            var volumeItem = processVolumeConfig(
                                 container, 
                                 volumeConfig,
                                 true);
+
+                            volumeItem.addProperties({
+                                kind: "yaml",
+                                id: "env",
+                                title: "Mount Config",
+                                order: 5,
+                                config: volumeRefConfig
+                            });  
                         }
                     }
                 }
@@ -155,6 +162,8 @@ module.exports = {
             if (volumeConfig.configMap) {
                 findAndProcessConfigMap(volume, volumeConfig.configMap.name, markUsedBy)
             }
+
+            return volume;
         }
         
         function findAndProcessConfigMap(parent, name, markUsedBy)
