@@ -38,9 +38,9 @@ For more details on installation options visit [Deployment Repository].
 
 ## Capabilities
 
-#### Visualizes Cluster In App Centric Way
+### Visualizes Cluster In App Centric Way
 
-<img align="right" width="300" src="https://github.com/kubevious/kubevious/raw/master/docs/screens/app-view.png">
+![Visualizes Cluster In App Centric Way](https://github.com/kubevious/kubevious/raw/master/docs/screens/app-view.png)
 
 Even a simple Hello World app in Kubernetes produces dosens of objects. It takes a lot of time to fetch application relevant configurations.
 
@@ -48,39 +48,32 @@ Kubeviuos renders entire Kubernets cluster configuration in an application centr
 
 The main screen is rendered using boxes. Every box is expandable (using double-click) and selectable. The right side panel includes properties and configurations associated with each box. 
 
-<div style="overflow: auto; clear: both; display: table;"></div>
-
 
 #### Detects Configuration Errors
 
-<img align="right" width="300" src="https://github.com/kubevious/kubevious/raw/master/docs/screens/config-errors.png">
+![Detects Configuration Errors](https://github.com/kubevious/kubevious/raw/master/docs/screens/config-errors.png)
 
 Kubernetes follows detached notion for configuration. It super easy to have typos and errors when connecting components together.
 
 Kubevious identifies many configuration errors, such as: misuse of labels, missing ports and others. A red circle with a number identifies number of errors withing the subtree.
 
-<div style="overflow: auto; clear: both; display: table;"></div>
 
 #### Identifies Blast Radius
 
-<img align="right" width="300" src="https://github.com/kubevious/kubevious/raw/master/docs/screens/shared-configs.png">
+![Identifies Blast Radius](https://github.com/kubevious/kubevious/raw/master/docs/screens/shared-configs.png)
 
 Configuration in Kubernetes is highly reusable. A small change can cause unintended consequences. 
 
 Kubevious identifies shared configurations and also displays other dependent objects. A single glance is enough to identify cascading effects of a particular change.
 
-<div style="overflow: auto; clear: both; display: table;"></div>
-
 
 #### Full Text Search
 
-<img align="right" width="300" src="https://github.com/kubevious/kubevious/raw/master/docs/screens/full-text-search.png">
+![Full Text Search](https://github.com/kubevious/kubevious/raw/master/docs/screens/full-text-search.png)
 
 Looking for configration in Kubernetes haystack takes lots of time. 
 
 Kubevious supports full text across across entire cluster.
-
-<div style="overflow: auto; clear: both; display: table;"></div>
 
 # Authors
 Everyone is welcome to contribute. See [CONTRIBUTING] for instructions on how to contribute.
