@@ -166,6 +166,8 @@ class LogicItem
         }
         if (date) {
             info.date = date;
+        } else {
+            info.date = new Date();
         }
         
         this._alerts[id] = info;
