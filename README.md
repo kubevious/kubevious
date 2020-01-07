@@ -3,13 +3,15 @@
 [![Codefresh build status](https://g.codefresh.io/api/badges/pipeline/kubevious/default%2Fkubevious-master?type=cf-1)](https://g.codefresh.io/public/accounts/kubevious/pipelines/5dfac9226e1ebecb0fd3775d)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-Modern application deployments are very complex. It is hard to make sense
-of existing deployments. **Kubevious** is made to help operators to navigate  infrastructure and deployment configurations.
+**Kubevious** is an highly graphical interface for interacting with Kubernetes clusters.
+
+## Why Kubevious?
+Running applications on top of Kubernetes produces dosens of configurations. It is hard to make sense of existing deployments. **Kubevious** is made to help operators to navigate  infrastructure and deployment configurations.
 
 ![Kubevious Intro](docs/screens/intro.png)
 
 ## Running Kubevious
-Deploy using Helm:
+Kubevious can be used for any Kubernetes distrubution and runs within the cluster. Deploy using Helm:
 
 ```sh
 kubectl create namespace kubevious
@@ -24,7 +26,7 @@ helm template kubevious \
 kubectl apply -f kubevious.yaml
 ```
 
-Setup port forwarding:
+Wait for few seconds for deployment to succeed. Setup port forwarding:
 
 ```sh
 kubectl port-forward $(kubectl get pod -l k8s-app=kubevious-ui -n kubevious -o jsonpath="{.items[0].metadata.name}") 3000:3000 -n kubevious
@@ -33,6 +35,42 @@ kubectl port-forward $(kubectl get pod -l k8s-app=kubevious-ui -n kubevious -o j
 Access from browser: http://localhost:3000
 
 For more details on installation options visit [Deployment Repository].
+
+## Capabilities
+
+#### Visualizes Entire Cluster
+
+<img align="right" width="200" src="https://github.com/kubevious/kubevious/raw/master/docs/screens/intro.png">
+
+Loprem ispum
+
+<div style="overflow: auto; clear: both; display: table;"></div>
+
+
+#### Detects Configuration Errors
+
+<img align="right" width="200" src="https://github.com/kubevious/kubevious/raw/master/docs/screens/config-errors.png">
+
+Loprem ispum
+
+<div style="overflow: auto; clear: both; display: table;"></div>
+
+#### Identifies Shared Configurations
+
+<img align="right" width="200" src="https://github.com/kubevious/kubevious/raw/master/docs/screens/shared-configs.png">
+
+Loprem ispum
+
+<div style="overflow: auto; clear: both; display: table;"></div>
+
+
+#### Full Text Search
+
+<img align="right" width="200" src="https://github.com/kubevious/kubevious/raw/master/docs/screens/full-text-search.png">
+
+Loprem ispum
+
+<div style="overflow: auto; clear: both; display: table;"></div>
 
 # Authors
 Everyone is welcome to contribute. See [CONTRIBUTING] for instructions on how to contribute.
