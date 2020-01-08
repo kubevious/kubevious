@@ -13,6 +13,7 @@ module.exports = {
     handler: ({scope, item, createK8sItem, createAlert, hasCreatedItems}) =>
     {
         var namespaceScope = scope.getNamespaceScope(item.config.metadata.namespace);
+        namespaceScope.ingresses[item.config.metadata.name] = true;
 
         var defaultBackend = _.get(item.config, "spec.backend");
         if (defaultBackend) {

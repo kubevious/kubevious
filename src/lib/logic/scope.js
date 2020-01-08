@@ -149,6 +149,7 @@ class NamespaceScope
         this.appControllers = {};
         this.appOwners = {};
         this.configMaps = {};
+        this.ingresses = {};
     }
 
     get logger() {
