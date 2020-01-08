@@ -51,6 +51,12 @@ module.exports = {
             var serviceScopeInfo = namespaceScope.services[backendConfig.serviceName];
             if (serviceScopeInfo) {
 
+                for(var appName of _.keys(serviceScopeInfo.apps))
+                {
+                    var appScope = namespaceScope.apps[appName];
+                    appScope.properties['Exposed'] = 'With Ingress';
+                }
+
                 for(var serviceItem of serviceScopeInfo.items) {
                     createIngress(serviceItem);
                 }

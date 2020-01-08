@@ -20,7 +20,10 @@ module.exports = {
         var namespaceScope = scope.getNamespaceScope(item.config.metadata.namespace);
         var appScope = {
             name: item.config.metadata.name,
-            ports: {}
+            ports: {},
+            properties: {
+                'Exposed': 'No'
+            }
         };
         namespaceScope.apps[appScope.name] = appScope;
 
@@ -41,8 +44,23 @@ module.exports = {
         scope.setK8sConfig(launcher, item.config);
         namespaceScope.registerAppOwner(launcher);
 
+        appScope.properties['Launcher'] = item.config.kind;
+
+        var volumesProperties = {
+
+        }
         var volumesConfig = _.get(item.config, 'spec.template.spec.volumes');
+        if (!volumesConfig) {
+            volumesConfig = [];
+        }
+        volumesProperties['Count'] = volumesConfig.length;
+        appScope.properties['Volumes'] = volumesConfig.length;
+
         var containersConfig = _.get(item.config, 'spec.template.spec.containers');
+        if (!containersConfig) {
+            containersConfig = [];
+        }
+        appScope.properties['Container Count'] = containersConfig.length;
 
         var volumesMap = _.makeDict(volumesConfig, x => x.name);
         var containersMap = _.makeDict(containersConfig, x => x.name);
@@ -145,6 +163,14 @@ module.exports = {
         if (_.isArray(volumesConfig) && (volumesConfig.length > 0)) {
             var volumes = app.fetchByNaming("vol", "Volumes");
 
+            volumes.addProperties({
+                kind: "key-value",
+                id: "properties",
+                title: "Properties",
+                order: 5,
+                config: volumesProperties
+            });  
+
             for(var volumeConfig of volumesConfig) {
                 processVolumeConfig(
                     volumes, 
@@ -152,6 +178,14 @@ module.exports = {
                     false);
             }
         }
+
+        app.addProperties({
+            kind: "key-value",
+            id: "properties",
+            title: "Properties",
+            order: 5,
+            config: appScope.properties
+        });  
 
         /*** HELPERS ***/
         function processVolumeConfig(parent, volumeConfig, markUsedBy)

@@ -16,7 +16,8 @@ module.exports = {
 
         var serviceScope = {
             name: item.config.metadata.name,
-            items: []
+            items: [],
+            apps: {}
         };
         namespaceScope.services[serviceScope.name] = serviceScope;
 
@@ -27,6 +28,9 @@ module.exports = {
             for(var appItem of appItems)
             {
                 var appScope = namespaceScope.apps[appItem.naming];
+                serviceScope.apps[appItem.naming] = true;
+
+                appScope.properties['Exposed'] = 'With Service';
 
                 serviceScope.microserviceName = appItem.naming;
                 var serviceCount = appItem.getChildrenByKind('service').length;
