@@ -46,7 +46,7 @@ Kubeviuos renders the entire Kubernetes cluster configuration in an application-
 The main screen is rendered using boxes. Every box is expandable (using double-click) and selectable. The right side panel includes properties and configurations associated with each box. 
 
 
-### Detects Configuration Errors
+## Detects Configuration Errors
 
 ![Detects Configuration Errors](https://github.com/kubevious/kubevious/raw/master/docs/screens/config-errors.png)
 
@@ -55,7 +55,7 @@ Kubernetes follows a detached notion for configuration. It is super easy to have
 Kubevious identifies many configuration errors, such as misuse of labels, missing ports, and others. The red circle contains the number of errors within the subtree.
 
 
-### Identifies Blast Radius
+## Identifies Blast Radius
 
 ![Identifies Blast Radius](https://github.com/kubevious/kubevious/raw/master/docs/screens/shared-configs.png)
 
@@ -64,7 +64,7 @@ Configuration in Kubernetes is highly reusable. A small change can cause uninten
 Kubevious identifies shared configurations and also displays other dependent objects. A single glance is enough to identify the cascading effects of a particular change.
 
 
-## Full Text Search
+## Enables Full Text Search
 
 ![Full Text Search](https://github.com/kubevious/kubevious/raw/master/docs/screens/full-text-search.png)
 
