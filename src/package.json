@@ -13,7 +13,7 @@
   "directories": {
     "lib": "./lib"
   },
-  "author": "Ruben Hakopian",
+  "author": "Ruben Hakopian <ruben.hakopian@gmail.com>",
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/kubevious/kubevious/issues"
