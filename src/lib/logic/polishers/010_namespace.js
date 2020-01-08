@@ -15,7 +15,8 @@ module.exports = {
 
         var properties = {
             "Applications": _.keys(namespaceScope.apps).length,
-            "Ingresses": _.keys(namespaceScope.ingresses).length
+            "Ingresses": _.keys(namespaceScope.ingresses).length,
+            "Secrets": _.keys(namespaceScope.secrets).length
         }
 
         item.addProperties({

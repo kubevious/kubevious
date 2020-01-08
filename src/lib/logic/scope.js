@@ -150,6 +150,7 @@ class NamespaceScope
         this.appOwners = {};
         this.configMaps = {};
         this.ingresses = {};
+        this.secrets = {};
     }
 
     get logger() {
@@ -180,6 +181,16 @@ class NamespaceScope
             return []
         }
         return this.appOwners[kind][name];
+    }
+
+    getSecret(name)
+    {
+        if (!this.secrets[name]) {
+            this.secrets[name] = {
+                usedBy: {}
+            }
+        }
+        return this.secrets[name];
     }
 }
 

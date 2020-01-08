@@ -197,6 +197,10 @@ module.exports = {
                 findAndProcessConfigMap(volume, volumeConfig.configMap.name, markUsedBy)
             }
 
+            if (volumeConfig.secret) {
+                findAndProcessSecret(volume, volumeConfig.secret.secretName, markUsedBy)
+            }
+
             return volume;
         }
         
@@ -216,6 +220,15 @@ module.exports = {
                 parent.addAlert("MissingConfig", "error", null, 'Could not find ConfigMap ' + name);
             }
             return configMapScope;
+        }
+
+        function findAndProcessSecret(parent, name, markUsedBy)
+        {
+            var secret = parent.fetchByNaming("secret", name);
+            if (markUsedBy) {
+                var secretScope = namespaceScope.getSecret(name);
+                secretScope.usedBy[secret.dn] = true;
+            }
         }
     }
 }
