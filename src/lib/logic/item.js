@@ -11,21 +11,37 @@ const KIND_TO_USER_MAPPING = {
 
 class LogicItem
 {
-    constructor(scope, kind, naming)
+    constructor(scope, parent, kind, naming)
     {
         this._scope = scope;
         this._kind = kind;
         this._naming = naming;
         this._rn = LogicItem._makeRn(kind, naming);
         this._config = {};
-        this._parent = null;
         this._order = 100;
         this._children = {};
         this._properties = {};
         this._alerts = {};
         this._flags = {};
-        this._usedBy = {
-        };
+        this._usedBy = {};
+
+        if (parent) {
+            this._parent = parent;
+            this._parent._children[this.rn] = this;
+            
+            this._dn = this._parent.dn + '/' + this.rn;
+
+            this._namingArray = _.clone(this._parent.namingArray);
+            this._namingArray.push(this.naming);
+        } else {
+            this._parent = null;
+            
+            this._dn = this.rn;
+
+            this._namingArray = [this.naming];
+        }
+ 
+        this._scope._acceptItem(this);
     }
 
     get kind() {
@@ -42,6 +58,10 @@ class LogicItem
 
     get naming() {
         return this._naming;
+    }
+
+    get namingArray() {
+        return this._namingArray;
     }
     
     get rn() {
@@ -61,10 +81,7 @@ class LogicItem
     }
 
     get dn() {
-        if (!this.parent) {
-            return this.rn;
-        }
-        return this.parent.dn + '/' + this.rn;
+        return this._dn;
     }
 
     get order() {
@@ -98,23 +115,13 @@ class LogicItem
         return _.values(this._children).filter(x => x.kind == kind);
     }
 
-    addChild(child) {
-        if (child._parent) {
-            child._parent.removeChild(child);
+    remove() {
+        if (!this._parent) {
+            return;
         }
-        child._parent = this;
-        this._children[child.rn] = child;
-        this._scope._acceptItem(child);
-    }
-
-    removeChild(child) {
-        var x = this._children[child.rn];
-        if (x) {
-            this._scope._dropItem(this);
-            delete this._children[child.rn];
-            x._parent = null;
-        }
-        child._parent = null;
+        this._scope._dropItem(this);
+        delete this._parent._children[this.rn];
+        this._parent = null;
     }
 
     findByNaming(kind, naming)
@@ -139,8 +146,7 @@ class LogicItem
         if (child) {
             return child;
         }
-        child = new LogicItem(this._scope, kind, naming);
-        this.addChild(child);
+        child = new LogicItem(this._scope, this, kind, naming);
         return child;
     }
 
@@ -255,7 +261,7 @@ class LogicItem
     }
 
     static constructTop(scope) {
-        return new LogicItem(scope, "root");
+        return new LogicItem(scope, null, "root");
     }
 
     static _makeRn(kind, naming) {

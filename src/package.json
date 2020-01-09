@@ -20,9 +20,9 @@
   },
   "homepage": "https://github.com/kubevious/kubevious#readme",
   "dependencies": {
-    "elasticlunr": "^0.9.5",
     "express": "^4.17.1",
     "express-promise-router": "^3.0.3",
+    "flexsearch": "^0.6.32",
     "js-yaml": "^3.13.1",
     "k8s-super-client": "^1.0.6",
     "the-lodash": "^1.0.15",

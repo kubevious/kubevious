@@ -1,5 +1,5 @@
 const _ = require("the-lodash");
-const elasticlunr = require('elasticlunr');
+const FlexSearch = require("flexsearch");
 
 class SearchEngine
 {
@@ -16,34 +16,35 @@ class SearchEngine
 
     reset()
     {
-        this._index = elasticlunr(function () {
-            this.addField('name')
-            this.addField('kind')
-            this.setRef('dn');
+        this._index = new FlexSearch({
+            encode: "icase",
+            tokenize: "full",
+            threshold: 1,
+            resolution: 3,
+            depth: 2
         });
     }
 
     addToIndex(item)
     {
-        var doc = {
-            dn: item.dn,
-            kind: item.prettyKind,
-            name: item.naming
-        }
-        this._index.addDoc(doc);
+        var doc = _.clone(item.namingArray);
+        doc.push(item.prettyKind);
+        doc = doc.join(' ');
+        this._index.add(item.dn, doc);
     }
 
     search(criteria)
     {
-        var config = {
-            fields: {
-                name: {boost: 2},
-                kind: {boost: 1}
-            },
-            boolean: "AND"
+        if ((!criteria) || criteria.length < 2) {
+            return [];
+        }  
+        var results = this._index.search(criteria);
+        this.logger.silly("SEARCH: %s, result: ", criteria, results);
+        if (_.isArray(results)) {
+            results = results.map(x => ({ dn: x }))
+        } else {
+            results = [];
         }
-        var results = this._index.search(criteria, config);
-        results = results.map(x => ({ dn: x.ref }))
         return results;
     }
 
