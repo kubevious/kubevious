@@ -48,7 +48,7 @@ module.exports = {
                         if (appPortInfo) {
                             createService(appPortInfo.portItem, { name: serviceItemName })
                         } else {
-                            // createAlert('Port-' + appPort, 'warn', null, 'Missing port ' + appPort + ' definition.');
+                            createAlert('Port-' + appPort, 'warn', null, 'Missing port ' + appPort + ' definition.');
                         }
                     }
                 }

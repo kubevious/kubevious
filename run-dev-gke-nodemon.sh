@@ -6,7 +6,9 @@ cd $MY_DIR
 export LOG_TO_FILE=true
 export NODE_ENV=development
 export GKE_CREDENTIALS_PATH=credentials.json
-export GKE_REGION=us-west1-c
-export GKE_K8S_CLUSTER=gprod-uswest1c
+export GKE_REGION=us-central1-a
+#us-west1-c
+export GKE_K8S_CLUSTER=kubevious-samples
+#gprod-uswest1c
 # export DEBUG=express:*
 nodemon src/mock/index-gke

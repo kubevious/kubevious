@@ -142,7 +142,10 @@ module.exports = {
 
                 if (_.isArray(containerConfig.ports)) {
                     for(var portConfig of containerConfig.ports) {
-                        var portName = portConfig.name + " (" + portConfig.protocol + "-" + portConfig.containerPort + ")";
+                        var portName = portConfig.protocol + "-" + portConfig.containerPort;
+                        if (portConfig.name) {
+                            portName = portConfig.name + " (" + portName + ")";
+                        }
                         var portItem = container.fetchByNaming("port", portName);
                         scope.setK8sConfig(portItem, portConfig);
 
