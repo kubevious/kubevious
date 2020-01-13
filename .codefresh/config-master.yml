@@ -44,7 +44,8 @@ steps:
       - pwd
       - ls -la
       - source version.sh
-      - echo "module.exports = \"v1.2.3\";" > /codefresh/volume/${PRODUCT_NAME}/src/version.js
+      - echo "module.exports = \"${PRODUCT_VERSION}\";" > /codefresh/volume/${PRODUCT_NAME}/src/version.js
+      - cat /codefresh/volume/${PRODUCT_NAME}/src/version.js
   build:
     title: "Building Docker Image"
     type: build
