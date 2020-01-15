@@ -43,6 +43,7 @@ steps:
     commands:
       - pwd
       - ls -la
+      - ../process-version-bump.sh
       - source version.sh
       - echo "module.exports = \"${PRODUCT_VERSION}\";" > /codefresh/volume/${PRODUCT_NAME}/src/version.js
       - cat /codefresh/volume/${PRODUCT_NAME}/src/version.js
@@ -60,7 +61,6 @@ steps:
     commands:
       - pwd
       - ls -la
-      - ../process-version-bump.sh
       - source version.sh
       - echo "PRODUCT_VERSION=${PRODUCT_VERSION}"
       - cf_export DOCKER_TAG="${PRODUCT_VERSION}"
