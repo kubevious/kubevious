@@ -1,6 +1,12 @@
 [![Codefresh build status](https://g.codefresh.io/api/badges/pipeline/kubevious/default%2Fkubevious-master?type=cf-1)](https://g.codefresh.io/public/accounts/kubevious/pipelines/5dfac9226e1ebecb0fd3775d)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
+* [What is Kubevious?](#what-is-kubevious)
+* [Live Demo](#live-demo)
+* [Running Kubevious](#running-kubevious)
+* [Capabilities](#capabilities)
+
+# What is Kubevious?
 **Kubevious** is open-source software that provides a usable and highly graphical interface for Kubernetes. Kubevious renders all configurations relevant to the application in one place. That saves a lot of time from operators, eliminating the need for looking up settings and digging within selectors and labels. Kubevious works with any Kubernetes distributions. Kubevious and can be used at any stage of the project.
 
 Kubevious also provides hints to operators to avoid and identify configurational and operational errors.

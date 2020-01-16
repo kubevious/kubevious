@@ -33,8 +33,10 @@ module.exports = {
                 appScope.properties['Exposed'] = 'With Service';
 
                 serviceScope.microserviceName = appItem.naming;
-                var serviceCount = appItem.getChildrenByKind('service').length;
-                var serviceItemName = "Service";
+                var serviceItemName = item.config.spec.type;
+                var serviceCount = appItem.getChildrenByKind('service')
+                    .filter(x => x.config.spec.type == serviceItemName)
+                    .length;
                 if (serviceCount != 0) {
                     serviceItemName += " " + (serviceCount + 1);
                 }
