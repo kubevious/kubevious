@@ -266,7 +266,7 @@ class LogicItem
 
     static _makeRn(kind, naming) {
         if (naming && naming.length > 0)  {
-            return [kind, naming].join('-');
+            return kind + '-[' + naming + ']'; 
         }
         return kind;
     }

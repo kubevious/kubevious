@@ -107,17 +107,25 @@ module.exports = {
             scope.setK8sConfig(container, containerConfig);
 
             if (containerConfig.image) {
-                var imageName = containerConfig.image;
+                var image = containerConfig.image;
                 var imageTag;
-                var i = imageName.indexOf(':');
+                var i = image.indexOf(':');
+                var repository = 'docker';
                 if (i != -1) {
-                    imageTag = imageName.substring(i + 1);
-                    imageName = imageName.substring(0, i);
+                    imageTag = image.substring(i + 1);
+                    image = image.substring(0, i);
                 } else {
                     imageTag = 'latest';
                 }
 
-                var imageItem = container.fetchByNaming("image", imageName);
+                var imageName = image;
+                i = image.lastIndexOf('/');
+                if (i != -1) {
+                    repository = image.substring(0, i);
+                    imageName = image.substring(i + 1);
+                }
+
+                var imageItem = container.fetchByNaming("image", image);
                 imageItem.addProperties({
                     kind: "key-value",
                     id: "props",
@@ -126,7 +134,8 @@ module.exports = {
                     config: {
                         name: imageName,
                         tag: imageTag,
-                        fullName: containerConfig.image
+                        fullName: containerConfig.image,
+                        repository: repository
                     }
                 });  
 
