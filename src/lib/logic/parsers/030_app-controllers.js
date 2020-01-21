@@ -11,12 +11,17 @@ module.exports = {
     }, {
         api: "apps",
         kind: "StatefulSet"
+    }, {
+        api: "batch",
+        kind: "Job"
     }],
 
     order: 30,
 
-    handler: ({scope, item, createK8sItem, createAlert, hasCreatedItems}) =>
+    handler: ({logger, scope, item, createK8sItem, createAlert, hasCreatedItems}) =>
     {
+        logger.error(item.id);
+
         var namespaceScope = scope.getNamespaceScope(item.config.metadata.namespace);
         var appScope = {
             name: item.config.metadata.name,

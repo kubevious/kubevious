@@ -23,6 +23,7 @@ class K8sLoader
             this._client.Deployment,
             this._client.StatefulSet,
             this._client.DaemonSet,
+            this._client.Job,
             this._client.Service,
             this._client.Ingress,
             this._client.ConfigMap,
