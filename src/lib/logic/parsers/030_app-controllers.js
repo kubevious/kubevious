@@ -2,6 +2,8 @@ const yaml = require('js-yaml');
 const _ = require("the-lodash");
 const resourcesHelper = require("../helpers/resources");
 
+const METRICS = ['cpu', 'memory'];
+
 module.exports = {
     targets: [{
         api: "apps",
@@ -102,6 +104,39 @@ module.exports = {
             order: 5,
             config: appScope.properties
         });  
+
+
+        {
+            var resourcesProps = {
+            }
+            for(var metric of METRICS) {
+                resourcesProps[metric] = { request: 0 };
+            }
+
+            for(var container of app.getChildrenByKind('cont'))
+            {
+                var contProps = container.getProperties('resources');
+                if (contProps)
+                {
+                    for(var metric of METRICS)
+                    {
+                        var value = _.get(contProps.config, metric + '.request');
+                        if (value)
+                        {
+                            resourcesProps[metric].request += value;
+                        }
+                    }
+                }
+            }
+
+            app.addProperties({
+                kind: "resources",
+                id: "resources-per-pod",
+                title: "Resources Per Pod",
+                order: 7,
+                config: resourcesProps
+            });
+        }
 
         /*** HELPERS ***/
 
@@ -238,8 +273,9 @@ module.exports = {
 
             var resourcesProps = {
             }
-            collectResourceMetric(containerConfig, resourcesProps, 'cpu')
-            collectResourceMetric(containerConfig, resourcesProps, 'memory')
+            for(var metric of METRICS) {
+                collectResourceMetric(containerConfig, resourcesProps, metric);
+            }
 
             container.addProperties({
                 kind: "resources",

@@ -159,6 +159,14 @@ class LogicItem
         this._properties[params.id] = params;
     }
 
+    getProperties(id)
+    {
+        if (this._properties[id]) {
+            return this._properties[id];
+        }
+        return null;
+    }
+
     addAlert(kind, severity, date, msg)
     {
         var id = kind;
