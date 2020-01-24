@@ -254,24 +254,16 @@ class LogicProcessor
 
     _processPolisher(scope, handlerInfo)
     {
-        this._logger.info("[_processPolisher] Handler: %s -> %s, target:", 
+        this._logger.silly("[_processPolisher] Handler: %s -> %s, target:", 
             handlerInfo.order, 
             handlerInfo.name, 
             handlerInfo.target);
 
         var path = _.clone(handlerInfo.target.path);
         this._visitTree(scope.root, 0, path, item => {
-            this._logger.info("[_processPolisher] Visited: %s", item.dn);
+            this._logger.silly("[_processPolisher] Visited: %s", item.dn);
             this._processHandler(scope, handlerInfo, item.dn, item);
         });
-    }
-
-    _processPolisherItem(scope, handlerInfo, item)
-    {
-        this._logger.info("[_processPolisherItem] Handler: %s, Item: %s", 
-            handlerInfo.name, 
-            item.dn);
-
     }
 
     _visitTree(item, index, path, cb)

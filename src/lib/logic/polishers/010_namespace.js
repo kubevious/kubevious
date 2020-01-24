@@ -9,8 +9,6 @@ module.exports = {
 
     handler: ({scope, item, logger}) =>
     {
-        logger.info("Polisher NS: %s", item.naming);
-
         var namespaceScope = scope.getNamespaceScope(item.naming);
 
         var properties = {
