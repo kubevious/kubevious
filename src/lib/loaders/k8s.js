@@ -19,6 +19,7 @@ class K8sLoader
     run()
     {
         var targets = [
+            this._client.Node,
             this._client.Namespace,
             this._client.LimitRange,
             this._client.Deployment,
