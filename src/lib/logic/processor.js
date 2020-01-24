@@ -260,7 +260,7 @@ class LogicProcessor
             handlerInfo.target);
 
         var path = _.clone(handlerInfo.target.path);
-        this._visitTree(scope.root, path, item => {
+        this._visitTree(scope.root, 0, path, item => {
             this._logger.info("[_processPolisher] Visited: %s", item.dn);
             this._processHandler(scope, handlerInfo, item.dn, item);
         });
@@ -274,22 +274,21 @@ class LogicProcessor
 
     }
 
-    _visitTree(item, path, cb)
+    _visitTree(item, index, path, cb)
     {
         this._logger.silly("[_visitTree] %s, path: %s...", item.dn, path);
 
-        if (path.length == 0)
+        if (index >= path.length)
         {
             cb(item);
         }
         else
         {
-            var top = _.head(path);
-            path.shift();
+            var top = path[index];
             var children = item.getChildrenByKind(top);
             for(var child of children)
             {
-                this._visitTree(child, path, cb);
+                this._visitTree(child, index + 1, path, cb);
             }
         }
     }

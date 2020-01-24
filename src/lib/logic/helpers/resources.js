@@ -1,5 +1,7 @@
 const _ = require("the-lodash");
 
+module.exports.METRICS = ['cpu', 'memory'];
+
 module.exports.parseCpu = function (value) {
     value = value.toString();
     value = _.trim(value, "\'\"");

@@ -1,8 +1,5 @@
 const yaml = require('js-yaml');
 const _ = require("the-lodash");
-const resourcesHelper = require("../helpers/resources");
-
-const METRICS = ['cpu', 'memory'];
 
 module.exports = {
     targets: [{
@@ -104,39 +101,6 @@ module.exports = {
             order: 5,
             config: appScope.properties
         });  
-
-
-        {
-            var resourcesProps = {
-            }
-            for(var metric of METRICS) {
-                resourcesProps[metric] = { request: 0 };
-            }
-
-            for(var container of app.getChildrenByKind('cont'))
-            {
-                var contProps = container.getProperties('resources');
-                if (contProps)
-                {
-                    for(var metric of METRICS)
-                    {
-                        var value = _.get(contProps.config, metric + '.request');
-                        if (value)
-                        {
-                            resourcesProps[metric].request += value;
-                        }
-                    }
-                }
-            }
-
-            app.addProperties({
-                kind: "resources",
-                id: "resources-per-pod",
-                title: "Resources Per Pod",
-                order: 7,
-                config: resourcesProps
-            });
-        }
 
         /*** HELPERS ***/
 
@@ -271,53 +235,6 @@ module.exports = {
                 }
             }
 
-            var resourcesProps = {
-            }
-            for(var metric of METRICS) {
-                collectResourceMetric(containerConfig, resourcesProps, metric);
-            }
-
-            container.addProperties({
-                kind: "resources",
-                id: "resources",
-                title: "Resources",
-                order: 7,
-                config: resourcesProps
-            });
-        }
-
-        function collectResourceMetric(config, resourcesProps, metric)
-        {
-            if (!resourcesProps[metric]) {
-                resourcesProps[metric] = {};
-            }
-            collectResourceMetricCounter(config, resourcesProps, metric, 'request');
-            collectResourceMetricCounter(config, resourcesProps, metric, 'limit');
-        }
-
-        function collectResourceMetricCounter(config, resourcesProps, metric, counter)
-        {
-            var rawValue = _.get(config, 'resources.' + counter + 's.' + metric);
-            if (!rawValue) {
-                rawValue = getDefaultMetric(metric, counter);
-                if (!rawValue) {
-                    return;
-                }
-            }
-            resourcesProps[metric][counter] = resourcesHelper.parse(metric, rawValue);
-        }
-
-        function getDefaultMetric(metric, counter)
-        {
-            // TODO: Get from LimitRange.
-            if (counter == 'request') {
-                if (metric == 'cpu') {
-                    return '100m';
-                }
-                if (metric == 'memory') {
-                    return '100Mi'
-                }
-            }
         }
 
         function processVolumeConfig(parent, volumeConfig, markUsedBy)
