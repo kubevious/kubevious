@@ -10,8 +10,6 @@ module.exports = {
 
     handler: ({scope, item, logger}) =>
     {
-        // logger.error("******* 030_container-resource : %s", item.dn);
-
         var resourcesProps = {
         }
         for(var metric of resourcesHelper.METRICS) {
