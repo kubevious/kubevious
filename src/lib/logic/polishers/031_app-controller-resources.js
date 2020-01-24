@@ -8,7 +8,7 @@ module.exports = {
 
     order: 31,
 
-    handler: ({scope, item, logger}) =>
+    handler: ({scope, item, logger, context}) =>
     {
         var perPodResourcesProps = {
         }
@@ -49,9 +49,16 @@ module.exports = {
             {
                 multiplier = _.get(launcher.config, "spec.replicas", 1);
             }
+            else if (launcher.config.kind == 'DaemonSet')
+            {
+                var nodes = context.concreteRegistry.filterItems({
+                    api: "v1",
+                    kind: "Node"
+                });
+                multiplier = nodes.length;
+            }
         }
         
-
         var usedResourcesProps = {
         }
         for(var metric of resourcesHelper.METRICS)

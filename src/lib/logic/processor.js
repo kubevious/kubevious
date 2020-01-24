@@ -189,7 +189,7 @@ class LogicProcessor
             scope: scope,
             logger: this.logger,
             item: item,
-            context: this.context,
+            context: this._context,
 
             createdItems: [],
             createdAlerts: []
