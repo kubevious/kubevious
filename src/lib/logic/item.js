@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const resourcesHelper = require("./helpers/resources");
 
 const KIND_TO_USER_MAPPING = {
     'ns': 'Namespace',
@@ -207,6 +208,28 @@ class LogicItem
                 order: 5,
                 config: _.keys(this._usedBy)
             });   
+        }
+
+        for (var i = 0; i < myProps.length; i++)
+        {
+            var props = myProps[i];
+            if (props.kind == "resources")
+            {
+                props = _.clone(props);
+                props.kind = "key-value";
+
+                var config = props.config;
+                props.config = {};
+                for(var metric of _.keys(config))
+                {
+                    for(var metricKind of _.keys(config[metric]))
+                    {
+                        var value = config[metric][metricKind];
+                        props.config[metric + ' ' + metricKind] = resourcesHelper.stringify(metric, value);
+                    }
+                }
+                myProps[i] = props;
+            }
         }
 
         return myProps;

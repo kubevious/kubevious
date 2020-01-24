@@ -24,7 +24,7 @@
     "express-promise-router": "^3.0.3",
     "flexsearch": "^0.6.32",
     "js-yaml": "^3.13.1",
-    "k8s-super-client": "^1.0.6",
+    "k8s-super-client": "^1.0.8",
     "the-lodash": "^1.0.15",
     "the-logger": "^1.1.20",
     "the-promise": "^1.1.4",

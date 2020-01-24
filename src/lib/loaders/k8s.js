@@ -20,6 +20,7 @@ class K8sLoader
     {
         var targets = [
             this._client.Namespace,
+            this._client.LimitRange,
             this._client.Deployment,
             this._client.StatefulSet,
             this._client.DaemonSet,

@@ -1,5 +1,6 @@
 const yaml = require('js-yaml');
 const _ = require("the-lodash");
+const resourcesHelper = require("../helpers/resources");
 
 module.exports = {
     targets: [{
@@ -18,10 +19,8 @@ module.exports = {
 
     order: 30,
 
-    handler: ({logger, scope, item, createK8sItem, createAlert, hasCreatedItems}) =>
+    handler: ({logger, scope, item, context, createK8sItem, createAlert, hasCreatedItems}) =>
     {
-        logger.error(item.id);
-
         var namespaceScope = scope.getNamespaceScope(item.config.metadata.namespace);
         var appScope = {
             name: item.config.metadata.name,
@@ -234,6 +233,53 @@ module.exports = {
 
                     appScope.ports[portConfig.name] = portConfigScope;
                     appScope.ports[portConfig.containerPort] = portConfigScope;
+                }
+            }
+
+            var resourcesProps = {
+            }
+            collectResourceMetric(containerConfig, resourcesProps, 'cpu')
+            collectResourceMetric(containerConfig, resourcesProps, 'memory')
+
+            container.addProperties({
+                kind: "resources",
+                id: "resources",
+                title: "Resources",
+                order: 7,
+                config: resourcesProps
+            });
+        }
+
+        function collectResourceMetric(config, resourcesProps, metric)
+        {
+            if (!resourcesProps[metric]) {
+                resourcesProps[metric] = {};
+            }
+            collectResourceMetricCounter(config, resourcesProps, metric, 'request');
+            collectResourceMetricCounter(config, resourcesProps, metric, 'limit');
+        }
+
+        function collectResourceMetricCounter(config, resourcesProps, metric, counter)
+        {
+            var rawValue = _.get(config, 'resources.' + counter + 's.' + metric);
+            if (!rawValue) {
+                rawValue = getDefaultMetric(metric, counter);
+                if (!rawValue) {
+                    return;
+                }
+            }
+            resourcesProps[metric][counter] = resourcesHelper.parse(metric, rawValue);
+        }
+
+        function getDefaultMetric(metric, counter)
+        {
+            // TODO: Get from LimitRange.
+            if (counter == 'request') {
+                if (metric == 'cpu') {
+                    return '100m';
+                }
+                if (metric == 'memory') {
+                    return '100Mi'
                 }
             }
         }
