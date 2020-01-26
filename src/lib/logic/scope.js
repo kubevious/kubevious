@@ -75,6 +75,13 @@ class LogicScope
         });
     }
 
+    fetchInfraRawContainer()
+    {
+        var infra = this.root.fetchByNaming("infra", "Infrastructure");
+        infra.order = 1000;
+        return infra;
+    }
+
     fetchRawContainer(item, name)
     {
         var namespace = this.root.fetchByNaming("ns", item.config.metadata.namespace);
