@@ -40,6 +40,8 @@ module.exports = {
             config: perPodResourcesProps
         });
 
+        // ***
+
         var multiplier = 0;
         var launcher = _.head(item.getChildrenByKind("launcher"));
         if (launcher) 
@@ -51,11 +53,7 @@ module.exports = {
             }
             else if (launcher.config.kind == 'DaemonSet')
             {
-                var nodes = context.concreteRegistry.filterItems({
-                    api: "v1",
-                    kind: "Node"
-                });
-                multiplier = nodes.length;
+                multiplier = scope.getInfraScope().nodeCount;
             }
         }
         
@@ -75,5 +73,9 @@ module.exports = {
             order: 7,
             config: usedResourcesProps
         });
+
+        // ***
+
+        
     }
 }

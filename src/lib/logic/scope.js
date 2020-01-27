@@ -14,6 +14,7 @@ class LogicScope
 
         this._configMap = {};
         this._namespaceScopes = {};
+        this._infraScope = new InfraScope(this);
     }
 
     get logger() {
@@ -60,6 +61,10 @@ class LogicScope
             this._namespaceScopes[name] = new NamespaceScope(this, name);
         }
         return this._namespaceScopes[name];
+    }
+
+    getInfraScope() {
+        return this._infraScope;
     }
 
     setK8sConfig(logicItem, config)
@@ -139,6 +144,50 @@ class LogicScope
             }
         }
         return item;
+    }
+}
+
+
+class InfraScope
+{
+    constructor(parent)
+    {
+        this._parent = parent;
+        this._logger = parent.logger;
+        this._nodeCount = 0
+        this._nodeResources = {};
+        this._clusterResources = {};
+    }
+
+    get logger() {
+        return this._logger;
+    }
+
+    get nodeCount() {
+        return this._nodeCount;
+    }
+
+    get clusterResources() {
+        return this._clusterResources;
+    }
+
+    get nodeResources() {
+        return this._nodeResources;
+    }
+
+    increaseNodeCount()
+    {
+        this._nodeCount += 1;
+    }
+
+    setClusterResources(value)
+    {
+        this._clusterResources = value;
+    }
+
+    setNodeResources(value)
+    {
+        this._nodeResources = value;
     }
 }
 

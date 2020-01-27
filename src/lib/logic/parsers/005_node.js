@@ -13,6 +13,8 @@ module.exports = {
 
     handler: ({scope, item, createK8sItem}) =>
     {
+        scope.getInfraScope().increaseNodeCount();
+        
         var infra = scope.fetchInfraRawContainer();
 
         var nodes = infra.fetchByNaming("nodes", "Nodes");

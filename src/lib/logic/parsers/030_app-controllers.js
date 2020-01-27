@@ -49,6 +49,12 @@ module.exports = {
 
         appScope.properties['Launcher'] = item.config.kind;
 
+        if (item.config.kind == "Deployment" || 
+            item.config.kind == "StatefulSet")
+        {
+            appScope.properties['Replicas'] = _.get(item.config, 'spec.replicas');
+        }
+
         var volumesProperties = {
 
         }
