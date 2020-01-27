@@ -64,9 +64,15 @@ module.exports.parse = function (metric, value) {
 }
 
 module.exports.stringifyCpu = function (value) {
-    value = value * 100;
-    value = Math.round(value * 100) / 100;
-    return value + "%";
+    return module.exports.percentage(value);
+}
+
+module.exports.percentage = function (value) {
+    return Number.parseFloat(value * 100).toFixed(2) + "%";
+}
+
+module.exports.precise = function (value) {
+    return Number.parseFloat(value).toPrecision(2);
 }
 
 const MEMORY_SIZES = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];

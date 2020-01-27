@@ -237,6 +237,20 @@ class LogicItem
                     }
                 }
                 myProps[i] = props;
+            } 
+            else if (props.kind == "percentage")
+            {
+                props = _.clone(props);
+                props.kind = "key-value";
+
+                var config = props.config;
+                props.config = {};
+                for(var key of _.keys(config))
+                {
+                    var value = config[key];
+                    props.config[key] = resourcesHelper.percentage(value);
+                }
+                myProps[i] = props;
             }
         }
 

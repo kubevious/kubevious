@@ -75,7 +75,51 @@ module.exports = {
         });
 
         // ***
+        var myUsedResources = {};
+        var availableResources = null;
+        if (launcher) 
+        {
+            if (launcher.config.kind == 'Deployment' || 
+                launcher.config.kind == 'StatefulSet')
+            {
+                for(var metric of resourcesHelper.METRICS)
+                {
+                    myUsedResources[metric] = usedResourcesProps[metric].request;
+                }
+                availableResources = scope.getInfraScope().clusterResources;
+            }
+            else if (launcher.config.kind == 'DaemonSet')
+            {
+                for(var metric of resourcesHelper.METRICS)
+                {
+                    myUsedResources[metric] = perPodResourcesProps[metric].request;
+                }
+                availableResources = scope.getInfraScope().nodeResources;
+            }
+        }
 
-        
+        if (availableResources)
+        {
+            var usedResourcePercentage = {};
+            for(var metric of _.keys(myUsedResources))
+            {
+                var value = myUsedResources[metric];
+                var avail = availableResources[metric];
+                if (!avail) {
+                    value = 0;
+                } else {
+                    value = value / avail;
+                }
+                usedResourcePercentage[metric] = value;
+            }
+
+            item.addProperties({
+                kind: "percentage",
+                id: "used-resources",
+                title: "Used Resources",
+                order: 9,
+                config: usedResourcePercentage
+            });
+        }
     }
 }

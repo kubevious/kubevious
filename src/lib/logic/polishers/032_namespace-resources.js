@@ -12,21 +12,36 @@ module.exports = {
     {
         var usedResourcesProps = {
         }
+        var relativeUsedResources = {};
         for(var metric of resourcesHelper.METRICS) {
             usedResourcesProps[metric] = { request: 0 };
+            relativeUsedResources[metric] = 0;
         }
 
         for(var app of item.getChildrenByKind('app'))
         {
-            var appProps = app.getProperties('resources');
-            if (appProps)
+            var appResourcesProps = app.getProperties('resources');
+            if (appResourcesProps)
             {
                 for(var metric of resourcesHelper.METRICS)
                 {
-                    var value = _.get(appProps.config, metric + '.request');
+                    var value = _.get(appResourcesProps.config, metric + '.request');
                     if (value)
                     {
                         usedResourcesProps[metric].request += value;
+                    }
+                }
+            }
+
+            var appUsedResourcesProps = app.getProperties('used-resources');
+            if (appUsedResourcesProps)
+            {
+                for(var metric of resourcesHelper.METRICS)
+                {
+                    var value = appUsedResourcesProps.config[metric];
+                    if (value)
+                    {
+                        relativeUsedResources[metric] += value;
                     }
                 }
             }
@@ -38,6 +53,14 @@ module.exports = {
             title: "Resources",
             order: 7,
             config: usedResourcesProps
+        });
+
+        item.addProperties({
+            kind: "percentage",
+            id: "used-resources",
+            title: "Used Resources",
+            order: 9,
+            config: relativeUsedResources
         });
     }
 }
