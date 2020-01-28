@@ -13,9 +13,23 @@ module.exports = {
         var usedResourcesProps = {
         }
         var clusterConsumptionProps = {};
+        var appsByConsumptionTable = {
+            headers: [
+                {
+                    id: 'dn',
+                    label: 'Application'
+                }
+            ],
+            shortcuts: {
+                'dn': true
+            },
+            rows: []
+        }
+        var appsByConsumptionDict = {};
         for(var metric of resourcesHelper.METRICS) {
             usedResourcesProps[metric] = { request: 0 };
             clusterConsumptionProps[metric] = 0;
+            appsByConsumptionTable.headers.push(metric);
         }
 
         for(var app of item.getChildrenByKind('app'))
@@ -42,6 +56,13 @@ module.exports = {
                     if (value)
                     {
                         clusterConsumptionProps[metric] += value;
+
+                        if (!appsByConsumptionDict[app.dn]) {
+                            appsByConsumptionDict[app.dn] = {
+                                dn: app.dn
+                            }
+                        }
+                        appsByConsumptionDict[app.dn][metric] = value;
                     }
                 }
             }
@@ -51,7 +72,7 @@ module.exports = {
             kind: "resources",
             id: "resources",
             title: "Resources",
-            order: 7,
+            order: 6,
             config: usedResourcesProps
         });
 
@@ -59,45 +80,41 @@ module.exports = {
             kind: "percentage",
             id: "cluster-consumption",
             title: "Cluster Consumption",
-            order: 9,
+            order: 7,
             config: clusterConsumptionProps
         });
 
         /********/
-        /*
+        for(var appConsumption of _.values(appsByConsumptionDict))
+        {
+            for(var metric of resourcesHelper.METRICS)
+            {
+                if (_.isNullOrUndefined(appConsumption[metric]))
+                {
+                    appConsumption[metric] = 0;
+                }
+            }
+            appConsumption['max'] = _.max(resourcesHelper.METRICS.map(metric => appConsumption[metric]));
+        }
+        appsByConsumptionTable.rows = _.values(appsByConsumptionDict);
+        appsByConsumptionTable.rows = _.orderBy(appsByConsumptionTable.rows, ['max'], 'desc');
+        for(var appConsumption of _.values(appsByConsumptionDict))
+        {
+            for(var metric of resourcesHelper.METRICS)
+            {
+                if (_.isNullOrUndefined(appConsumption[metric]))
+                {
+                    appConsumption[metric] = 0;
+                }
+                appConsumption[metric] = resourcesHelper.percentage(appConsumption[metric]);
+            }
+        }
         item.addProperties({
             kind: "table",
-            id: "sample-table",
-            title: "Sample Table",
-            order: 1,
-            config: {
-                headers: [
-                    'dn',
-                    'cpu',
-                    'memory',
-                ],
-                rows: [{
-                    dn: 'root/ns-[berlioz]/app-[gprod-berlioz-main-ctlr]',
-                    cpu: '111',
-                    memory: '222',
-                },
-                {
-                    dn: 'root/ns-[berlioz]/app-[gprod-berlioz-main-ctlr]',
-                    cpu: '333',
-                    memory: '444',
-                },
-                {
-                    dn: 'root/ns-[berlioz]/app-[gprod-berlioz-main-ctlr]',
-                    cpu: '333',
-                    memory: '444',
-                },
-                {
-                    dn: 'root/ns-[berlioz]/app-[gprod-berlioz-main-ctlr]',
-                    cpu: '333',
-                    memory: '444',
-                }]
-            }
+            id: "app-consumption",
+            title: "Application Consumption",
+            order: 8,
+            config: appsByConsumptionTable
         });
-        */
     }
 }
