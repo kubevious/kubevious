@@ -12,10 +12,10 @@ module.exports = {
     {
         var usedResourcesProps = {
         }
-        var relativeUsedResources = {};
+        var clusterConsumptionProps = {};
         for(var metric of resourcesHelper.METRICS) {
             usedResourcesProps[metric] = { request: 0 };
-            relativeUsedResources[metric] = 0;
+            clusterConsumptionProps[metric] = 0;
         }
 
         for(var app of item.getChildrenByKind('app'))
@@ -33,7 +33,7 @@ module.exports = {
                 }
             }
 
-            var appUsedResourcesProps = app.getProperties('used-resources');
+            var appUsedResourcesProps = app.getProperties('cluster-consumption');
             if (appUsedResourcesProps)
             {
                 for(var metric of resourcesHelper.METRICS)
@@ -41,7 +41,7 @@ module.exports = {
                     var value = appUsedResourcesProps.config[metric];
                     if (value)
                     {
-                        relativeUsedResources[metric] += value;
+                        clusterConsumptionProps[metric] += value;
                     }
                 }
             }
@@ -57,10 +57,10 @@ module.exports = {
 
         item.addProperties({
             kind: "percentage",
-            id: "used-resources",
-            title: "Used Resources",
+            id: "cluster-consumption",
+            title: "Cluster Consumption",
             order: 9,
-            config: relativeUsedResources
+            config: clusterConsumptionProps
         });
     }
 }

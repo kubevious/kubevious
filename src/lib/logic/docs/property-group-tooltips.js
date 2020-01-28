@@ -15,7 +15,7 @@ module.exports = {
         default: 'Resource usage.'
     },
     'resources-per-pod': 'Resource usage per single pod.',
-    'used-resources': 'Consumption of overall cluster resources.',
+    'cluster-consumption': 'Consumption of overall cluster resources.',
     'cluster-resources': 'Resources provided by all nodes within the cluster.',
     'node-resources': 'Resources provided by a single node. Describes the weakest node in the cluster.',
 

@@ -100,7 +100,7 @@ module.exports = {
 
         if (availableResources)
         {
-            var usedResourcePercentage = {};
+            var clusterConsumptionProps = {};
             for(var metric of _.keys(myUsedResources))
             {
                 var value = myUsedResources[metric];
@@ -110,15 +110,15 @@ module.exports = {
                 } else {
                     value = value / avail;
                 }
-                usedResourcePercentage[metric] = value;
+                clusterConsumptionProps[metric] = value;
             }
 
             item.addProperties({
                 kind: "percentage",
-                id: "used-resources",
-                title: "Used Resources",
+                id: "cluster-consumption",
+                title: "Cluster Consumption",
                 order: 9,
-                config: usedResourcePercentage
+                config: clusterConsumptionProps
             });
         }
     }

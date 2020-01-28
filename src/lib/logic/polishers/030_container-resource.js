@@ -49,6 +49,7 @@ module.exports = {
 
         function getDefaultMetric(metric, counter)
         {
+            return null;
             // TODO: Get from LimitRange.
             if (counter == 'request') {
                 if (metric == 'cpu') {
