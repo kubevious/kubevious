@@ -16,7 +16,7 @@ Kubevious also provides hints to operators to avoid and identify configurational
 ![Kubevious Intro](docs/screens/intro.png)
 
 # Live Demo
-See our live demo running on a model cluster: [http://demo.kubevious.io](http://demo.kubevious.io).
+See our live demo running on a model cluster: [https://demo.kubevious.io](https://demo.kubevious.io).
 
 # Running Kubevious
 Kubevious works with any Kubernetes distribution and runs within the cluster. Deploy using Helm:
