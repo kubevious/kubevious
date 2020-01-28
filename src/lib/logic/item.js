@@ -1,14 +1,8 @@
 const _ = require('lodash');
 const resourcesHelper = require("./helpers/resources");
 
-const KIND_TO_USER_MAPPING = {
-    'ns': 'Namespace',
-    'app': 'Application',
-    'cont': 'Container',
-    'vol': 'Volume',
-    'configMap': 'ConfigMap',
-    'replicaSet': 'ReplicaSet',
-}
+const KIND_TO_USER_MAPPING = require('./docs/kind-labels');
+const PROPERTY_GROUP_TOOLTIPS = require('./docs/property-group-tooltips');
 
 class LogicItem
 {
@@ -221,9 +215,26 @@ class LogicItem
         for (var i = 0; i < myProps.length; i++)
         {
             var props = myProps[i];
+            props = _.clone(props);
+
+            var tooltip = PROPERTY_GROUP_TOOLTIPS[props.id];
+            if (tooltip) {
+                if (_.isObject(tooltip)) {
+                    var str = _.get(tooltip, 'owner.' + this.kind);
+                    if (str) {
+                        tooltip = str;
+                    } else {
+                        tooltip = tooltip.default;
+                    }
+                }
+            }
+
+            if (tooltip) {
+                props.tooltip = tooltip;
+            }
+
             if (props.kind == "resources")
             {
-                props = _.clone(props);
                 props.kind = "key-value";
 
                 var config = props.config;
@@ -236,11 +247,9 @@ class LogicItem
                         props.config[metric + ' ' + metricKind] = resourcesHelper.stringify(metric, value);
                     }
                 }
-                myProps[i] = props;
             } 
             else if (props.kind == "percentage")
             {
-                props = _.clone(props);
                 props.kind = "key-value";
 
                 var config = props.config;
@@ -250,8 +259,9 @@ class LogicItem
                     var value = config[key];
                     props.config[key] = resourcesHelper.percentage(value);
                 }
-                myProps[i] = props;
             }
+
+            myProps[i] = props;
         }
 
         return myProps;
