@@ -62,5 +62,42 @@ module.exports = {
             order: 9,
             config: clusterConsumptionProps
         });
+
+        /********/
+        /*
+        item.addProperties({
+            kind: "table",
+            id: "sample-table",
+            title: "Sample Table",
+            order: 1,
+            config: {
+                headers: [
+                    'dn',
+                    'cpu',
+                    'memory',
+                ],
+                rows: [{
+                    dn: 'root/ns-[berlioz]/app-[gprod-berlioz-main-ctlr]',
+                    cpu: '111',
+                    memory: '222',
+                },
+                {
+                    dn: 'root/ns-[berlioz]/app-[gprod-berlioz-main-ctlr]',
+                    cpu: '333',
+                    memory: '444',
+                },
+                {
+                    dn: 'root/ns-[berlioz]/app-[gprod-berlioz-main-ctlr]',
+                    cpu: '333',
+                    memory: '444',
+                },
+                {
+                    dn: 'root/ns-[berlioz]/app-[gprod-berlioz-main-ctlr]',
+                    cpu: '333',
+                    memory: '444',
+                }]
+            }
+        });
+        */
     }
 }
