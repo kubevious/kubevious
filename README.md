@@ -13,7 +13,7 @@
 
 Kubevious also provides hints to operators to avoid and identify configurational and operational errors.
 
-![Kubevious Intro](docs/screens/intro.png)
+![Kubevious Intro](https://github.com/kubevious/media/raw/master/videos/intro.gif)
 
 # Live Demo
 See our live demo running on a model cluster: [https://demo.kubevious.io](https://demo.kubevious.io).
@@ -48,7 +48,7 @@ For more details on installation options visit [Deployment Repository].
 
 ## Visualizes Cluster In An Application Centric Way
 
-![Visualizes Cluster In An Application Centric Way](https://github.com/kubevious/kubevious/raw/master/docs/screens/app-view.png)
+![Visualizes Cluster In An Application Centric Way](https://github.com/kubevious/media/raw/master/screens/app-view.png)
 
 Even a simple Hello World app in Kubernetes produces dozens of objects. It takes a lot of time to fetch application relevant configurations.
 
@@ -59,7 +59,7 @@ The main screen is rendered using boxes. Every box is expandable (using double-c
 
 ## Detects Configuration Errors
 
-![Detects Configuration Errors](https://github.com/kubevious/kubevious/raw/master/docs/screens/config-errors.png)
+![Detects Configuration Errors](https://github.com/kubevious/media/raw/master/screens/config-errors.png)
 
 Kubernetes follows a detached notion for configuration. It is super easy to have typos and errors when connecting components.
 
@@ -68,7 +68,7 @@ Kubevious identifies many configuration errors, such as misuse of labels, missin
 
 ## Identifies Blast Radius
 
-![Identifies Blast Radius](https://github.com/kubevious/kubevious/raw/master/docs/screens/shared-configs.png)
+![Identifies Blast Radius](https://github.com/kubevious/media/raw/master/screens/shared-configs.png)
 
 Configuration in Kubernetes is highly reusable. A small change can cause unintended consequences. 
 
@@ -77,11 +77,18 @@ Kubevious identifies shared configurations and also displays other dependent obj
 
 ## Enables Full Text Search
 
-![Full Text Search](https://github.com/kubevious/kubevious/raw/master/docs/screens/full-text-search.png)
+![Full Text Search](https://github.com/kubevious/media/raw/master/screens/full-text-search.png)
 
 Looking for a particular configuration in Kubernetes haystack takes lots of time. 
 
 Kubevious supports full text across across entire cluster.
+
+## Capacity Planning and Resource Usage Optimization
+![Capacity Planning and Resource Usage Optimization](https://github.com/kubevious/media/raw/master/screens/capacity-planning.png)
+
+Clearly identify how much resources are taken by each container, pod, deployment, daemonset, namespace, etc. 
+
+Kubevious renders not only absolute resource request values, but also relative usage per node, namespace and entire cluster. Identify which apps take most resources within the namespace.
 
 # Authors
 Everyone is welcome to contribute. See [CONTRIBUTING] for instructions on how to contribute.
