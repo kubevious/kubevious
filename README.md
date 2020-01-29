@@ -19,7 +19,7 @@ Kubevious also provides hints to operators to avoid and identify configurational
 <a href="https://youtu.be/YVBjt-9ugTg" target="_blank">
 <img src="https://github.com/kubevious/media/raw/master/videos/intro.gif" />
 </a>
-For a video with voice see in youtube: [https://youtu.be/YVBjt-9ugTg](https://youtu.be/YVBjt-9ugTg).
+For a video with voice see in youtube: https://youtu.be/YVBjt-9ugTg
 
 # Live Demo
 See our live demo running on a model cluster: [https://demo.kubevious.io](https://demo.kubevious.io).
