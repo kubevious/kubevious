@@ -16,7 +16,7 @@ Kubevious also provides hints to operators to avoid and identify configurational
 
 # Intro Video
 <!-- ![Kubevious Intro Video](https://github.com/kubevious/media/raw/master/videos/intro.gif) -->
-<a href="https://github.com/kubevious/kubevious#intro-video" target="_blank">
+<a href="https://youtu.be/YVBjt-9ugTg" target="_blank">
 <img src="https://github.com/kubevious/media/raw/master/videos/intro.gif" />
 </a>
 
