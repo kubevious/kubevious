@@ -14,7 +14,9 @@
 Kubevious also provides hints to operators to avoid and identify configurational and operational errors.
 
 <!-- ![Kubevious Intro Video](https://github.com/kubevious/media/raw/master/videos/intro.gif) -->
+<a href="https://github.com/kubevious" target="_blank">
 <img src="https://github.com/kubevious/media/raw/master/videos/intro.gif" />
+</a>
 
 # Live Demo
 See our live demo running on a model cluster: [https://demo.kubevious.io](https://demo.kubevious.io).
