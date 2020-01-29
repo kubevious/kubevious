@@ -4,6 +4,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 * [What is Kubevious?](#what-is-kubevious)
+* [Intro Video](#intro-video)
 * [Live Demo](#live-demo)
 * [Running Kubevious](#running-kubevious)
 * [Capabilities](#capabilities)
@@ -13,8 +14,9 @@
 
 Kubevious also provides hints to operators to avoid and identify configurational and operational errors.
 
+# Intro Video
 <!-- ![Kubevious Intro Video](https://github.com/kubevious/media/raw/master/videos/intro.gif) -->
-<a href="https://github.com/kubevious" target="_blank">
+<a href="https://github.com/kubevious/kubevious#intro-video" target="_blank">
 <img src="https://github.com/kubevious/media/raw/master/videos/intro.gif" />
 </a>
 
