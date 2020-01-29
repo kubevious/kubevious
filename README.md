@@ -13,7 +13,8 @@
 
 Kubevious also provides hints to operators to avoid and identify configurational and operational errors.
 
-![Kubevious Intro](https://github.com/kubevious/media/raw/master/videos/intro.gif)
+<!-- ![Kubevious Intro Video](https://github.com/kubevious/media/raw/master/videos/intro.gif) -->
+<img src="https://github.com/kubevious/media/raw/master/videos/intro.gif" />
 
 # Live Demo
 See our live demo running on a model cluster: [https://demo.kubevious.io](https://demo.kubevious.io).
