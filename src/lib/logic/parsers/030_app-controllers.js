@@ -179,13 +179,6 @@ module.exports = {
                             }
                         }
                     }
-                    var value = null;
-                    if (envObj.value) {
-                        value = envObj.value;
-                    } else if (envObj.valueFrom) {
-                        value = "<pre>" + yaml.safeDump(envObj.valueFrom) + "</pre>";
-                    }
-                    envVars[envObj.name] = value;
                 }
             }
 
