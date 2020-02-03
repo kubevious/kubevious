@@ -52,6 +52,14 @@ For more details on installation options visit [Deployment Repository].
 
 # Capabilities
 
+* [Visualizes Cluster In An Application Centric Way](#visualizes-cluster-in-an-application-centric-way)
+* [Detects Configuration Errors](#detects-configuration-errors)
+* [Identifies Blast Radius](#identifies-blast-radius)
+* [Enables Full Text Search](#enables-full-text-search)
+* [Capacity Planning and Resource Usage Optimization](#capacity-planning-and-resource-usage-optimization)
+* [Radioactive & Overprivileged Workloads](#radioactive--overprivileged-workloads)
+
+
 ## Visualizes Cluster In An Application Centric Way
 
 ![Visualizes Cluster In An Application Centric Way](https://github.com/kubevious/media/raw/master/screens/app-view.png)
