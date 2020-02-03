@@ -96,6 +96,13 @@ Clearly identify how much resources are taken by each container, pod, deployment
 
 Kubevious renders not only absolute resource request values, but also relative usage per node, namespace and entire cluster. Identify which apps take most resources within the namespace.
 
+## Radioactive & Overprivileged Workloads
+![Radioactive & Overprivileged Workloads](https://github.com/kubevious/media/raw/master/screens/radioactive-1.png)
+
+Granting excessive control to workloads not only increases the risk of being hacked but also affects the stability of nodes and the entire cluster.
+
+Kubevious marks workloads and their corresponding namespaces as radioactive. Specifically, it checks for privileged containers, hostPID, hostNetwork, hostIPC flags, and mounts to sensitive host locations like docker.sock file, etc.  
+
 # Authors
 Everyone is welcome to contribute. See [CONTRIBUTING] for instructions on how to contribute.
 
