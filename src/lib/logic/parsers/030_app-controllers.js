@@ -242,7 +242,7 @@ module.exports = {
             scope.setK8sConfig(volume, volumeConfig);
         
             if (volumeConfig.configMap) {
-                findAndProcessConfigMap(volume, volumeConfig.configMap.name, markUsedBy)
+                findAndProcessConfigMap(volume, volumeConfig.configMap.name, markUsedBy, volumeConfig.configMap.optional)
             }
 
             if (volumeConfig.secret) {
@@ -252,7 +252,7 @@ module.exports = {
             return volume;
         }
         
-        function findAndProcessConfigMap(parent, name, markUsedBy)
+        function findAndProcessConfigMap(parent, name, markUsedBy, isOptional)
         {
             var configMapScope = namespaceScope.configMaps[name];
             if (configMapScope)
@@ -265,7 +265,9 @@ module.exports = {
             }
             else
             {
-                parent.addAlert("MissingConfig", "error", null, 'Could not find ConfigMap ' + name);
+                if (!isOptional) {
+                    parent.addAlert("MissingConfig", "error", null, 'Could not find ConfigMap ' + name);
+                }
             }
             return configMapScope;
         }

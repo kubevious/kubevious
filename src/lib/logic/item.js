@@ -92,6 +92,13 @@ class LogicItem
         this._flags[name] = true;
     }
 
+    hasFlag(name)
+    {
+        if (this._flags[name])
+            return true;
+        return false;
+    }
+
     setUsedBy(dn)
     {
         this._usedBy[dn] = true;

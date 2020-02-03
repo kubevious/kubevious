@@ -145,6 +145,7 @@ class LogicProcessor
 
         this._processParsers(scope);
         this._processPolishers(scope);
+        this._propagete(scope);
 
         this._logger.info("[_proces] READY");
 
@@ -282,6 +283,49 @@ class LogicProcessor
             {
                 this._visitTree(child, index + 1, path, cb);
             }
+        }
+    }
+
+    _propagete(scope)
+    {
+        this._traverseTreeBottomsUp(scope, this._propagateFlags.bind(this));
+    }
+
+    _propagateFlags(node)
+    {
+        this.logger.info("[_propagateFlags] %s...", node.dn)
+
+        if (node.hasFlag('radioactive')) 
+        {
+            if (node.parent) 
+            {
+                node.parent.setFlag('radioactive');
+            }
+        }
+    }
+
+    _traverseTree(scope, cb)
+    {
+        var col = [scope.root];
+        while (col.length)
+        {
+            var node = col.shift();
+            cb(node);
+            col.unshift(...node.getChildren());
+        }
+    }
+
+    _traverseTreeBottomsUp(scope, cb)
+    {
+        var col = [];
+        this._traverseTree(scope, x => {
+            col.push(x);
+        })
+
+        for(var i = col.length - 1; i >= 0; i--)
+        {
+            var node = col[i];
+            cb(node);
         }
     }
 
