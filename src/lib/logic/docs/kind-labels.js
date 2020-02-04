@@ -5,4 +5,5 @@ module.exports = {
     'vol': 'Volume',
     'configMap': 'ConfigMap',
     'replicaSet': 'ReplicaSet',
+    'hpa': 'HorizontalPodAutoScaler',
 }

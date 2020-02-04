@@ -24,6 +24,7 @@ class K8sLoader
             this._client.LimitRange,
             this._client.Deployment,
             this._client.StatefulSet,
+            this._client.HorizontalPodAutoscaler,
             this._client.DaemonSet,
             this._client.Job,
             this._client.Service,
