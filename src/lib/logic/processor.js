@@ -293,7 +293,7 @@ class LogicProcessor
 
     _propagateFlags(node)
     {
-        this.logger.info("[_propagateFlags] %s...", node.dn)
+        this.logger.silly("[_propagateFlags] %s...", node.dn)
 
         if (node.hasFlag('radioactive')) 
         {
