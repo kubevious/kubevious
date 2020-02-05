@@ -29,7 +29,7 @@ class MySqlDriver
         })
     }
 
-    prepareStatement(id, sql)
+    registerStatement(id, sql)
     {
         this._statementsSql[id] = sql;
     }
