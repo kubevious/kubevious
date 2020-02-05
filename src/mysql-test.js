@@ -44,9 +44,38 @@ mysqldriver.onConnect(() => {
             diffObj = fetchedItem;
             logger.info("!!! FETCHED DIFF: ", diffObj);
         })
+        // .then(() => {
+        //     return historyAccessor.insertDiffItem(diffObj.id, 'zzz/bbb/ddd/ccc', { kind: 'props', name: 'config' }, true, {apiversion: 'v1', kind: 'POD'})
+        //     // return historyAccessor.insertDiffItem(diffObj.id, 'zzz/bbb/ddd/ccc/ddd', { kind: 'props', name: 'resources' }, false, null)
+        // })
         .then(() => {
-            return historyAccessor.insertDiffItem(diffObj.id, 'zzz/bbb/ddd/ccc', { kind: 'props', name: 'config' }, true, {apiversion: 'v1', kind: 'POD'})
-            // return historyAccessor.insertDiffItem(diffObj.id, 'zzz/bbb/ddd/ccc/ddd', { kind: 'props', name: 'resources' }, false, null)
+            var items = [
+                {
+                    "dn": "zzz/bbb/ddd/ccc/xx",
+                    "info": {
+                      "kind": "props",
+                      "name": "config"
+                    },
+                    "present": 1,
+                    "config": {
+                      "kind": "POD",
+                      "apiversion": "v1"
+                    }
+                },
+                {
+                    "dn": "aaa/bbb/ddd/ccc",
+                    "info": {
+                      "kind": "props",
+                      "name": "config"
+                    },
+                    "present": 1,
+                    "config": {
+                      "kind": "POD",
+                      "apiversion": "v1"
+                    }
+                }
+            ]
+            return historyAccessor.syncDiffItems(diffObj.id, items);
         })
         .then(() => {
             return historyAccessor.queryDiffItems(diffObj.id)
