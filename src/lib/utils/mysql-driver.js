@@ -36,7 +36,7 @@ class MySqlDriver
 
     executeStatement(id, params)
     {
-        return new Promise((reject, resolve) => {
+        return new Promise((resolve, reject) => {
             this.logger.info("[executeStatement] executing: %s", id);
             var statement = this._preparedStatements[id];
             if (!statement) {
