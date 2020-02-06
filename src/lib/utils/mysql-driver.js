@@ -57,9 +57,8 @@ class MySqlDriver
                     return;
                 }
                 resolve(results);
-            })
-        })
-
+            });
+        });
     }
 
     /** IMPL **/

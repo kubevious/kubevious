@@ -43,6 +43,8 @@ class FacadeRegistry
         this._logger.info("[acceptItems] ...");
         this._itemsMap = value;
 
+        this._context.historyProcessor.acceptSnapshot(value);
+
         this._context.searchEngine.reset();
         for(var item of _.values(this._itemsMap))
         {

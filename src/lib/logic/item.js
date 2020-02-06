@@ -305,7 +305,7 @@ class LogicItem
         }
     }
 
-    exportTree()
+    exportNode()
     {
         var node = {};
         node.rn = this.rn;
@@ -314,6 +314,13 @@ class LogicItem
         node.order = this.order;
         node.errorCount = _.keys(this._alerts).length;
         node.flags = this._flags;
+        node.hasChildren = this.hasChildren;
+        return node;
+    }
+
+    exportTree()
+    {
+        var node = this.exportNode();
         node.children = [];
         for(var child of this.getChildren())
         {

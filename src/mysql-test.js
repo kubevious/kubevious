@@ -30,8 +30,25 @@ mysqldriver.onConnect(() => {
             logger.info("!!! GET_SNAPSHOTS ALL RESULT: ", results);
         })
         .then(() => {
-            // return historyAccessor.insertSnapshotItem(snapshotObj.id, 'zzz/bbb/ddd/ccc', null, {apiversion: 'v1', kind: 'POD'})
-            // return historyAccessor.insertSnapshotItem(snapshotObj.id, 'zzz/bbb/ddd/ccc', { kind: 'props', name: 'config' }, {apiversion: 'v1', kind: 'POD'})
+            var items = [
+                {
+                    "dn": "zzz/bbb/ddd/ccc/xx",
+                    "info": {
+                      "kind": "props",
+                      "name": "config"
+                    },
+                    "config": {
+                      "kind": "POD",
+                      "apiversion": "v1"
+                    }
+                },
+                {
+                    "dn": "aaa/bbb/ddd/eee",
+                    "info": null,
+                    "config": { foo: "bar" }
+                }
+            ]
+            return historyAccessor.syncSnapshotItems(snapshotObj.id, items);
         })
         .then(() => {
             return historyAccessor.querySnapshotItems(snapshotObj.id)
@@ -63,16 +80,10 @@ mysqldriver.onConnect(() => {
                     }
                 },
                 {
-                    "dn": "aaa/bbb/ddd/ccc",
-                    "info": {
-                      "kind": "props",
-                      "name": "config"
-                    },
-                    "present": 1,
-                    "config": {
-                      "kind": "POD",
-                      "apiversion": "v1"
-                    }
+                    "dn": "aaa/bbb/ddd/ruben",
+                    "info": null,
+                    "present": 0,
+                    "config": null
                 }
             ]
             return historyAccessor.syncDiffItems(diffObj.id, items);

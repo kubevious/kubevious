@@ -34,7 +34,7 @@ class EventDampener {
     _runNext(cb)
     {
         //process.nextTick(cb)
-        Promise.timeout(1000)
+        Promise.timeout(5000)
             .then(() => cb());
     }
 
