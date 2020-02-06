@@ -82,7 +82,33 @@ class HistoryDbAccessor
                     currentItems, 
                     this._getSnapshotItemKey.bind(this));
 
-                this.logger.info("[syncSnapshotItems] ", itemsDelta);
+                {
+                    var s = _.cloneDeep(items);
+                    var writer = this.logger.outputStream("history-items-new.json");
+                    if (writer) {
+                        writer.write(s);
+                        writer.close();
+                    }
+                }
+    
+                {
+                    var s = _.cloneDeep(currentItems);
+                    var writer = this.logger.outputStream("history-items-current.json");
+                    if (writer) {
+                        writer.write(s);
+                        writer.close();
+                    }
+                }
+
+                {
+                    var s = _.cloneDeep(itemsDelta);
+                    var writer = this.logger.outputStream("history-items-delta.json");
+                    if (writer) {
+                        writer.write(s);
+                        writer.close();
+                    }
+                }
+                // this.logger.info("[syncSnapshotItems] ", itemsDelta);
 
                 return Promise.serial(itemsDelta, delta => {
                     if (delta.present)
@@ -301,9 +327,19 @@ class HistoryDbAccessor
         return this._driver.registerStatement.apply(this._driver, arguments);
     }
 
-    _execute()
+    _execute(statementId, params)
     {
-        return this._driver.executeStatement.apply(this._driver, arguments);
+        if (!params) {
+            params = []
+        } else {
+            params = params.map(x => {
+                if (_.isUndefined(x)) {
+                    return null;
+                }
+                return x;
+            })
+        }
+        return this._driver.executeStatement(statementId, params);
     }
 
 }

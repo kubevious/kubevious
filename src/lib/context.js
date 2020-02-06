@@ -4,6 +4,7 @@ const ConcreteRegistry = require('./concrete/registry');
 const FacadeRegistry = require('./facade/registry');
 const LogicProcessor = require('./logic/processor');
 const SearchEngine = require('./search/engine');
+const MysqlDriver = require("./utils/mysql-driver");
 const HistoryProcessor = require('./history/processor');
 
 class Context
@@ -12,6 +13,7 @@ class Context
     {
         this._logger = logger.sublogger("Context");
         this._loaders = [];
+        this._mysqlDriver = new MysqlDriver(logger);
         this._facadeRegistry = new FacadeRegistry(this);
         this._concreteRegistry = new ConcreteRegistry(this);
         this._k8sParser = new K8sParser(this);
@@ -26,6 +28,10 @@ class Context
 
     get logger() {
         return this._logger;
+    }
+
+    get mysqlDriver() {
+        return this._mysqlDriver;
     }
 
     get concreteRegistry() {
@@ -64,6 +70,7 @@ class Context
         return Promise.resolve()
             .then(() => this._setupParsers())
             .then(() => this._processLoaders())
+            .then(() => this._mysqlDriver.connect())
             .then(() => this._runServer())
             .catch(reason => {
                 console.log("***** ERROR *****");

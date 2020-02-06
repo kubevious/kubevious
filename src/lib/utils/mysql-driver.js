@@ -44,8 +44,6 @@ class MySqlDriver
                 return;
             }
 
-            this.logger.info("[executeStatement] executing: %s", statement.constructor.name);
-
             if (!params) {
                 params = [];
             }
