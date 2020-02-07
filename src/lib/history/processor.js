@@ -57,7 +57,7 @@ class HistoryProcessor
         {
             snapshotItems.push({
                 dn: item.dn,
-                info: {},
+                info: { kind: 'node' },
                 config: item.exportNode()
             });
 
@@ -76,7 +76,7 @@ class HistoryProcessor
             {
                 snapshotItems.push({
                     dn: item.dn,
-                    info: { kind: 'props' },
+                    info: { kind: 'props', name: props.id },
                     config: props
                 })
             }

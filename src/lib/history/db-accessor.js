@@ -137,20 +137,6 @@ class HistoryDbAccessor
                 })
 
                 return this._executeMany(statements);
-
-                // return Promise.serial(itemsDelta, delta => {
-                //     if (delta.present)
-                //     {
-                //         return this.insertSnapshotItem(snapshotId,
-                //             delta.item.dn,
-                //             delta.item.info,
-                //             delta.item.config);
-                //     }
-                //     else
-                //     {
-                //         return this.deleteSnapshotItem(delta.id);
-                //     }
-                // });
             })
             .then(() => {
                 this.logger.info("[syncSnapshotItems] END");

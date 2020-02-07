@@ -52,11 +52,13 @@ class MySqlDriver
                     if (_.isUndefined(x)) {
                         return null;
                     }
+                    if (_.isPlainObject(x) || _.isArray(x)) {
+                        return _.stableStringify(x);
+                    }
                     return x;
                 })
             }
-            // this.logger.info("[executeStatement] params: ", params);
-            // this.logger.info("[executeStatement] statement: ", statement);
+            // this.logger.info("[executeStatement] final params: ", params);
 
             statement.execute(params, (err, results, fields) => {
                 if (err) {
