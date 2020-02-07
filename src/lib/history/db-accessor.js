@@ -22,8 +22,10 @@ class HistoryDbAccessor
         this._registerStatement('INSERT_SNAPSHOT', 'INSERT INTO `snapshots` (`date`) VALUES (?);');
 
         this._registerStatement('INSERT_SNAPSHOT_ITEM', 'INSERT INTO `snap_items` (`snapshot_id`, `dn`, `info`, `config`) VALUES (?, ?, ?, ?);');
+        this._registerStatement('UPDATE_SNAPSHOT_ITEM', 'UPDATE `snap_items` SET `dn` = ?, `info` = ?, `config` = ? WHERE `id` = ?;');
         this._registerStatement('DELETE_SNAPSHOT_ITEM', 'DELETE FROM `snap_items` WHERE `id` = ?;');
         this._registerStatement('GET_SNAPSHOT_ITEMS', 'SELECT `id`, `dn`, `info`, `config` FROM `snap_items` WHERE `snapshot_id` = ?');
+        
 
         this._registerStatement('FIND_DIFF', 'SELECT * FROM `diffs` WHERE `snapshot_id` = ? AND `date` = ? ORDER BY `id` DESC LIMIT 1;');
         this._registerStatement('INSERT_DIFF', 'INSERT INTO `diffs` (`snapshot_id`, `date`) VALUES (?, ?);');
@@ -117,15 +119,30 @@ class HistoryDbAccessor
 
                 var statements = itemsDelta.map(x => {
                     if (x.present) {
-                        return { 
-                            id: 'INSERT_SNAPSHOT_ITEM',
-                            params: [
-                                snapshotId,
-                                x.item.dn,
-                                x.item.info,
-                                x.item.config
-                            ]
-                        };
+                        if (x.oldItemId)
+                        {
+                            return { 
+                                id: 'UPDATE_SNAPSHOT_ITEM',
+                                params: [
+                                    x.item.dn,
+                                    x.item.info,
+                                    x.item.config,
+                                    x.oldItemId
+                                ]
+                            };
+                        }
+                        else
+                        {
+                            return { 
+                                id: 'INSERT_SNAPSHOT_ITEM',
+                                params: [
+                                    snapshotId,
+                                    x.item.dn,
+                                    x.item.info,
+                                    x.item.config
+                                ]
+                            };
+                        }
                     } else {
                         return { 
                             id: 'DELETE_SNAPSHOT_ITEM',
@@ -283,10 +300,23 @@ class HistoryDbAccessor
             var newItem = newItemsMaps[key];
             if (currentItemsMap[key])
             {
-                var found = false;
                 for(var id of _.keys(currentItemsMap[key]))
                 {
-                    if (found)
+                    if (shouldCreate)
+                    {
+                        shouldCreate = false;
+                        var currentItem = currentItemsMap[key][id];
+                        if (!_.fastDeepEqual(newItem, currentItem))
+                        {
+                            itemsDelta.push({
+                                present: true,
+                                oldItemId: id,
+                                reason: 'not-equal',
+                                item: newItem
+                            });
+                        }
+                    }
+                    else
                     {
                         itemsDelta.push({
                             present: false,
@@ -295,29 +325,6 @@ class HistoryDbAccessor
                             item: currentItemsMap[key][id]
                         });
                     }
-                    else
-                    {
-                        var currentItem = currentItemsMap[key][id];
-                        if (_.fastDeepEqual(newItem, currentItem))
-                        {
-                            found = true;
-                            shouldCreate = false;
-                        }
-                        else
-                        {
-                            itemsDelta.push({
-                                present: false,
-                                id: id,
-                                reason: 'not-equal',
-                                newItem: newItem,
-                                newItemKeys: _.keys(newItem),
-                                newItemObjKeys: Object.keys(newItem),
-                                currentItem: currentItem,
-                                currentItemKeys: _.keys(currentItem),
-                                currentItemObjKeys: Object.keys(currentItem)
-                            });
-                        }
-                    }
                 }
             }
             
@@ -325,7 +332,8 @@ class HistoryDbAccessor
             {
                 itemsDelta.push({
                     present: true,
-                    item: newItem
+                    item: newItem,
+                    reason: 'not-found'
                 });
             }
         }
