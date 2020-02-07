@@ -185,7 +185,7 @@ class LogicItem
         } else {
             info.date = new Date();
         }
-        
+        info.date = info.date.toISOString();
         this._alerts[id] = info;
     }
 
@@ -271,11 +271,15 @@ class LogicItem
             myProps[i] = props;
         }
 
+        myProps = _.deepClean(myProps);
+
         return myProps;
     }
 
     extractAlerts() {
-        return _.values(this._alerts);
+        var alerts = _.values(this._alerts);
+        alerts = _.deepClean(alerts);
+        return alerts;
     }
 
     debugOutputToFile(writer, options)
@@ -315,6 +319,7 @@ class LogicItem
         node.errorCount = _.keys(this._alerts).length;
         node.flags = this._flags;
         node.hasChildren = this.hasChildren;
+        node = _.deepClean(node);
         return node;
     }
 

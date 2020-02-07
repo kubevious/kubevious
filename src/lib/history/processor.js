@@ -57,7 +57,7 @@ class HistoryProcessor
         {
             snapshotItems.push({
                 dn: item.dn,
-                info: null,
+                info: {},
                 config: item.exportNode()
             });
 

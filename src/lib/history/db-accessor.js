@@ -75,12 +75,11 @@ class HistoryDbAccessor
 
     syncSnapshotItems(snapshotId, items)
     {
+        this.logger.info("[syncSnapshotItems] BEGIN, item count: %s", items.length);
+
         return this.querySnapshotItems(snapshotId)
             .then(currentItems => {
-                var itemsDelta = this._produceDelta(
-                    items, 
-                    currentItems, 
-                    this._getSnapshotItemKey.bind(this));
+                this.logger.info("[syncSnapshotItems] currentItems count: %s", currentItems.length);
 
                 {
                     var s = _.cloneDeep(items);
@@ -100,6 +99,12 @@ class HistoryDbAccessor
                     }
                 }
 
+                var itemsDelta = this._produceDelta(
+                    items, 
+                    currentItems, 
+                    this._getSnapshotItemKey.bind(this));
+                this.logger.info("[syncSnapshotItems] itemsDelta count: %s", itemsDelta.length);
+
                 {
                     var s = _.cloneDeep(itemsDelta);
                     var writer = this.logger.outputStream("history-items-delta.json");
@@ -110,19 +115,45 @@ class HistoryDbAccessor
                 }
                 // this.logger.info("[syncSnapshotItems] ", itemsDelta);
 
-                return Promise.serial(itemsDelta, delta => {
-                    if (delta.present)
-                    {
-                        return this.insertSnapshotItem(snapshotId,
-                            delta.item.dn,
-                            delta.item.info,
-                            delta.item.config);
+                var statements = itemsDelta.map(x => {
+                    if (x.present) {
+                        return { 
+                            id: 'INSERT_SNAPSHOT_ITEM',
+                            params: [
+                                snapshotId,
+                                x.item.dn,
+                                x.item.info,
+                                x.item.config
+                            ]
+                        };
+                    } else {
+                        return { 
+                            id: 'DELETE_SNAPSHOT_ITEM',
+                            params: [
+                                x.id
+                            ]
+                        };
                     }
-                    else
-                    {
-                        return this.deleteSnapshotItem(delta.id);
-                    }
-                });
+                })
+
+                return this._executeMany(statements);
+
+                // return Promise.serial(itemsDelta, delta => {
+                //     if (delta.present)
+                //     {
+                //         return this.insertSnapshotItem(snapshotId,
+                //             delta.item.dn,
+                //             delta.item.info,
+                //             delta.item.config);
+                //     }
+                //     else
+                //     {
+                //         return this.deleteSnapshotItem(delta.id);
+                //     }
+                // });
+            })
+            .then(() => {
+                this.logger.info("[syncSnapshotItems] END");
             });
     }
 
@@ -273,7 +304,9 @@ class HistoryDbAccessor
                     {
                         itemsDelta.push({
                             present: false,
-                            id: id
+                            id: id,
+                            reason: 'already-found',
+                            item: currentItemsMap[key][id]
                         });
                     }
                     else
@@ -288,7 +321,14 @@ class HistoryDbAccessor
                         {
                             itemsDelta.push({
                                 present: false,
-                                id: id
+                                id: id,
+                                reason: 'not-equal',
+                                newItem: newItem,
+                                newItemKeys: _.keys(newItem),
+                                newItemObjKeys: Object.keys(newItem),
+                                currentItem: currentItem,
+                                currentItemKeys: _.keys(currentItem),
+                                currentItemObjKeys: Object.keys(currentItem)
                             });
                         }
                     }
@@ -329,17 +369,12 @@ class HistoryDbAccessor
 
     _execute(statementId, params)
     {
-        if (!params) {
-            params = []
-        } else {
-            params = params.map(x => {
-                if (_.isUndefined(x)) {
-                    return null;
-                }
-                return x;
-            })
-        }
         return this._driver.executeStatement(statementId, params);
+    }
+
+    _executeMany(statements)
+    {
+        return this._driver.executeStatements(statements);
     }
 
 }

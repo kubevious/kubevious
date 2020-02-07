@@ -38,6 +38,7 @@ class MySqlDriver
     {
         return new Promise((resolve, reject) => {
             this.logger.info("[executeStatement] executing: %s", id);
+            // this.logger.info("[executeStatement] executing: %s", id, params);
             var statement = this._preparedStatements[id];
             if (!statement) {
                 reject("NOT PREPARED: " + id);
@@ -45,8 +46,17 @@ class MySqlDriver
             }
 
             if (!params) {
-                params = [];
+                params = []
+            } else {
+                params = params.map(x => {
+                    if (_.isUndefined(x)) {
+                        return null;
+                    }
+                    return x;
+                })
             }
+            // this.logger.info("[executeStatement] params: ", params);
+            // this.logger.info("[executeStatement] statement: ", statement);
 
             statement.execute(params, (err, results, fields) => {
                 if (err) {
@@ -57,6 +67,64 @@ class MySqlDriver
                 resolve(results);
             });
         });
+    }
+
+    executeStatements(statements)
+    {
+        this.logger.info("[executeStatements] BEGIN. Count: %s", statements.length);
+        // return Promise.serial(statements, statement => {
+        //     return this.executeStatement(statement.id, statement.params);
+        // });
+
+        var connection = this._connection;
+        return new Promise((resolve, reject) => {
+            this.logger.info("[executeStatements] TX Started.");
+
+            if (!connection) {
+                reject(new Error("NOT CONNECTED"));
+                return;
+            }
+
+            var rollback = (err) =>
+            {
+                this.logger.error("[executeStatements] Rolling Back.");
+                connection.rollback(() => {
+                    this.logger.error("[executeStatements] Rollback complete.");
+                    reject(err);
+                });
+            }
+
+            connection.beginTransaction((err) => {
+                if (err) { 
+                    reject(err);
+                    return;
+                }
+
+                return Promise.serial(statements, statement => {
+                    return this.executeStatement(statement.id, statement.params);
+                })
+                .then(() => {
+                    connection.commit((err) => {
+                        if (err) {
+                            this.logger.error("[executeStatements] TX Failed To Commit.");
+                            rollback(err);
+                        } else {
+                            this.logger.info("[executeStatements] TX Completed.");
+                            resolve();
+                        }
+                    });
+                })
+                .catch(reason => {
+                    this.logger.error("[executeStatements] TX Failed.");
+                    rollback(reason);
+                })
+                ;
+                
+              });
+
+        });
+
+        
     }
 
     /** IMPL **/
