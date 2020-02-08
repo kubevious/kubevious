@@ -6,8 +6,13 @@ class HistoryProcessor
 {
     constructor(context)
     {
+        this._context = context;
         this._logger = context.logger.sublogger('HistoryProcessor');
         this._dbAccessor = new HistoryAccessor(this.logger, context.mysqlDriver);
+        this._snapshotQueue = [];
+        this._isProcessing = false;
+
+        context.mysqlDriver.onConnect(this._onDbConnected.bind(this));
     }
 
     get logger() {
@@ -18,18 +23,22 @@ class HistoryProcessor
     {
         this._logger.info("[acceptItems] ...");
 
-        var snapshot = null;
+        var snapshot = this._produceSnapshot(itemsMap);
+        this._logger.info("[acceptItems] snapshot item count: %s", snapshot.items.length);
+        this._snapshotQueue.push(snapshot);
+        while(this._snapshotQueue.length > 10) {
+            this._snapshotQueue.shift();
+        }
+        this._tryProcessSnapshot();
+    }
+
+    _processSnapshot(snapshot)
+    {
         return Promise.resolve()
             .then(() => {
-                snapshot = this._produceSnapshot(itemsMap);
-                // this._logger.info("SNAPSHOT: ", snapshot);
-                this._logger.info("SNAPSHOT ITEM COUNT: %s :: %s ", snapshot.date.toISOString(), snapshot.items.length);
-            })
-            .then(() => {
-                var s = _.cloneDeep(snapshot);
                 var writer = this.logger.outputStream("history-snapshot.json");
                 if (writer) {
-                    writer.write(s);
+                    writer.write(_.cloneDeep(snapshot));
                     writer.close();
                 }
             })
@@ -86,6 +95,45 @@ class HistoryProcessor
             date: new Date("2020-02-07 02:18:22"),
             items: snapshotItems
         };
+    }
+
+    _onDbConnected()
+    {
+        this._logger.info("[_onDbConnected] ...");
+        return this._tryProcessSnapshot();
+    }
+
+    _tryProcessSnapshot()
+    {
+        if (this._isProcessing) {
+            return;
+        }
+
+        this._logger.info("[_tryProcessSnapshot] BEGIN");
+        if (!this._context.mysqlDriver.isConnected)
+        {
+            this._logger.warn("[_tryProcessSnapshot] not connected to db");
+            return;
+        }
+        this._logger.info("[_tryProcessSnapshot] snapshots in queue: %s", this._snapshotQueue.length);
+        if (this._snapshotQueue.length == 0) {
+            this._logger.info("[_tryProcessSnapshot] empty");
+            return;
+        }
+        this._isProcessing = true;
+        var snapshot = _.head(this._snapshotQueue);
+        return this._processSnapshot(snapshot)
+            .then(() => {
+                this._logger.info("[_tryProcessSnapshot] END");
+
+                this._snapshotQueue.shift();
+                this._isProcessing = false;
+                return this._tryProcessSnapshot();
+            })
+            .catch(reason => {
+                this._isProcessing = false;
+                this._logger.error("[_tryProcessSnapshot] ", reason);
+            });
     }
 }
 

@@ -185,7 +185,10 @@ class LogicItem
         } else {
             info.date = new Date();
         }
-        info.date = info.date.toISOString();
+        if (info.date instanceof Date)
+        {
+            info.date = info.date.toISOString();
+        }
         this._alerts[id] = info;
     }
 

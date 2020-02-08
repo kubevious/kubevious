@@ -84,19 +84,17 @@ class HistoryDbAccessor
                 this.logger.info("[syncSnapshotItems] currentItems count: %s", currentItems.length);
 
                 {
-                    var s = _.cloneDeep(items);
                     var writer = this.logger.outputStream("history-items-new.json");
                     if (writer) {
-                        writer.write(s);
+                        writer.write(_.cloneDeep(items));
                         writer.close();
                     }
                 }
     
                 {
-                    var s = _.cloneDeep(currentItems);
                     var writer = this.logger.outputStream("history-items-current.json");
                     if (writer) {
-                        writer.write(s);
+                        writer.write(_.cloneDeep(currentItems));
                         writer.close();
                     }
                 }
@@ -108,42 +106,41 @@ class HistoryDbAccessor
                 this.logger.info("[syncSnapshotItems] itemsDelta count: %s", itemsDelta.length);
 
                 {
-                    var s = _.cloneDeep(itemsDelta);
                     var writer = this.logger.outputStream("history-items-delta.json");
                     if (writer) {
-                        writer.write(s);
+                        writer.write(_.cloneDeep(itemsDelta));
                         writer.close();
                     }
                 }
                 // this.logger.info("[syncSnapshotItems] ", itemsDelta);
 
                 var statements = itemsDelta.map(x => {
-                    if (x.present) {
-                        if (x.oldItemId)
-                        {
-                            return { 
-                                id: 'UPDATE_SNAPSHOT_ITEM',
-                                params: [
-                                    x.item.dn,
-                                    x.item.info,
-                                    x.item.config,
-                                    x.oldItemId
-                                ]
-                            };
-                        }
-                        else
-                        {
-                            return { 
-                                id: 'INSERT_SNAPSHOT_ITEM',
-                                params: [
-                                    snapshotId,
-                                    x.item.dn,
-                                    x.item.info,
-                                    x.item.config
-                                ]
-                            };
-                        }
-                    } else {
+                    if (x.action == 'C')
+                    {
+                        return { 
+                            id: 'INSERT_SNAPSHOT_ITEM',
+                            params: [
+                                snapshotId,
+                                x.item.dn,
+                                x.item.info,
+                                x.item.config
+                            ]
+                        };
+                    }
+                    else if (x.action == 'U')
+                    {
+                        return { 
+                            id: 'UPDATE_SNAPSHOT_ITEM',
+                            params: [
+                                x.item.dn,
+                                x.item.info,
+                                x.item.config,
+                                x.oldItemId
+                            ]
+                        };
+                    } 
+                    else if (x.action == 'D')
+                    {
                         return { 
                             id: 'DELETE_SNAPSHOT_ITEM',
                             params: [
@@ -151,6 +148,9 @@ class HistoryDbAccessor
                             ]
                         };
                     }
+
+                    this.logger.info("[syncSnapshotItems] INVALID delta: ", x);
+                    throw new Error("INVALID");
                 })
 
                 return this._executeMany(statements);
@@ -309,7 +309,7 @@ class HistoryDbAccessor
                         if (!_.fastDeepEqual(newItem, currentItem))
                         {
                             itemsDelta.push({
-                                present: true,
+                                action: 'U',
                                 oldItemId: id,
                                 reason: 'not-equal',
                                 item: newItem
@@ -319,7 +319,7 @@ class HistoryDbAccessor
                     else
                     {
                         itemsDelta.push({
-                            present: false,
+                            action: 'D',
                             id: id,
                             reason: 'already-found',
                             item: currentItemsMap[key][id]
@@ -331,7 +331,7 @@ class HistoryDbAccessor
             if (shouldCreate)
             {
                 itemsDelta.push({
-                    present: true,
+                    action: 'C',
                     item: newItem,
                     reason: 'not-found'
                 });
@@ -345,7 +345,7 @@ class HistoryDbAccessor
                 for(var id of _.keys(currentItemsMap[key]))
                 {
                     itemsDelta.push({
-                        present: false,
+                        action: 'D',
                         id: id
                     });
                 }

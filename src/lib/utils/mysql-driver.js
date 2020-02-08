@@ -7,7 +7,7 @@ class MySqlDriver
 {
     constructor(logger)
     {
-        this._logger = logger;
+        this._logger = logger.sublogger("MySqlDriver");
         this._statementsSql = {};
         this._preparedStatements = {};
         this._connectEmitter = new events.EventEmitter();
@@ -17,6 +17,10 @@ class MySqlDriver
         return this._logger;
     }
 
+    get isConnected() {
+        return _.isNotNullOrUndefined(this._connection);
+    }
+
     connect()
     {
        return this._tryConnect();
@@ -24,9 +28,40 @@ class MySqlDriver
 
     onConnect(cb)
     {
+        if (this.isConnected) {
+            this._triggerCallback(cb);
+        }
         this._connectEmitter.on('connect', () => {
-            cb(this);
+            this._triggerCallback(cb);
         })
+    }
+
+    _triggerCallback(cb)
+    {
+        try
+        {
+            this._logger.info("[_triggerCallback]")
+
+            setImmediate(() => {
+                try
+                {
+                    var res = cb(this);
+                    return Promise.resolve(res)
+                        .then(() => {})
+                        .catch(reason => {
+                            this._logger.error("[_triggerCallback] Promise Failure: ", reason)
+                        })
+                    }
+                    catch(error)
+                    {
+                        this._logger.error("[_triggerCallback] Exception: ", error);
+                    }
+            });
+        }
+        catch(error)
+        {
+            this._logger.error("[_triggerCallback] Exception2: ", error)
+        }
     }
 
     registerStatement(id, sql)
@@ -37,7 +72,7 @@ class MySqlDriver
     executeStatement(id, params)
     {
         return new Promise((resolve, reject) => {
-            this.logger.info("[executeStatement] executing: %s", id);
+            this.logger.silly("[executeStatement] executing: %s", id);
             // this.logger.info("[executeStatement] executing: %s", id, params);
             var statement = this._preparedStatements[id];
             if (!statement) {
@@ -74,9 +109,6 @@ class MySqlDriver
     executeStatements(statements)
     {
         this.logger.info("[executeStatements] BEGIN. Count: %s", statements.length);
-        // return Promise.serial(statements, statement => {
-        //     return this.executeStatement(statement.id, statement.params);
-        // });
 
         var connection = this._connection;
         return new Promise((resolve, reject) => {
@@ -102,7 +134,7 @@ class MySqlDriver
                     return;
                 }
 
-                return Promise.serial(statements, statement => {
+                return Promise.parallel(statements, statement => {
                     return this.executeStatement(statement.id, statement.params);
                 })
                 .then(() => {

@@ -29,7 +29,7 @@ class ConcreteRegistry
 
     add(id, obj, indexBy)
     {
-        this.logger.info("[add] ", id);
+        this.logger.verbose("[add] ", id);
         var rawId = this._makeDictId(id);
         var item = new ConcreteItem(this, id, obj);
         this._items[rawId] = item;
@@ -43,7 +43,7 @@ class ConcreteRegistry
 
     remove(id)
     {
-        this.logger.info("[remove] %s", id);
+        this.logger.verbose("[remove] %s", id);
 
         var rawId = this._makeDictId(id);
 
