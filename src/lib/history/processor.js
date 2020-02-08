@@ -11,6 +11,7 @@ class HistoryProcessor
         this._dbAccessor = new HistoryAccessor(this.logger, context.mysqlDriver);
         this._snapshotQueue = [];
         this._isProcessing = false;
+        this._latestSnapshot = null;
 
         context.mysqlDriver.onConnect(this._onDbConnected.bind(this));
     }
@@ -42,10 +43,34 @@ class HistoryProcessor
                     writer.close();
                 }
             })
-            .then(() => this._persistSnapshot(snapshot))
+            .then(() => {
+                if (this._shouldProcessAsDiff(snapshot))
+                {
+                    return this._persistDiff(snapshot);
+                }
+                else
+                {
+                    return this._persistSnapshot(snapshot);
+                }
+            })
+            .then(() => {
+                this._latestSnapshot = snapshot;
+            })
             .catch(reason => {
                 this.logger.error(reason);
             });
+    }
+
+    _shouldProcessAsDiff(snapshot)
+    {
+        if (this._latestSnapshot)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     _persistSnapshot(snapshot)
@@ -56,6 +81,32 @@ class HistoryProcessor
                 this.logger.info("[_persistSnapshot] ", dbSnapshot);
                 // this.logger.info("[_persistSnapshot] sample: ", snapshot.items[10]);
                 return this._dbAccessor.syncSnapshotItems(dbSnapshot.id, snapshot.items);
+            })
+    }
+
+    _persistDiff(snapshot)
+    {
+        return Promise.resolve()
+            .then(() => this._dbAccessor.fetchSnapshot(snapshot.date))
+            .then(dbSnapshot => {
+                return this._dbAccessor.fetchDiff(dbSnapshot.id, snapshot.date);
+            })
+            .then(dbDiff => {
+                this.logger.info('[_persistDiff] ', dbDiff);
+                var itemsDelta = this._dbAccessor.produceDelta(snapshot.items, this._latestSnapshot.items);
+                itemsDelta = itemsDelta.map(x => {
+                    var newItem = _.clone(x.item);
+                    if (x.action == 'C' || x.action == 'U')
+                    {
+                        newItem.present = 1;
+                    }
+                    else
+                    {
+                        newItem.present = 0;
+                    }
+                    return newItem;
+                });
+                return this._dbAccessor.syncDiffItems(dbDiff.id, itemsDelta);
             })
     }
 

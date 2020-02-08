@@ -31,6 +31,7 @@ class HistoryDbAccessor
         this._registerStatement('INSERT_DIFF', 'INSERT INTO `diffs` (`snapshot_id`, `date`) VALUES (?, ?);');
 
         this._registerStatement('INSERT_DIFF_ITEM', 'INSERT INTO `diff_items` (`diff_id`, `dn`, `info`, `present`, `config`) VALUES (?, ?, ?, ?, ?);');
+        this._registerStatement('UPDATE_DIFF_ITEM', 'UPDATE `diff_items` SET `dn` = ?, `info` = ?, `present` = ?, `config` = ? WHERE `id` = ?;');
         this._registerStatement('DELETE_DIFF_ITEM', 'DELETE FROM `diff_items` WHERE `id` = ?;');
         this._registerStatement('GET_DIFF_ITEMS', 'SELECT `id`, `dn`, `info`, `present`, `config` FROM `diff_items` WHERE `diff_id` = ?');
 
@@ -99,10 +100,7 @@ class HistoryDbAccessor
                     }
                 }
 
-                var itemsDelta = this._produceDelta(
-                    items, 
-                    currentItems, 
-                    this._getSnapshotItemKey.bind(this));
+                var itemsDelta = this.produceDelta(items, currentItems);
                 this.logger.info("[syncSnapshotItems] itemsDelta count: %s", itemsDelta.length);
 
                 {
@@ -160,19 +158,6 @@ class HistoryDbAccessor
             });
     }
 
-    _getSnapshotItemKeyInfo(item)
-    {
-        return {
-            dn: item.dn,
-            info: item.info
-        };
-    }
-
-    _getSnapshotItemKey(item)
-    {
-        return _.stableStringify(this._getSnapshotItemKeyInfo(item));
-    }
-
     /* SNAPSHOT ITEMS END */
 
     /* DIFF BEGIN */
@@ -220,52 +205,78 @@ class HistoryDbAccessor
 
     syncDiffItems(diffId, items)
     {
+        this.logger.info("[syncDiffItems] items: ", items);
+
         return this.queryDiffItems(diffId)
             .then(currentItems => {
+                this.logger.info("[syncDiffItems] currentItems: ", currentItems);
 
-                var itemsDelta = this._produceDelta(
-                    items, 
-                    currentItems, 
-                    this._getDiffItemKey.bind(this));
+                var itemsDelta = this.produceDelta(items, currentItems);
+
+                this.logger.info("[syncDiffItems] delta: ", itemsDelta);
                 
-                return Promise.serial(itemsDelta, delta => {
-                    if (delta.present)
+                var statements = itemsDelta.map(x => {
+                    if (x.action == 'C')
                     {
-                        return this.insertDiffItem(diffId, 
-                            delta.item.dn,
-                            delta.item.info,
-                            delta.item.present,
-                            delta.item.config);
+                        return { 
+                            id: 'INSERT_DIFF_ITEM',
+                            params: [
+                                diffId,
+                                x.item.dn,
+                                x.item.info,
+                                x.item.present,
+                                x.item.config
+                            ]
+                        };
                     }
-                    else
+                    else if (x.action == 'U')
                     {
-                        return this.deleteDiffItem(delta.id);
+                        return { 
+                            id: 'UPDATE_DIFF_ITEM',
+                            params: [
+                                x.item.dn,
+                                x.item.info,
+                                x.item.present,
+                                x.item.config,
+                                x.oldItemId
+                            ]
+                        };
+                    } 
+                    else if (x.action == 'D')
+                    {
+                        return { 
+                            id: 'DELETE_DIFF_ITEM',
+                            params: [
+                                x.id
+                            ]
+                        };
                     }
-                });
+
+                    this.logger.info("[syncDiffItems] INVALID delta: ", x);
+                    throw new Error("INVALID");
+                })
+
+                return this._executeMany(statements);
             });
-    }
-
-    _getDiffItemKeyInfo(item)
-    {
-        return {
-            dn: item.dn,
-            info: item.info
-        };
-    }
-
-    _getDiffItemKey(item)
-    {
-        return _.stableStringify(this._getDiffItemKeyInfo(item));
     }
 
     /* DIFF ITEMS END */
 
-    _produceDelta(items, currentItems, keyFunc)
+    _getDeltaKey(item)
+    {
+        var keyInfo = {
+            dn: item.dn,
+            info: item.info
+        };
+        return _.stableStringify(keyInfo);
+    }
+
+    produceDelta(items, currentItems)
     {
         var newItemsMaps = {};
         for(var x of items)
         {
-            var key = keyFunc(x);
+            var key = this._getDeltaKey(x);
             if (!newItemsMaps[key]) {
                 newItemsMaps[key] = {
                 }
@@ -276,7 +287,7 @@ class HistoryDbAccessor
         var currentItemsMap = {};
         for(var x of currentItems)
         {
-            var key = keyFunc(x);
+            var key = this._getDeltaKey(x);
             if (!currentItemsMap[key]) {
                 currentItemsMap[key] = {
                 }
@@ -312,7 +323,8 @@ class HistoryDbAccessor
                                 action: 'U',
                                 oldItemId: id,
                                 reason: 'not-equal',
-                                item: newItem
+                                item: newItem,
+                                currentItem: currentItem
                             });
                         }
                     }
