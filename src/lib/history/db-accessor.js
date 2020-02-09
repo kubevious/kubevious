@@ -1,5 +1,6 @@
 const Promise = require('the-promise');
 const _ = require('the-lodash');
+const SnapshotReader = require('./snapshot-reader');
 
 class HistoryDbAccessor
 {
@@ -7,6 +8,7 @@ class HistoryDbAccessor
     {
         this._logger = logger.sublogger('HistoryDbAccessor');
         this._driver = driver;
+        this._snapshotReader = new SnapshotReader(logger, driver);
 
         this._registerStatements();
     }
@@ -24,8 +26,6 @@ class HistoryDbAccessor
         this._registerStatement('INSERT_SNAPSHOT_ITEM', 'INSERT INTO `snap_items` (`snapshot_id`, `dn`, `info`, `config`) VALUES (?, ?, ?, ?);');
         this._registerStatement('UPDATE_SNAPSHOT_ITEM', 'UPDATE `snap_items` SET `dn` = ?, `info` = ?, `config` = ? WHERE `id` = ?;');
         this._registerStatement('DELETE_SNAPSHOT_ITEM', 'DELETE FROM `snap_items` WHERE `id` = ?;');
-        this._registerStatement('GET_SNAPSHOT_ITEMS', 'SELECT `id`, `dn`, `info`, `config` FROM `snap_items` WHERE `snapshot_id` = ?');
-        
 
         this._registerStatement('FIND_DIFF', 'SELECT * FROM `diffs` WHERE `snapshot_id` = ? AND `date` = ? ORDER BY `id` DESC LIMIT 1;');
         this._registerStatement('INSERT_DIFF', 'INSERT INTO `diffs` (`snapshot_id`, `date`) VALUES (?, ?);');
@@ -33,7 +33,6 @@ class HistoryDbAccessor
         this._registerStatement('INSERT_DIFF_ITEM', 'INSERT INTO `diff_items` (`diff_id`, `dn`, `info`, `present`, `config`) VALUES (?, ?, ?, ?, ?);');
         this._registerStatement('UPDATE_DIFF_ITEM', 'UPDATE `diff_items` SET `dn` = ?, `info` = ?, `present` = ?, `config` = ? WHERE `id` = ?;');
         this._registerStatement('DELETE_DIFF_ITEM', 'DELETE FROM `diff_items` WHERE `id` = ?;');
-        this._registerStatement('GET_DIFF_ITEMS', 'SELECT `id`, `dn`, `info`, `present`, `config` FROM `diff_items` WHERE `diff_id` = ?');
 
         this._registerStatement('GET_DIFFS', 'SELECT * FROM diffs;');
     }
@@ -65,11 +64,6 @@ class HistoryDbAccessor
         return this._execute('INSERT_SNAPSHOT_ITEM', params);
     }
 
-    querySnapshotItems(snapshotId)
-    {
-        return this._execute('GET_SNAPSHOT_ITEMS', [snapshotId]);
-    }
-
     deleteSnapshotItem(snapshotId)
     {
         var params = [snapshotId]; 
@@ -80,7 +74,7 @@ class HistoryDbAccessor
     {
         this.logger.info("[syncSnapshotItems] BEGIN, item count: %s", items.length);
 
-        return this.querySnapshotItems(snapshotId)
+        return this._snapshotReader.querySnapshotItems(snapshotId)
             .then(currentItems => {
                 this.logger.info("[syncSnapshotItems] currentItems count: %s", currentItems.length);
 
@@ -192,11 +186,6 @@ class HistoryDbAccessor
         return this._execute('INSERT_DIFF_ITEM', params);
     }
 
-    queryDiffItems(diffId)
-    {
-        return this._execute('GET_DIFF_ITEMS', [diffId]);
-    }
-
     deleteDiffItem(diffId)
     {
         var params = [diffId]; 
@@ -205,15 +194,16 @@ class HistoryDbAccessor
 
     syncDiffItems(diffId, items)
     {
-        this.logger.info("[syncDiffItems] items: ", items);
+        this.logger.info("[syncDiffItems] item count: ", items.length);
+        // this.logger.info("[syncDiffItems] items: ", items);
 
-        return this.queryDiffItems(diffId)
+        return this._snapshotReader.queryDiffItems(diffId)
             .then(currentItems => {
-                this.logger.info("[syncDiffItems] currentItems: ", currentItems);
+                // this.logger.info("[syncDiffItems] currentItems: ", currentItems);
 
                 var itemsDelta = this.produceDelta(items, currentItems);
 
-                this.logger.info("[syncDiffItems] delta: ", itemsDelta);
+                // this.logger.info("[syncDiffItems] delta: ", itemsDelta);
                 
                 var statements = itemsDelta.map(x => {
                     if (x.action == 'C')

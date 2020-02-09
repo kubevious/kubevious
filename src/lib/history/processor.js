@@ -79,7 +79,6 @@ class HistoryProcessor
             .then(() => this._dbAccessor.fetchSnapshot(snapshot.date))
             .then(dbSnapshot => {
                 this.logger.info("[_persistSnapshot] ", dbSnapshot);
-                // this.logger.info("[_persistSnapshot] sample: ", snapshot.items[10]);
                 return this._dbAccessor.syncSnapshotItems(dbSnapshot.id, snapshot.items);
             })
     }
