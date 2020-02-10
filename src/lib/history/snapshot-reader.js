@@ -88,7 +88,7 @@ class HistorySnapshotReader
             .then(snapshot => {
                 this.logger.info('[reconstructRecentShaphot] db snapshot: ', snapshot);
                 if (!snapshot) {
-                    return {}
+                    return new Snapshot();
                 }
                 return this.reconstructSnapshotById(snapshot.id);
             })

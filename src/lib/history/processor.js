@@ -14,7 +14,7 @@ class HistoryProcessor
         this._snapshotQueue = [];
         this._isProcessing = false;
         this._latestSnapshot = null;
-        this._latestReconstructedSnapshot = null;
+        this._currentState = null;
 
         context.mysqlDriver.onConnect(this._onDbConnected.bind(this));
     }
@@ -49,14 +49,14 @@ class HistoryProcessor
                 }
             })
             .then(() => {
-                if (this._shouldProcessAsDiff(snapshot))
-                {
-                    return this._persistDiff(snapshot);
-                }
-                else
-                {
-                    return this._persistSnapshot(snapshot);
-                }
+
+                return this._dbAccessor.executeInTransaction(() => {
+                    return Promise.resolve()
+                        .then(() => this._persistSnapshot(snapshot))
+                        .then(() => this._persistDiff(snapshot))
+                        .then(() => this._persistConfig())
+                });
+
             })
             .then(() => {
                 this._latestSnapshot = snapshot;
@@ -66,44 +66,46 @@ class HistoryProcessor
             });
     }
 
-    _shouldProcessAsDiff(snapshot)
-    {
-        if (this._latestSnapshot)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
     _persistSnapshot(snapshot)
     {
-        return Promise.resolve()
-            .then(() => this._dbAccessor.fetchSnapshot(snapshot.date))
+        this._itemsDelta = this._dbAccessor.produceDelta(snapshot, this._latestSnapshot);
+
+        if (this._currentState.snapshot_id) {
+            return;
+        }
+
+        return this._dbAccessor.fetchSnapshot(snapshot.date)
             .then(dbSnapshot => {
+                this._currentState.snapshot_id = dbSnapshot.id;
+                this._currentState.snapshot_date = dbSnapshot.date;
+                this._currentState.diff_in_snapshot = true;
+                this._currentState.diff_count = 0;
+                this._currentState.diff_item_count = 0;
+
                 this.logger.info("[_persistSnapshot] ", dbSnapshot);
                 return this._dbAccessor.syncSnapshotItems(dbSnapshot.id, snapshot);
-            })
+            });
     }
 
     _persistDiff(snapshot)
     {
-        return Promise.resolve()
-            .then(() => this._dbAccessor.fetchSnapshot(snapshot.date))
-            .then(dbSnapshot => {
-                return this._dbAccessor.fetchDiff(dbSnapshot.id, snapshot.date);
-            })
+        this.logger.info('[_persistDiff] ', this._currentState);
+
+        return this._dbAccessor.fetchDiff(this._currentState.snapshot_id,
+                                          snapshot.date,
+                                          this._currentState.diff_in_snapshot)
             .then(dbDiff => {
-                // this.logger.info('[_persistDiff] ', dbDiff);
+                this._currentState.diff_id = dbDiff.id;
+                this._currentState.diff_date = dbDiff.date;
+                this._currentState.diff_in_snapshot = false;
+                this._currentState.diff_count += 1;
+
                 var itemsDelta = this._dbAccessor.produceDelta(snapshot, this._latestSnapshot);
+                this._currentState.diff_item_count += itemsDelta.length;
 
                 var diffSnapshot = new Snapshot();
                 for(var x of itemsDelta)
                 {
-                    // this.logger.info('[_persistDiff] X: ', x);
-
                     var newItem = _.clone(x.item);
                     if (x.action == 'C' || x.action == 'U')
                     {
@@ -118,6 +120,11 @@ class HistoryProcessor
 
                 return this._dbAccessor.syncDiffItems(dbDiff.id, diffSnapshot);
             })
+    }
+
+    _persistConfig()
+    {
+        return this._dbAccessor.updateConfig('STATE', this._currentState);
     }
 
     _produceSnapshot(logicItemsMap)
@@ -160,14 +167,19 @@ class HistoryProcessor
     _onDbConnected()
     {
         this._logger.info("[_onDbConnected] ...");
-        this._latestReconstructedSnapshot = null;
-        return this._dbAccessor.snapshotReader.reconstructRecentShaphot()
+        this._latestSnapshot = null;
+        return Promise.resolve()
+            .then(() => this._dbAccessor.queryConfig('STATE'))
+            .then(config => {
+                this._currentState = config.value || {};
+                this._logger.info("[_onDbConnected] state: ", this._currentState);
+            })
+            .then(() => this._dbAccessor.snapshotReader.reconstructRecentShaphot())
             .then(snapshot => {
-                // this._logger.info("[_onDbConnected] reconstructed snapshot: ",
-                // snapshotItems);
-                //  _.keys(snapshotItems));
+                this._logger.info("[_onDbConnected] reconstructed snapshot item count: %s",
+                    snapshot.count);
 
-                this._latestReconstructedSnapshot = snapshot;
+                this._latestSnapshot = snapshot;
 
                 return this._tryProcessSnapshot();
             })
@@ -179,7 +191,12 @@ class HistoryProcessor
             return;
         }
 
-        if (!this._latestReconstructedSnapshot) {
+        if (!this._currentState) {
+            this._logger.warn("[_tryProcessSnapshot] state not fetched");
+            return;
+        }
+
+        if (!this._latestSnapshot) {
             this._logger.warn("[_tryProcessSnapshot] snapshot not yet fetched");
             return;
         }
@@ -211,19 +228,5 @@ class HistoryProcessor
             });
     }
 }
-
-// var unhandledPromises = [];
-// Promise.onPossiblyUnhandledRejection(function(reason, promise) {
-//     unhandledPromises.push(promise);
-//     //Update some debugger UI
-//     console.log('[onPossiblyUnhandledRejection]')
-// });
-
-// Promise.onUnhandledRejectionHandled(function(promise) {
-//     var index = unhandledPromises.indexOf(promise);
-//     unhandledPromises.splice(index, 1);
-//     //Update the debugger UI
-//     console.log('[onUnhandledRejectionHandled]')
-// });
 
 module.exports = HistoryProcessor;

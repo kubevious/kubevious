@@ -97,10 +97,11 @@ class MySqlDriver
 
             statement.execute(params, (err, results, fields) => {
                 if (err) {
-                    this.logger.error("[executeStatement] ", err);
+                    this.logger.error("[executeStatement] ERROR IN %s. ", id, err);
                     reject(err);
                     return;
                 }
+                this.logger.silly("[executeStatement] DONE: %s", id);
                 resolve(results);
             });
         });
@@ -109,6 +110,19 @@ class MySqlDriver
     executeStatements(statements)
     {
         this.logger.info("[executeStatements] BEGIN. Count: %s", statements.length);
+
+        // return this.executeInTransaction(() => {
+            // this.logger.info("[executeStatements] Inside Tx");
+            return Promise.parallel(statements, statement => {
+                // this.logger.info("[executeStatements] exec:");
+                return this.executeStatement(statement.id, statement.params);
+            })
+        // });
+    }
+
+    executeInTransaction(cb)
+    {
+        this.logger.info("[executeInTransaction] BEGIN");
 
         var connection = this._connection;
         return new Promise((resolve, reject) => {
@@ -134,31 +148,26 @@ class MySqlDriver
                     return;
                 }
 
-                return Promise.parallel(statements, statement => {
-                    return this.executeStatement(statement.id, statement.params);
-                })
-                .then(() => {
-                    connection.commit((err) => {
-                        if (err) {
-                            this.logger.error("[executeStatements] TX Failed To Commit.");
-                            rollback(err);
-                        } else {
-                            this.logger.info("[executeStatements] TX Completed.");
-                            resolve();
-                        }
+                return Promise.resolve()
+                    .then(() => cb(this))
+                    .then(() => {
+                        connection.commit((err) => {
+                            if (err) {
+                                this.logger.error("[executeStatements] TX Failed To Commit.");
+                                rollback(err);
+                            } else {
+                                this.logger.info("[executeStatements] TX Completed.");
+                                resolve();
+                            }
+                        });
+                    })
+                    .catch(reason => {
+                        this.logger.error("[executeStatements] TX Failed.");
+                        rollback(reason);
                     });
-                })
-                .catch(reason => {
-                    this.logger.error("[executeStatements] TX Failed.");
-                    rollback(reason);
-                })
-                ;
-                
-              });
-
+            });
         });
 
-        
     }
 
     /** IMPL **/

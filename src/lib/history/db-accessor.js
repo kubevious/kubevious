@@ -33,14 +33,35 @@ class HistoryDbAccessor
         this._registerStatement('UPDATE_SNAPSHOT_ITEM', 'UPDATE `snap_items` SET `dn` = ?, `info` = ?, `config` = ? WHERE `id` = ?;');
         this._registerStatement('DELETE_SNAPSHOT_ITEM', 'DELETE FROM `snap_items` WHERE `id` = ?;');
 
-        this._registerStatement('FIND_DIFF', 'SELECT * FROM `diffs` WHERE `snapshot_id` = ? AND `date` = ? ORDER BY `id` DESC LIMIT 1;');
-        this._registerStatement('INSERT_DIFF', 'INSERT INTO `diffs` (`snapshot_id`, `date`) VALUES (?, ?);');
+        this._registerStatement('FIND_DIFF', 'SELECT * FROM `diffs` WHERE `snapshot_id` = ? AND `date` = ? AND `in_snapshot` = ? ORDER BY `id` DESC LIMIT 1;');
+        this._registerStatement('INSERT_DIFF', 'INSERT INTO `diffs` (`snapshot_id`, `date`, `in_snapshot`) VALUES (?, ?, ?);');
 
         this._registerStatement('INSERT_DIFF_ITEM', 'INSERT INTO `diff_items` (`diff_id`, `dn`, `info`, `present`, `config`) VALUES (?, ?, ?, ?, ?);');
         this._registerStatement('UPDATE_DIFF_ITEM', 'UPDATE `diff_items` SET `dn` = ?, `info` = ?, `present` = ?, `config` = ? WHERE `id` = ?;');
         this._registerStatement('DELETE_DIFF_ITEM', 'DELETE FROM `diff_items` WHERE `id` = ?;');
 
         this._registerStatement('GET_DIFFS', 'SELECT * FROM diffs;');
+
+        this._registerStatement('GET_CONFIG', 'SELECT * FROM `config` WHERE `key` = ?;');
+        this._registerStatement('SET_CONFIG', 'INSERT INTO `config`(`key`, `value`) VALUES(?, ?) ON DUPLICATE KEY UPDATE `key` = ?, `value` = ?;');
+    }
+
+    updateConfig(key, value)
+    {
+        var params = [key, value, key, value]; 
+        return this._execute('SET_CONFIG', params);
+    }
+
+    queryConfig(key)
+    {
+        var params = [key]; 
+        return this._execute('GET_CONFIG', params)
+            .then(results => {
+                if (results.length == 0) {
+                    return {};
+                }
+                return _.head(results);
+            });
     }
    
     fetchSnapshot(date)
@@ -180,9 +201,10 @@ class HistoryDbAccessor
 
     /* DIFF BEGIN */
 
-    fetchDiff(snapshotId, date)
+    fetchDiff(snapshotId, date, in_snapshot)
     {
-        var params = [snapshotId, toMysqlFormat(date)]; 
+        date = makeDate(date);
+        var params = [snapshotId, toMysqlFormat(date), in_snapshot]; 
         return this._execute('FIND_DIFF', params)
             .then(results => {
                 if (!results.length) {
@@ -342,7 +364,6 @@ class HistoryDbAccessor
         return itemsDelta;
     }
 
-
     _registerStatement()
     {
         return this._driver.registerStatement.apply(this._driver, arguments);
@@ -358,8 +379,12 @@ class HistoryDbAccessor
         return this._driver.executeStatements(statements);
     }
 
-}
+    executeInTransaction(cb)
+    {
+        return this._driver.executeInTransaction(cb);
+    }
 
+}
 
 function twoDigits(d) {
     if(0 <= d && d < 10) return "0" + d.toString();
@@ -368,12 +393,20 @@ function twoDigits(d) {
 }
 function toMysqlFormat(date)
 {
+    date = makeDate(date);
     return date.getUTCFullYear() + "-" + 
         twoDigits(1 + date.getUTCMonth()) + "-" + 
         twoDigits(date.getUTCDate()) + " " + 
         twoDigits(date.getUTCHours()) + ":" + 
         twoDigits(date.getUTCMinutes()) + ":" + 
         twoDigits(date.getUTCSeconds());
+};
+function makeDate(date)
+{
+    if (_.isString(date)) {
+        date = new Date(date);
+    }
+    return date;
 };
 
 module.exports = HistoryDbAccessor;
