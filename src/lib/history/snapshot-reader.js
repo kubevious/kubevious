@@ -1,6 +1,7 @@
 const Promise = require('the-promise');
 const _ = require('the-lodash');
 const SnapshotReconstructor = require('./snapshot-reconstructor');
+const Snapshot = require('./snapshot');
 
 class HistorySnapshotReader
 {
@@ -51,7 +52,10 @@ class HistorySnapshotReader
 
     queryRecentSnapshot()
     {
-        return this._execute('GET_RECENT_SNAPSHOT');
+        return this._execute('GET_RECENT_SNAPSHOT')
+            .then(results => {
+                return _.head(results);
+            });
     }
 
     queryDiffItems(diffId)
@@ -59,7 +63,7 @@ class HistorySnapshotReader
         return this._execute('GET_DIFF_ITEMS', [diffId]);
     }
 
-    querySnapshotById(snapshotId)
+    reconstructSnapshotById(snapshotId)
     {
         var snapshotReconstructor = null;
         return Promise.resolve()
@@ -73,9 +77,21 @@ class HistorySnapshotReader
             })
             .then(diffsItems => {
                 snapshotReconstructor.applyDiffsItems(diffsItems);
-                return snapshotReconstructor.getSnapshotList();
+                return snapshotReconstructor.getSnapshot();
             })
             ;
+    }
+
+    reconstructRecentShaphot()
+    {
+        return this.queryRecentSnapshot()
+            .then(snapshot => {
+                this.logger.info('[reconstructRecentShaphot] db snapshot: ', snapshot);
+                if (!snapshot) {
+                    return {}
+                }
+                return this.reconstructSnapshotById(snapshot.id);
+            })
     }
 
     _queryDiffsItems(diffs)

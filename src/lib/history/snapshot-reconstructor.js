@@ -1,18 +1,22 @@
 const Promise = require('the-promise');
 const _ = require('the-lodash');
+const Snapshot = require('./snapshot');
 
 class SnapshotReconstructor
 {
     constructor(snapshotItems)
     {
-        this._snapshot = {};
+        this._snapshot = new Snapshot();
 
-        for(var item of snapshotItems)
+        if (snapshotItems)
         {
-            this._snapshot[this._makeId(item)] = item;
+            for(var item of snapshotItems)
+            {
+                this._snapshot.addItem(item);
+            }
         }
     }
-
+    
     applyDiffsItems(diffsItems)
     {
         for(var diffItems of diffsItems)
@@ -25,27 +29,22 @@ class SnapshotReconstructor
     {
         for(var item of diffItems)
         {
-            var id = this._makeId(item);
             if (item.present)
             {
-                this._snapshot[id] = item;
+                this._snapshot.addItem(item);
             }
             else
             {
-                delete this._snapshot[id];
+                this._snapshot.deleteItem(item);
             }
         }
     }
 
-    getSnapshotList()
+    getSnapshot()
     {
-        return _.values(this._snapshot);
+        return this._snapshot;
     }
 
-    _makeId(item)
-    {
-        return item.dn + '-' + _.stableStringify(item.info);
-    }
 }
 
 module.exports = SnapshotReconstructor;

@@ -1,6 +1,8 @@
 const Promise = require('the-promise');
 const _ = require('the-lodash');
 const SnapshotReader = require('./snapshot-reader');
+const Helpers = require('./helpers');
+const Snapshot = require('./snapshot');
 
 class HistoryDbAccessor
 {
@@ -15,6 +17,10 @@ class HistoryDbAccessor
 
     get logger() {
         return this._logger;
+    }
+
+    get snapshotReader() {
+        return this._snapshotReader;
     }
 
     _registerStatements()
@@ -70,31 +76,49 @@ class HistoryDbAccessor
         return this._execute('DELETE_SNAPSHOT_ITEM', params);
     }
 
-    syncSnapshotItems(snapshotId, items)
+    _makeDbSnapshotFromItems(items)
     {
-        this.logger.info("[syncSnapshotItems] BEGIN, item count: %s", items.length);
+        var snapshot = new Snapshot();
+        for(var x of items)
+        {
+            var key = Helpers.makeKey(x);
+            if (!snapshot.findById(key)) {
+                snapshot._items[key] = {};
+            }
+            var id = x.id;
+            delete x.id;
+            snapshot._items[key][id] = x;
+        }
+        return snapshot;
+    }
+
+    syncSnapshotItems(snapshotId, snapshot)
+    {
+        this.logger.info("[syncSnapshotItems] BEGIN, item count: %s", snapshot.count);
+        // this.logger.error("[syncSnapshotItems] BEGIN, SNAPSHOT!!!!!", snapshot.getDict()["root"]);
 
         return this._snapshotReader.querySnapshotItems(snapshotId)
-            .then(currentItems => {
-                this.logger.info("[syncSnapshotItems] currentItems count: %s", currentItems.length);
+            .then(dbItems => {
+                var dbSnapshot = this._makeDbSnapshotFromItems(dbItems);
+                this.logger.info("[syncSnapshotItems] dbSnapshot count: %s", dbSnapshot.count);
 
                 {
-                    var writer = this.logger.outputStream("history-items-new.json");
+                    var writer = this.logger.outputStream("history-snapshot-target.json");
                     if (writer) {
-                        writer.write(_.cloneDeep(items));
+                        writer.write(_.cloneDeep(snapshot));
                         writer.close();
                     }
                 }
     
                 {
-                    var writer = this.logger.outputStream("history-items-current.json");
+                    var writer = this.logger.outputStream("history-snapshot-db.json");
                     if (writer) {
-                        writer.write(_.cloneDeep(currentItems));
+                        writer.write(_.cloneDeep(dbSnapshot));
                         writer.close();
                     }
                 }
 
-                var itemsDelta = this.produceDelta(items, currentItems);
+                var itemsDelta = this.produceDelta(snapshot, dbSnapshot);
                 this.logger.info("[syncSnapshotItems] itemsDelta count: %s", itemsDelta.length);
 
                 {
@@ -192,19 +216,17 @@ class HistoryDbAccessor
         return this._execute('DELETE_DIFF_ITEM', params);
     }
 
-    syncDiffItems(diffId, items)
+    syncDiffItems(diffId, diffSnapshot)
     {
-        this.logger.info("[syncDiffItems] item count: ", items.length);
-        // this.logger.info("[syncDiffItems] items: ", items);
+        this.logger.info("[syncDiffItems] item count: ", diffSnapshot.count);
 
         return this._snapshotReader.queryDiffItems(diffId)
-            .then(currentItems => {
-                // this.logger.info("[syncDiffItems] currentItems: ", currentItems);
+            .then(dbItems => {
+                var dbSnapshot = this._makeDbSnapshotFromItems(dbItems);
 
-                var itemsDelta = this.produceDelta(items, currentItems);
+                var itemsDelta = this.produceDelta(diffSnapshot, dbSnapshot);
+                // this.logger.info('[syncDiffItems] itemsDelta: ', itemsDelta);
 
-                // this.logger.info("[syncDiffItems] delta: ", itemsDelta);
-                
                 var statements = itemsDelta.map(x => {
                     if (x.action == 'C')
                     {
@@ -245,76 +267,39 @@ class HistoryDbAccessor
                     this.logger.info("[syncDiffItems] INVALID delta: ", x);
                     throw new Error("INVALID");
                 })
+                // this.logger.info('[syncDiffItems] ', statements);
 
                 return this._executeMany(statements);
             });
     }
 
     /* DIFF ITEMS END */
-
-    _getDeltaKey(item)
+    produceDelta(targetSnapshot, dbSnapshot)
     {
-        var keyInfo = {
-            dn: item.dn,
-            info: item.info
-        };
-        return _.stableStringify(keyInfo);
-    }
-
-    produceDelta(items, currentItems)
-    {
-        var newItemsMaps = {};
-        for(var x of items)
-        {
-            var key = this._getDeltaKey(x);
-            if (!newItemsMaps[key]) {
-                newItemsMaps[key] = {
-                }
-            }
-            newItemsMaps[key] = x;
-        }
-
-        var currentItemsMap = {};
-        for(var x of currentItems)
-        {
-            var key = this._getDeltaKey(x);
-            if (!currentItemsMap[key]) {
-                currentItemsMap[key] = {
-                }
-            }
-            var id = x.id;
-            delete x.id;
-            currentItemsMap[key][id] = x;
-        }
-
-        var itemsDelta = this._produceItemsDelta(newItemsMaps, currentItemsMap);
-        return itemsDelta;
-    }
-
-    _produceItemsDelta(newItemsMaps, currentItemsMap)
-    {
+        this.logger.info("[produceDelta] targetSnapshot count: %s",  targetSnapshot.count);
         var itemsDelta = [];
 
-        for(var key of _.keys(newItemsMaps))
+        for(var key of targetSnapshot.keys)
         {
             var shouldCreate = true;
-            var newItem = newItemsMaps[key];
-            if (currentItemsMap[key])
+            var targetItem = targetSnapshot.findById(key);
+            var dbItemDict = dbSnapshot.findById(key)
+            if (dbItemDict)
             {
-                for(var id of _.keys(currentItemsMap[key]))
+                for(var id of _.keys(dbItemDict))
                 {
+                    var dbItem = dbItemDict[id];
                     if (shouldCreate)
                     {
                         shouldCreate = false;
-                        var currentItem = currentItemsMap[key][id];
-                        if (!_.fastDeepEqual(newItem, currentItem))
+                        if (!_.fastDeepEqual(targetItem, dbItem))
                         {
                             itemsDelta.push({
                                 action: 'U',
                                 oldItemId: id,
                                 reason: 'not-equal',
-                                item: newItem,
-                                currentItem: currentItem
+                                item: targetItem,
+                                currentItem: dbItem
                             });
                         }
                     }
@@ -324,7 +309,7 @@ class HistoryDbAccessor
                             action: 'D',
                             id: id,
                             reason: 'already-found',
-                            item: currentItemsMap[key][id]
+                            item: dbItemDict
                         });
                     }
                 }
@@ -334,17 +319,17 @@ class HistoryDbAccessor
             {
                 itemsDelta.push({
                     action: 'C',
-                    item: newItem,
+                    item: targetItem,
                     reason: 'not-found'
                 });
             }
         }
 
-        for(var key of _.keys(currentItemsMap))
+        for(var key of dbSnapshot.keys)
         {
-            if (!newItemsMaps[key])
+            if (!targetSnapshot.findById(key))
             {
-                for(var id of _.keys(currentItemsMap[key]))
+                for(var id of _.keys(dbSnapshot[key]))
                 {
                     itemsDelta.push({
                         action: 'D',

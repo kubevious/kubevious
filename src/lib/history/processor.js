@@ -1,6 +1,8 @@
 const Promise = require('the-promise');
 const _ = require('the-lodash');
 const HistoryAccessor = require("./db-accessor");
+const Helpers = require('./helpers');
+const Snapshot = require('./snapshot');
 
 class HistoryProcessor
 {
@@ -12,6 +14,7 @@ class HistoryProcessor
         this._snapshotQueue = [];
         this._isProcessing = false;
         this._latestSnapshot = null;
+        this._latestReconstructedSnapshot = null;
 
         context.mysqlDriver.onConnect(this._onDbConnected.bind(this));
     }
@@ -20,12 +23,14 @@ class HistoryProcessor
         return this._logger;
     }
 
-    acceptSnapshot(itemsMap)
+    acceptSnapshot(logicItemsMap)
     {
         this._logger.info("[acceptItems] ...");
 
-        var snapshot = this._produceSnapshot(itemsMap);
-        this._logger.info("[acceptItems] snapshot item count: %s", snapshot.items.length);
+        var snapshot = this._produceSnapshot(logicItemsMap);
+        this._logger.info("[acceptItems] snapshot item count: %s", snapshot.getItems().length);
+        // this._logger.info("[acceptItems] snapshot item count: ", _.keys(snapshot.getDict()));
+
         this._snapshotQueue.push(snapshot);
         while(this._snapshotQueue.length > 10) {
             this._snapshotQueue.shift();
@@ -79,7 +84,7 @@ class HistoryProcessor
             .then(() => this._dbAccessor.fetchSnapshot(snapshot.date))
             .then(dbSnapshot => {
                 this.logger.info("[_persistSnapshot] ", dbSnapshot);
-                return this._dbAccessor.syncSnapshotItems(dbSnapshot.id, snapshot.items);
+                return this._dbAccessor.syncSnapshotItems(dbSnapshot.id, snapshot);
             })
     }
 
@@ -91,9 +96,14 @@ class HistoryProcessor
                 return this._dbAccessor.fetchDiff(dbSnapshot.id, snapshot.date);
             })
             .then(dbDiff => {
-                this.logger.info('[_persistDiff] ', dbDiff);
-                var itemsDelta = this._dbAccessor.produceDelta(snapshot.items, this._latestSnapshot.items);
-                itemsDelta = itemsDelta.map(x => {
+                // this.logger.info('[_persistDiff] ', dbDiff);
+                var itemsDelta = this._dbAccessor.produceDelta(snapshot, this._latestSnapshot);
+
+                var diffSnapshot = new Snapshot();
+                for(var x of itemsDelta)
+                {
+                    // this.logger.info('[_persistDiff] X: ', x);
+
                     var newItem = _.clone(x.item);
                     if (x.action == 'C' || x.action == 'U')
                     {
@@ -103,18 +113,20 @@ class HistoryProcessor
                     {
                         newItem.present = 0;
                     }
-                    return newItem;
-                });
-                return this._dbAccessor.syncDiffItems(dbDiff.id, itemsDelta);
+                    diffSnapshot.addItem(newItem);
+                }
+
+                return this._dbAccessor.syncDiffItems(dbDiff.id, diffSnapshot);
             })
     }
 
-    _produceSnapshot(itemsMap)
+    _produceSnapshot(logicItemsMap)
     {
-        var snapshotItems = [];
-        for(var item of _.values(itemsMap))
+        var snapshot = new Snapshot();
+
+        for(var item of _.values(logicItemsMap))
         {
-            snapshotItems.push({
+            snapshot.addItem({
                 dn: item.dn,
                 info: { kind: 'node' },
                 config: item.exportNode()
@@ -123,7 +135,7 @@ class HistoryProcessor
             var alerts = item.extractAlerts();
             if (alerts.length > 0) 
             {
-                snapshotItems.push({
+                snapshot.addItem({
                     dn: item.dn,
                     info: { kind: 'alerts' },
                     config: item.extractAlerts()
@@ -133,7 +145,7 @@ class HistoryProcessor
             var properties = item.extractProperties();
             for(var props of properties)
             {
-                snapshotItems.push({
+                snapshot.addItem({
                     dn: item.dn,
                     info: { kind: 'props', name: props.id },
                     config: props
@@ -141,21 +153,34 @@ class HistoryProcessor
             }
         }
 
-        return {
-            date: new Date("2020-02-07 02:18:22"),
-            items: snapshotItems
-        };
+        snapshot.setDate(new Date("2020-02-07 02:18:22"));
+        return snapshot;
     }
 
     _onDbConnected()
     {
         this._logger.info("[_onDbConnected] ...");
-        return this._tryProcessSnapshot();
+        this._latestReconstructedSnapshot = null;
+        return this._dbAccessor.snapshotReader.reconstructRecentShaphot()
+            .then(snapshot => {
+                // this._logger.info("[_onDbConnected] reconstructed snapshot: ",
+                // snapshotItems);
+                //  _.keys(snapshotItems));
+
+                this._latestReconstructedSnapshot = snapshot;
+
+                return this._tryProcessSnapshot();
+            })
     }
 
     _tryProcessSnapshot()
     {
         if (this._isProcessing) {
+            return;
+        }
+
+        if (!this._latestReconstructedSnapshot) {
+            this._logger.warn("[_tryProcessSnapshot] snapshot not yet fetched");
             return;
         }
 
