@@ -15,6 +15,7 @@ class HistoryProcessor
         this._isProcessing = false;
         this._latestSnapshot = null;
         this._currentState = null;
+        this._interation = 0;
 
         context.mysqlDriver.onConnect(this._onDbConnected.bind(this));
     }
@@ -50,6 +51,8 @@ class HistoryProcessor
             })
             .then(() => {
 
+                this._interation += 1;
+
                 return this._dbAccessor.executeInTransaction(() => {
                     return Promise.resolve()
                         .then(() => this._persistSnapshot(snapshot))
@@ -68,8 +71,6 @@ class HistoryProcessor
 
     _persistSnapshot(snapshot)
     {
-        this._itemsDelta = this._dbAccessor.produceDelta(snapshot, this._latestSnapshot);
-
         if (this._currentState.snapshot_id) {
             return;
         }
@@ -100,26 +101,83 @@ class HistoryProcessor
                 this._currentState.diff_in_snapshot = false;
                 this._currentState.diff_count += 1;
 
-                var itemsDelta = this._dbAccessor.produceDelta(snapshot, this._latestSnapshot);
+                var writer = this.logger.outputStream("history-diff-snapshot-" + this._interation + ".json");
+                if (writer) {
+                    writer.write(_.cloneDeep(snapshot));
+                    writer.close();
+                }
+
+                var writer = this.logger.outputStream("history-diff-latest-snapshot-" + this._interation + ".json");
+                if (writer) {
+                    writer.write(_.cloneDeep(this._latestSnapshot));
+                    writer.close();
+                }
+
+                var itemsDelta = this._produceDelta(snapshot, this._latestSnapshot);
+                var writer = this.logger.outputStream("history-diff-items-delta-" + this._interation + ".json");
+                if (writer) {
+                    writer.write(_.cloneDeep(itemsDelta));
+                    writer.close();
+                }
+
                 this._currentState.diff_item_count += itemsDelta.length;
 
                 var diffSnapshot = new Snapshot();
                 for(var x of itemsDelta)
                 {
-                    var newItem = _.clone(x.item);
-                    if (x.action == 'C' || x.action == 'U')
-                    {
-                        newItem.present = 1;
-                    }
-                    else
-                    {
-                        newItem.present = 0;
-                    }
+                    var newItem = _.clone(x);
                     diffSnapshot.addItem(newItem);
                 }
 
                 return this._dbAccessor.syncDiffItems(dbDiff.id, diffSnapshot);
             })
+    }
+
+    _produceDelta(targetSnapshot, currentSnapshot)
+    {
+        this.logger.info("[_produceDelta] target count: %s, current count: %s.",  targetSnapshot.count, currentSnapshot.count);
+        var itemsDelta = [];
+
+        for(var key of targetSnapshot.keys)
+        {
+            var targetItem = targetSnapshot.findById(key);
+            var currentItem = currentSnapshot.findById(key);
+            currentItem = this._sanitizeSnapshotItem(currentItem);
+            if (!currentItem || !_.fastDeepEqual(targetItem, currentItem))
+            {
+                itemsDelta.push({
+                    present: 1,
+                    dn: targetItem.dn,
+                    info: targetItem.info,
+                    config: targetItem.config
+                });
+            }
+        }
+
+        for(var key of currentSnapshot.keys)
+        {
+            var currentItem = currentSnapshot.findById(key);
+            if (!targetSnapshot.findById(key))
+            {
+                currentItem = this._sanitizeSnapshotItem(currentItem);
+                currentItem.present = 0;
+                itemsDelta.push(currentItem);
+            }
+        }
+
+        return itemsDelta;
+    }
+
+    _sanitizeSnapshotItem(item)
+    {
+        if (!item) {
+            return null;
+        }
+        return {
+            dn: item.dn,
+            info: item.info,
+            config: item.config
+        }
     }
 
     _persistConfig()
@@ -180,6 +238,12 @@ class HistoryProcessor
                     snapshot.count);
 
                 this._latestSnapshot = snapshot;
+
+                var writer = this.logger.outputStream("history-diff-latest-snapshot-" + this._interation + ".json");
+                if (writer) {
+                    writer.write(_.cloneDeep(this._latestSnapshot));
+                    writer.close();
+                }
 
                 return this._tryProcessSnapshot();
             })

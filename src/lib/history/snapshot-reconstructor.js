@@ -12,6 +12,7 @@ class SnapshotReconstructor
         {
             for(var item of snapshotItems)
             {
+                delete item.id;
                 this._snapshot.addItem(item);
             }
         }
@@ -29,6 +30,7 @@ class SnapshotReconstructor
     {
         for(var item of diffItems)
         {
+            delete item.id;
             if (item.present)
             {
                 this._snapshot.addItem(item);
