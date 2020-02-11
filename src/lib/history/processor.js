@@ -71,7 +71,7 @@ class HistoryProcessor
 
     _persistSnapshot(snapshot)
     {
-        if (this._currentState.snapshot_id) {
+        if (!this._shouldCreateNewDbSnapshot(snapshot)) {
             return;
         }
 
@@ -88,13 +88,30 @@ class HistoryProcessor
             });
     }
 
+    _shouldCreateNewDbSnapshot(snapshot)
+    {
+        if (!this._currentState.snapshot_id) {
+            return true;
+        }
+
+        if (this._currentState.diff_count > 10) {
+            return true;
+        }
+
+        return false;
+    }
+
     _persistDiff(snapshot)
     {
         this.logger.info('[_persistDiff] ', this._currentState);
+        var itemsDelta = this._produceDelta(snapshot, this._latestSnapshot);
+
+        var deltaSummary = this._constructDeltaSummary(snapshot, itemsDelta);
 
         return this._dbAccessor.fetchDiff(this._currentState.snapshot_id,
                                           snapshot.date,
-                                          this._currentState.diff_in_snapshot)
+                                          this._currentState.diff_in_snapshot,
+                                          deltaSummary)
             .then(dbDiff => {
                 this._currentState.diff_id = dbDiff.id;
                 this._currentState.diff_date = dbDiff.date;
@@ -113,7 +130,6 @@ class HistoryProcessor
                     writer.close();
                 }
 
-                var itemsDelta = this._produceDelta(snapshot, this._latestSnapshot);
                 var writer = this.logger.outputStream("history-diff-items-delta-" + this._interation + ".json");
                 if (writer) {
                     writer.write(_.cloneDeep(itemsDelta));
@@ -131,6 +147,71 @@ class HistoryProcessor
 
                 return this._dbAccessor.syncDiffItems(dbDiff.id, diffSnapshot);
             })
+    }
+
+    _constructDeltaSummary(snapshot, itemsDelta)
+    {
+
+        var deltaSummary = {
+            snapshot: this._constructSnapshotSummary(snapshot.getItems()),
+            delta: this._constructSnapshotSummary(itemsDelta)
+        }
+
+        var alertsDict = {};
+        this._constructAlertsSummary(snapshot, alertsDict, 1);
+        deltaSummary.snapshot.alerts = _.sum(_.values(alertsDict));
+
+        this._constructAlertsSummary(this._latestSnapshot, alertsDict, -1);
+        deltaSummary.delta.alerts = _.sum(_.values(alertsDict));
+
+        return deltaSummary;
+    }
+
+    _constructSnapshotSummary(items)
+    {
+        var dns = {};
+        var summary = {
+            items: 0,
+            kinds: {}
+        };
+
+        for(var item of items)
+        {
+            if (item.info.kind != 'alerts')
+            {
+                if (!dns[item.dn])
+                {
+                    dns[item.dn] = true;
+                    
+                    summary.items = summary.items + 1;
+
+                    if (!summary.kinds[item.info['item-kind']])
+                    {
+                        summary.kinds[item.info['item-kind']] = 1;
+                    }
+                    else
+                    {
+                        summary.kinds[item.info['item-kind']] = summary.kinds[item.info['item-kind']] + 1;
+                    }
+                }
+            }
+        }
+
+        return summary;
+    }
+
+    _constructAlertsSummary(snapshot, alertsDict, mult)
+    {
+        for(var item of snapshot.getItems())
+        {
+            if (item.info.kind == 'alerts')
+            {
+                if (_.isNullOrUndefined(alertsDict[item.dn])) {
+                    alertsDict[item.dn] = 0;
+                }
+                alertsDict[item.dn] += item.config.length * mult;
+            }
+        }
     }
 
     _produceDelta(targetSnapshot, currentSnapshot)
@@ -193,7 +274,7 @@ class HistoryProcessor
         {
             snapshot.addItem({
                 dn: item.dn,
-                info: { kind: 'node' },
+                info: { 'item-kind': item.kind, kind: 'node' },
                 config: item.exportNode()
             });
 
@@ -202,7 +283,7 @@ class HistoryProcessor
             {
                 snapshot.addItem({
                     dn: item.dn,
-                    info: { kind: 'alerts' },
+                    info: { 'item-kind': item.kind, kind: 'alerts' },
                     config: item.extractAlerts()
                 });
             }
@@ -212,13 +293,15 @@ class HistoryProcessor
             {
                 snapshot.addItem({
                     dn: item.dn,
-                    info: { kind: 'props', name: props.id },
+                    info: { 'item-kind': item.kind, kind: 'props', name: props.id },
                     config: props
                 })
             }
         }
 
-        snapshot.setDate(new Date("2020-02-07 02:18:22"));
+        snapshot.setDate(new Date());
+        // snapshot.setDate(new Date("2020-02-07 02:18:22"));
+
         return snapshot;
     }
 

@@ -34,7 +34,7 @@ class HistoryDbAccessor
         this._registerStatement('DELETE_SNAPSHOT_ITEM', 'DELETE FROM `snap_items` WHERE `id` = ?;');
 
         this._registerStatement('FIND_DIFF', 'SELECT * FROM `diffs` WHERE `snapshot_id` = ? AND `date` = ? AND `in_snapshot` = ? ORDER BY `id` DESC LIMIT 1;');
-        this._registerStatement('INSERT_DIFF', 'INSERT INTO `diffs` (`snapshot_id`, `date`, `in_snapshot`) VALUES (?, ?, ?);');
+        this._registerStatement('INSERT_DIFF', 'INSERT INTO `diffs` (`snapshot_id`, `date`, `in_snapshot`, `summary`) VALUES (?, ?, ?, ?);');
 
         this._registerStatement('INSERT_DIFF_ITEM', 'INSERT INTO `diff_items` (`diff_id`, `dn`, `info`, `present`, `config`) VALUES (?, ?, ?, ?, ?);');
         this._registerStatement('UPDATE_DIFF_ITEM', 'UPDATE `diff_items` SET `dn` = ?, `info` = ?, `present` = ?, `config` = ? WHERE `id` = ?;');
@@ -201,13 +201,14 @@ class HistoryDbAccessor
 
     /* DIFF BEGIN */
 
-    fetchDiff(snapshotId, date, in_snapshot)
+    fetchDiff(snapshotId, date, in_snapshot, summary)
     {
         date = makeDate(date);
         var params = [snapshotId, toMysqlFormat(date), in_snapshot]; 
         return this._execute('FIND_DIFF', params)
             .then(results => {
                 if (!results.length) {
+                    params = [snapshotId, toMysqlFormat(date), in_snapshot, summary]; 
                     return this._execute('INSERT_DIFF', params)
                         .then(insertResult => {
                             var newObj = {
