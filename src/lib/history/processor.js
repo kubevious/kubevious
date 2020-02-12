@@ -3,6 +3,7 @@ const _ = require('the-lodash');
 const HistoryAccessor = require("./db-accessor");
 const Helpers = require('./helpers');
 const Snapshot = require('./snapshot');
+const DateUtils = require('../utils/date-utils');
 
 class HistoryProcessor
 {
@@ -13,6 +14,7 @@ class HistoryProcessor
         this._dbAccessor = new HistoryAccessor(this.logger, context.mysqlDriver);
         this._snapshotQueue = [];
         this._isProcessing = false;
+        this._isScheduled = false;
         this._latestSnapshot = null;
         this._currentState = null;
         this._interation = 0;
@@ -27,15 +29,43 @@ class HistoryProcessor
     acceptSnapshot(logicItemsMap)
     {
         this._logger.info("[acceptItems] ...");
+        var date = new Date();
 
-        var snapshot = this._produceSnapshot(logicItemsMap);
+        var snapshot = this._produceSnapshot(logicItemsMap, date);
         this._logger.info("[acceptItems] snapshot item count: %s", snapshot.getItems().length);
-
         this._snapshotQueue.push(snapshot);
-        while(this._snapshotQueue.length > 10) {
-            this._snapshotQueue.shift();
-        }
+
+        this._filterSnapshots();
+
         this._tryProcessSnapshot();
+    }
+
+    _filterSnapshots()
+    {
+        var timeDeltas = [];
+        for(var i = 0; i < this._snapshotQueue.length - 1; i++)
+        {
+            var snapshot = this._snapshotQueue[i];
+            var nextSnapshot = this._snapshotQueue[i + 1];
+            var seconds = DateUtils.diffSeconds(nextSnapshot.date, snapshot.date);
+            timeDeltas.push({
+                index: i,
+                diff: seconds
+            })
+        }
+
+        var targetCount = 10;
+        var toRemoveCount = Math.max(this._snapshotQueue.length - targetCount, 0);
+
+        if (toRemoveCount > 0)
+        {
+            var toRemove = _(timeDeltas).orderBy(['diff']).take(toRemoveCount).value();
+            toRemove = _.orderBy(toRemove, ['index'], ['desc']);
+            for(var x of toRemove)
+            {
+                this._snapshotQueue.splice(x.index, 1);
+            }
+        }
     }
 
     _processSnapshot(snapshot)
@@ -265,7 +295,7 @@ class HistoryProcessor
         return this._dbAccessor.updateConfig('STATE', this._currentState);
     }
 
-    _produceSnapshot(logicItemsMap)
+    _produceSnapshot(logicItemsMap, date)
     {
         var snapshot = new Snapshot();
 
@@ -298,7 +328,7 @@ class HistoryProcessor
             }
         }
 
-        snapshot.setDate(new Date());
+        snapshot.setDate(date);
         // snapshot.setDate(new Date("2020-02-07 02:18:22"));
 
         return snapshot;
@@ -353,13 +383,20 @@ class HistoryProcessor
             this._logger.warn("[_tryProcessSnapshot] not connected to db");
             return;
         }
-        this._logger.info("[_tryProcessSnapshot] snapshots in queue: %s", this._snapshotQueue.length);
+
+        if (!this._canProcessSnapshotNow())
+        {
+            this._rescheduleProcess();
+            return;
+        }
+
         if (this._snapshotQueue.length == 0) {
             this._logger.info("[_tryProcessSnapshot] empty");
             return;
         }
-        this._isProcessing = true;
+
         var snapshot = _.head(this._snapshotQueue);
+        this._isProcessing = true;
         return this._processSnapshot(snapshot)
             .then(() => {
                 this._logger.info("[_tryProcessSnapshot] END");
@@ -372,6 +409,46 @@ class HistoryProcessor
                 this._isProcessing = false;
                 this._logger.error("[_tryProcessSnapshot] ", reason);
             });
+    }
+
+    _canProcessSnapshotNow()
+    {
+        if (!this._currentState.diff_date) {
+            return true;
+        }
+
+        while(this._snapshotQueue.length > 0)
+        {
+            var snapshot = this._snapshotQueue[0];
+            var seconds = DateUtils.diffSeconds(snapshot.date, this._currentState.diff_date);
+            if (seconds < 60) {
+                if (this._snapshotQueue.length > 1) {
+                    this._snapshotQueue.shift();
+                } else {
+                    return false;
+                }
+            } else {
+                return true;
+            }
+        }
+
+        return true;
+    }
+
+    _rescheduleProcess()
+    {
+        this._logger.info("[_rescheduleProcess]");
+        if (this._isScheduled) {
+            return;
+        }
+        this._isScheduled = true;
+
+        setTimeout(() => {
+            this._logger.info("[_rescheduleProcess] IN TIMEOUT");
+
+            this._isScheduled = false;
+            this._tryProcessSnapshot();
+        }, 5000);
     }
 }
 

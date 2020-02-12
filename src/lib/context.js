@@ -70,7 +70,7 @@ class Context
             isReady: false,
             readyHandler: (value) => {
                 loaderInfo.isReady = value;
-                this._logger.info("[readyHandler] %s", value);
+                this._logger.debug("[readyHandler] %s", value);
                 this._checkLoadersReady();
             }
         }
