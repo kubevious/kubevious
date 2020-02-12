@@ -182,7 +182,8 @@ class MySqlDriver
             this._isConnecting = true;
     
             var connection = mysql.createConnection({
-                host     : 'localhost',
+                host     : process.env.MYSQL_HOST,
+                port     : process.env.MYSQL_PORT,
                 user     : 'root',
                 password : '',
                 database : 'kubevious'

@@ -11,4 +11,6 @@ export GKE_REGION=us-central1-a
 export GKE_K8S_CLUSTER=kubevious-samples
 #gprod-uswest1c
 # export DEBUG=express:*
+export MYSQL_HOST=localhost
+export MYSQL_PORT=3306
 nodemon src/mock/index-gke

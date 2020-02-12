@@ -65,19 +65,33 @@ module.exports = {
         volumesProperties['Count'] = volumesConfig.length;
         appScope.properties['Volumes'] = volumesConfig.length;
 
-        var containersConfig = _.get(item.config, 'spec.template.spec.containers');
-        if (!containersConfig) {
-            containersConfig = [];
+        // Normal Containers 
+        {
+            var containersConfig = _.get(item.config, 'spec.template.spec.containers');
+            if (!containersConfig) {
+                containersConfig = [];
+            }
+            appScope.properties['Container Count'] = containersConfig.length;
+            if (_.isArray(containersConfig)) {
+                for(var containerConfig of containersConfig)
+                {
+                    processContainer(containerConfig, "cont");
+                }
+            }
         }
-        appScope.properties['Container Count'] = containersConfig.length;
 
-        var volumesMap = _.makeDict(volumesConfig, x => x.name);
-        var containersMap = _.makeDict(containersConfig, x => x.name);
-
-        if (_.isArray(containersConfig)) {
-            for(var containerConfig of containersConfig)
-            {
-                processContainer(containerConfig);
+        // Init Containers 
+        {
+            var containersConfig = _.get(item.config, 'spec.template.spec.initContainers');
+            if (!containersConfig) {
+                containersConfig = [];
+            }
+            appScope.properties['Init Container Count'] = containersConfig.length;
+            if (_.isArray(containersConfig)) {
+                for(var containerConfig of containersConfig)
+                {
+                    processContainer(containerConfig, "initcont");
+                }
             }
         }
 
@@ -110,9 +124,9 @@ module.exports = {
 
         /*** HELPERS ***/
 
-        function processContainer(containerConfig)
+        function processContainer(containerConfig, kind)
         {
-            var container = app.fetchByNaming("cont", containerConfig.name);
+            var container = app.fetchByNaming(kind, containerConfig.name);
             scope.setK8sConfig(container, containerConfig);
 
             if (containerConfig.image) {
@@ -194,6 +208,7 @@ module.exports = {
             }
 
             if (_.isArray(containerConfig.volumeMounts)) {
+                var volumesMap = _.makeDict(volumesConfig, x => x.name);
                 for(var volumeRefConfig of containerConfig.volumeMounts) {
                     var volumeConfig = volumesMap[volumeRefConfig.name];
                     if (volumeConfig) {
