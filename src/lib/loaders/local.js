@@ -9,11 +9,21 @@ class LocalLoader
     {
         this._context = context;
         this._logger = context.logger.sublogger("LocalLoader");
+        this._loader = null;
+
         this.logger.info("Constructed");
     }
 
     get logger() {
         return this._logger;
+    }
+
+    setupReadyHandler(handler)
+    {
+        this._readyHandler = handler;
+        if (this._loader) {
+            this._loader.setupReadyHandler(this._readyHandler);
+        }
     }
     
     run()
@@ -29,8 +39,9 @@ class LocalLoader
                 var info = {
                     infra: "local"
                 }
-                var loader = new K8sLoader(this._context, client, info);
-                return loader.run();
+                this._loader = new K8sLoader(this._context, client, info);
+                this._loader.setupReadyHandler(this._readyHandler);
+                return this._loader.run();
             })
     }
 }

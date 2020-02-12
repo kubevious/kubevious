@@ -30,7 +30,6 @@ class HistoryProcessor
 
         var snapshot = this._produceSnapshot(logicItemsMap);
         this._logger.info("[acceptItems] snapshot item count: %s", snapshot.getItems().length);
-        // this._logger.info("[acceptItems] snapshot item count: ", _.keys(snapshot.getDict()));
 
         this._snapshotQueue.push(snapshot);
         while(this._snapshotQueue.length > 10) {

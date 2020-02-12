@@ -14,14 +14,15 @@ class Context
         this._logger = logger.sublogger("Context");
         this._loaders = [];
         this._mysqlDriver = new MysqlDriver(logger);
-        this._facadeRegistry = new FacadeRegistry(this);
         this._concreteRegistry = new ConcreteRegistry(this);
         this._k8sParser = new K8sParser(this);
         this._searchEngine = new SearchEngine(this);
         this._historyProcessor = new HistoryProcessor(this);
-
         this._logicProcessor = new LogicProcessor(this);
 
+        this._facadeRegistry = new FacadeRegistry(this);
+
+        this._areLoadersReady = false;
 
         this._server = null;
     }
@@ -54,9 +55,27 @@ class Context
         return this._historyProcessor;
     }
 
+    get logicProcessor() {
+        return this._logicProcessor;
+    }
+
+    get areLoadersReady() {
+        return this._areLoadersReady;
+    }
+
     addLoader(loader)
     {
-        this._loaders.push(loader);
+        var loaderInfo = {
+            loader: loader,
+            isReady: false,
+            readyHandler: (value) => {
+                loaderInfo.isReady = value;
+                this._logger.info("[readyHandler] %s", value);
+                this._checkLoadersReady();
+            }
+        }
+        loader.setupReadyHandler(loaderInfo.readyHandler);
+        this._loaders.push(loaderInfo);
     }
 
     setupServer()
@@ -68,7 +87,6 @@ class Context
     run()
     {
         return Promise.resolve()
-            .then(() => this._setupParsers())
             .then(() => this._processLoaders())
             .then(() => this._mysqlDriver.connect())
             .then(() => this._runServer())
@@ -83,13 +101,33 @@ class Context
     _processLoaders()
     {
         return Promise.serial(this._loaders, x => {
-            return x.run();
+            return x.loader.run();
         });
     }
 
-    _setupParsers()
+    _checkLoadersReady()
     {
+        var areLoadersReady = this._calculateLoadersReady();
+        if (areLoadersReady != this._areLoadersReady) {
+            this._areLoadersReady = areLoadersReady;
+            this.logger.info("[_checkLoadersReady] areLoadersReady: %s", areLoadersReady);
 
+            if (this._areLoadersReady)
+            {
+                this.facadeRegistry.handleAreLoadersReadyChange();
+            }
+        }
+    }
+
+    _calculateLoadersReady()
+    {
+        for(var loader of this._loaders)
+        {
+            if (!loader.isReady) {
+                return false;
+            }
+        }
+        return true;
     }
 
     _runServer()

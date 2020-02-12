@@ -12,6 +12,8 @@ class FacadeRegistry
 
         this._logicTree = {};
         this._configMap = {};
+
+        this._context.concreteRegistry.onChanged(this._handleConcreteRegistryChange.bind(this));
     }
 
     get logger() {
@@ -101,6 +103,22 @@ class FacadeRegistry
         return value.extractAlerts();
     }
 
+    _handleConcreteRegistryChange()
+    {
+        this._logger.info("[_handleConcreteRegistryChange] BEGIN");
+
+        if (this._context.areLoadersReady) {
+            this._context.logicProcessor.process();
+        }
+
+        this._logger.info("[_handleConcreteRegistryChange] END");
+    }
+
+    handleAreLoadersReadyChange()
+    {
+        this._logger.info("[handleAreLoadersReadyChange] ");
+        this._handleConcreteRegistryChange();
+    }
 }
 
 module.exports = FacadeRegistry;

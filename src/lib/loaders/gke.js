@@ -3,19 +3,28 @@ const K8sLoader = require('./k8s');
 
 class GKELoader 
 {
-    constructor(context, credentials, name, region)
+    constructor(context, credentials, name, region, readyHandler)
     {
         this._context = context;
         this._logger = context.logger.sublogger("GKELoader");
         this._credentials = credentials;
         this._name = name;
         this._region = region;
+        this._loader = null;
 
         this.logger.info("Constructed");
     }
 
     get logger() {
         return this._logger;
+    }
+
+    setupReadyHandler(handler)
+    {
+        this._readyHandler = handler;
+        if (this._loader) {
+            this._loader.setupReadyHandler(this._readyHandler);
+        }
     }
     
     run()
@@ -29,8 +38,9 @@ class GKELoader
                     region: this._region
                 }
         
-                var loader = new K8sLoader(this._context, client, info);
-                return loader.run();
+                this._loader = new K8sLoader(this._context, client, info);
+                this._loader.setupReadyHandler(this._readyHandler);
+                return this._loader.run();
             })
     }
 }

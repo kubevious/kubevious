@@ -11,10 +11,19 @@ class K8sMockLoader
         this._context = context;
         this._logger = context.logger.sublogger("K8sMockLoader");
         this.logger.info("Constructed");
+        this._isReady = false;
     }
 
     get logger() {
         return this._logger;
+    }
+
+    setupReadyHandler(handler)
+    {
+        this._readyHandler = handler;
+        if (this._isReady) {
+            this._readyHandler(true);
+        }
     }
 
     run()
@@ -34,6 +43,11 @@ class K8sMockLoader
                 this._handle(true, obj);
             }
         }
+
+        setTimeout(() => {
+            this._isReady = true;
+            this._readyHandler(true);
+        }, 3000);
     }
 
     _handle(isPresent, obj)

@@ -241,7 +241,7 @@ class HistoryDbAccessor
 
     syncDiffItems(diffId, diffSnapshot)
     {
-        this.logger.info("[syncDiffItems] item count: ", diffSnapshot.count);
+        this.logger.info("[syncDiffItems] item count: %s", diffSnapshot.count);
 
         return this._snapshotReader.queryDiffItems(diffId)
             .then(dbItems => {
