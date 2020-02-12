@@ -12,6 +12,8 @@ class K8sLoader
         this._info = info;
         this._apiTargets = {};
 
+        this._context.setupK8sClient(client);
+
         this.logger.info("Constructed");
 
         this._setupApiTargets();

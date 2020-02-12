@@ -6,6 +6,7 @@ const LogicProcessor = require('./logic/processor');
 const SearchEngine = require('./search/engine');
 const MysqlDriver = require("./utils/mysql-driver");
 const HistoryProcessor = require('./history/processor');
+const ClusterLeaderElector = require('./cluster/leader-elector')
 
 class Context
 {
@@ -25,6 +26,8 @@ class Context
         this._areLoadersReady = false;
 
         this._server = null;
+        this._k8sClient = null;
+        this._clusterLeaderElector = null;
     }
 
     get logger() {
@@ -82,6 +85,15 @@ class Context
     {
         const Server = require("./server");
         this._server = new Server(this);
+    }
+
+    setupK8sClient(client)
+    {
+        this._k8sClient = client;
+        if (this._k8sClient) 
+        {
+            this._clusterLeaderElector = new ClusterLeaderElector(this, this._k8sClient);
+        }
     }
 
     run()

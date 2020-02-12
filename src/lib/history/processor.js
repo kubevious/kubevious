@@ -34,6 +34,7 @@ class HistoryProcessor
         var snapshot = this._produceSnapshot(logicItemsMap, date);
         this._logger.info("[acceptItems] snapshot item count: %s", snapshot.getItems().length);
         this._snapshotQueue.push(snapshot);
+        this._logger.info("[acceptItems] snapshots in queue: %s", this._snapshotQueue.length);
 
         this._filterSnapshots();
 
@@ -70,6 +71,8 @@ class HistoryProcessor
 
     _processSnapshot(snapshot)
     {
+        this.logger.info("[_processSnapshot] BEGIN. Item Count: %s", snapshot.count);
+
         return Promise.resolve()
             .then(() => {
                 var writer = this.logger.outputStream("history-snapshot.json");
@@ -91,6 +94,8 @@ class HistoryProcessor
 
             })
             .then(() => {
+                this.logger.info("[_processSnapshot] END");
+
                 this._latestSnapshot = snapshot;
             })
             .catch(reason => {
@@ -100,10 +105,11 @@ class HistoryProcessor
 
     _persistSnapshot(snapshot)
     {
+
         if (!this._shouldCreateNewDbSnapshot(snapshot)) {
             return;
         }
-
+        this.logger.info("[_persistSnapshot] BEGIN. Item Count: %s", snapshot.count);
         return this._dbAccessor.fetchSnapshot(snapshot.date)
             .then(dbSnapshot => {
                 this._currentState.snapshot_id = dbSnapshot.id;
@@ -114,6 +120,9 @@ class HistoryProcessor
 
                 this.logger.info("[_persistSnapshot] ", dbSnapshot);
                 return this._dbAccessor.syncSnapshotItems(dbSnapshot.id, snapshot);
+            })
+            .then(() => {
+                this.logger.info("[_persistSnapshot] END");
             });
     }
 
@@ -132,7 +141,7 @@ class HistoryProcessor
 
     _persistDiff(snapshot)
     {
-        this.logger.info('[_persistDiff] ', this._currentState);
+        this.logger.info('[_persistDiff] BEGIN. ', this._currentState);
         var itemsDelta = this._produceDelta(snapshot, this._latestSnapshot);
 
         var deltaSummary = this._constructDeltaSummary(snapshot, itemsDelta);
@@ -175,6 +184,9 @@ class HistoryProcessor
                 }
 
                 return this._dbAccessor.syncDiffItems(dbDiff.id, diffSnapshot);
+            })
+            .then(() => {
+                this.logger.info('[_persistDiff] END.');
             })
     }
 
@@ -444,8 +456,6 @@ class HistoryProcessor
         this._isScheduled = true;
 
         setTimeout(() => {
-            this._logger.info("[_rescheduleProcess] IN TIMEOUT");
-
             this._isScheduled = false;
             this._tryProcessSnapshot();
         }, 5000);
