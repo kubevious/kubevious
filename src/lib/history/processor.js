@@ -1,7 +1,6 @@
 const Promise = require('the-promise');
 const _ = require('the-lodash');
 const HistoryAccessor = require("./db-accessor");
-const Helpers = require('./helpers');
 const Snapshot = require('./snapshot');
 const DateUtils = require('../utils/date-utils');
 
@@ -19,6 +18,9 @@ class HistoryProcessor
         this._currentState = null;
         this._interation = 0;
 
+        // TODO: Temporary
+        // this._skipProduceHistory = true;
+
         context.mysqlDriver.onConnect(this._onDbConnected.bind(this));
     }
 
@@ -28,6 +30,10 @@ class HistoryProcessor
 
     acceptSnapshot(logicItemsMap)
     {
+        if (this._skipProduceHistory) {
+            return;
+        }
+        
         this._logger.info("[acceptItems] ...");
         var date = new Date();
 
