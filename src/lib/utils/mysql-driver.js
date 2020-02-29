@@ -98,6 +98,8 @@ class MySqlDriver
             statement.execute(params, (err, results, fields) => {
                 if (err) {
                     this.logger.error("[executeStatement] ERROR IN %s. ", id, err);
+                    this.logger.error("[executeStatement] Statement INFO: %s", id, params);
+
                     reject(err);
                     return;
                 }

@@ -224,7 +224,7 @@ class HistoryProcessor
 
         for(var item of items)
         {
-            if (item.info.kind != 'alerts')
+            if (item['config-kind'] != 'alerts')
             {
                 if (!dns[item.dn])
                 {
@@ -232,13 +232,13 @@ class HistoryProcessor
                     
                     summary.items = summary.items + 1;
 
-                    if (!summary.kinds[item.info['item-kind']])
+                    if (!summary.kinds[item.kind])
                     {
-                        summary.kinds[item.info['item-kind']] = 1;
+                        summary.kinds[item.kind] = 1;
                     }
                     else
                     {
-                        summary.kinds[item.info['item-kind']] = summary.kinds[item.info['item-kind']] + 1;
+                        summary.kinds[item.kind] = summary.kinds[item.kind] + 1;
                     }
                 }
             }
@@ -251,7 +251,7 @@ class HistoryProcessor
     {
         for(var item of snapshot.getItems())
         {
-            if (item.info.kind == 'alerts')
+            if (item['config-kind'] == 'alerts')
             {
                 if (_.isNullOrUndefined(alertsDict[item.dn])) {
                     alertsDict[item.dn] = 0;
@@ -276,7 +276,9 @@ class HistoryProcessor
                 itemsDelta.push({
                     present: 1,
                     dn: targetItem.dn,
-                    info: targetItem.info,
+                    kind: targetItem.kind,
+                    'config-kind': targetItem['config-kind'],
+                    name: targetItem.name,
                     config: targetItem.config
                 });
             }
@@ -301,11 +303,16 @@ class HistoryProcessor
         if (!item) {
             return null;
         }
-        return {
+        var config = {
             dn: item.dn,
-            info: item.info,
+            kind: item.kind,
+            'config-kind': item['config-kind'],
             config: item.config
         }
+        if (item.name) {
+            config.name = item.name;
+        }
+        return config;
     }
 
     _persistConfig()
@@ -321,7 +328,8 @@ class HistoryProcessor
         {
             snapshot.addItem({
                 dn: item.dn,
-                info: { 'item-kind': item.kind, kind: 'node' },
+                kind: item.kind,
+                'config-kind': 'node',
                 config: item.exportNode()
             });
 
@@ -330,7 +338,8 @@ class HistoryProcessor
             {
                 snapshot.addItem({
                     dn: item.dn,
-                    info: { 'item-kind': item.kind, kind: 'alerts' },
+                    kind: item.kind,
+                    'config-kind': 'alerts',
                     config: item.extractAlerts()
                 });
             }
@@ -340,7 +349,9 @@ class HistoryProcessor
             {
                 snapshot.addItem({
                     dn: item.dn,
-                    info: { 'item-kind': item.kind, kind: 'props', name: props.id },
+                    kind: item.kind,
+                    'config-kind': 'props',
+                    name: props.id,
                     config: props
                 })
             }

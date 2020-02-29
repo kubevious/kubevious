@@ -29,15 +29,15 @@ class HistoryDbAccessor
         this._registerStatement('FIND_SNAPSHOT', 'SELECT * FROM `snapshots` WHERE `date` = ? ORDER BY `id` DESC LIMIT 1;');
         this._registerStatement('INSERT_SNAPSHOT', 'INSERT INTO `snapshots` (`date`) VALUES (?);');
 
-        this._registerStatement('INSERT_SNAPSHOT_ITEM', 'INSERT INTO `snap_items` (`snapshot_id`, `dn`, `info`, `config`) VALUES (?, ?, ?, ?);');
-        this._registerStatement('UPDATE_SNAPSHOT_ITEM', 'UPDATE `snap_items` SET `dn` = ?, `info` = ?, `config` = ? WHERE `id` = ?;');
+        this._registerStatement('INSERT_SNAPSHOT_ITEM', 'INSERT INTO `snap_items` (`snapshot_id`, `dn`, `kind`, `config-kind`, `name`, `config`) VALUES (?, ?, ?, ?, ?, ?);');
+        this._registerStatement('UPDATE_SNAPSHOT_ITEM', 'UPDATE `snap_items` SET `dn` = ?, `kind` = ?, `config-kind` = ?, `name` = ?, `config` = ? WHERE `id` = ?;');
         this._registerStatement('DELETE_SNAPSHOT_ITEM', 'DELETE FROM `snap_items` WHERE `id` = ?;');
 
         this._registerStatement('FIND_DIFF', 'SELECT * FROM `diffs` WHERE `snapshot_id` = ? AND `date` = ? AND `in_snapshot` = ? ORDER BY `id` DESC LIMIT 1;');
         this._registerStatement('INSERT_DIFF', 'INSERT INTO `diffs` (`snapshot_id`, `date`, `in_snapshot`, `summary`) VALUES (?, ?, ?, ?);');
 
-        this._registerStatement('INSERT_DIFF_ITEM', 'INSERT INTO `diff_items` (`diff_id`, `dn`, `info`, `present`, `config`) VALUES (?, ?, ?, ?, ?);');
-        this._registerStatement('UPDATE_DIFF_ITEM', 'UPDATE `diff_items` SET `dn` = ?, `info` = ?, `present` = ?, `config` = ? WHERE `id` = ?;');
+        this._registerStatement('INSERT_DIFF_ITEM', 'INSERT INTO `diff_items` (`diff_id`, `dn`, `kind`, `config-kind`, `name`, `present`, `config`) VALUES (?, ?, ?, ?, ?, ?, ?);');
+        this._registerStatement('UPDATE_DIFF_ITEM', 'UPDATE `diff_items` SET `dn` = ?, `kind` = ?, `config-kind` = ?, `name` = ?, `present` = ?, `config` = ? WHERE `id` = ?;');
         this._registerStatement('DELETE_DIFF_ITEM', 'DELETE FROM `diff_items` WHERE `id` = ?;');
 
         this._registerStatement('GET_DIFFS', 'SELECT * FROM diffs;');
@@ -85,9 +85,9 @@ class HistoryDbAccessor
     }
 
     /* SNAPSHOT ITEMS BEGIN */
-    insertSnapshotItem(snapshotId, dn, info, config)
+    insertSnapshotItem(snapshotId, dn, kind, configKind, name, config)
     {
-        var params = [snapshotId, dn, info, config]; 
+        var params = [snapshotId, dn, kind, configKind, name, config]; 
         return this._execute('INSERT_SNAPSHOT_ITEM', params);
     }
 
@@ -159,7 +159,9 @@ class HistoryDbAccessor
                             params: [
                                 snapshotId,
                                 x.item.dn,
-                                x.item.info,
+                                x.item.kind,
+                                x.item['config-kind'],
+                                x.item.name,
                                 x.item.config
                             ]
                         };
@@ -170,7 +172,9 @@ class HistoryDbAccessor
                             id: 'UPDATE_SNAPSHOT_ITEM',
                             params: [
                                 x.item.dn,
-                                x.item.info,
+                                x.item.kind,
+                                x.item['config-kind'],
+                                x.item.name,
                                 x.item.config,
                                 x.oldItemId
                             ]
@@ -227,9 +231,9 @@ class HistoryDbAccessor
     /* DIFF END */
 
     /* DIFF ITEMS BEGIN */
-    insertDiffItem(diffId, dn, info, isPresent, config)
+    insertDiffItem(diffId, dn, kind, configKind, name, isPresent, config)
     {
-        var params = [diffId, dn, info, isPresent, config]; 
+        var params = [diffId, dn, kind, configKind, name, isPresent, config]; 
         return this._execute('INSERT_DIFF_ITEM', params);
     }
 
@@ -258,7 +262,9 @@ class HistoryDbAccessor
                             params: [
                                 diffId,
                                 x.item.dn,
-                                x.item.info,
+                                x.item.kind,
+                                x.item['config-kind'],
+                                x.item.name,
                                 x.item.present,
                                 x.item.config
                             ]
@@ -270,7 +276,9 @@ class HistoryDbAccessor
                             id: 'UPDATE_DIFF_ITEM',
                             params: [
                                 x.item.dn,
-                                x.item.info,
+                                x.item.kind,
+                                x.item['config-kind'],
+                                x.item.name,
                                 x.item.present,
                                 x.item.config,
                                 x.oldItemId
