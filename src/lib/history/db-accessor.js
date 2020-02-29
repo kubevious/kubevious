@@ -3,6 +3,7 @@ const _ = require('the-lodash');
 const SnapshotReader = require('./snapshot-reader');
 const Helpers = require('./helpers');
 const Snapshot = require('./snapshot');
+const DateUtils = require('../utils/date-utils');
 
 class HistoryDbAccessor
 {
@@ -66,7 +67,9 @@ class HistoryDbAccessor
    
     fetchSnapshot(date)
     {
-        var params = [toMysqlFormat(date)]; 
+        date = DateUtils.makeDate(date);
+
+        var params = [ date ]; 
         return this._execute('FIND_SNAPSHOT', params)
             .then(results => {
                 if (!results.length) {
@@ -207,12 +210,12 @@ class HistoryDbAccessor
 
     fetchDiff(snapshotId, date, in_snapshot, summary)
     {
-        date = makeDate(date);
-        var params = [snapshotId, toMysqlFormat(date), in_snapshot]; 
+        date = DateUtils.makeDate(date);
+        var params = [snapshotId, date, in_snapshot]; 
         return this._execute('FIND_DIFF', params)
             .then(results => {
                 if (!results.length) {
-                    params = [snapshotId, toMysqlFormat(date), in_snapshot, summary]; 
+                    params = [snapshotId, date, in_snapshot, summary]; 
                     return this._execute('INSERT_DIFF', params)
                         .then(insertResult => {
                             var newObj = {
@@ -394,28 +397,5 @@ class HistoryDbAccessor
     }
 
 }
-
-function twoDigits(d) {
-    if(0 <= d && d < 10) return "0" + d.toString();
-    if(-10 < d && d < 0) return "-0" + (-1*d).toString();
-    return d.toString();
-}
-function toMysqlFormat(date)
-{
-    date = makeDate(date);
-    return date.getUTCFullYear() + "-" + 
-        twoDigits(1 + date.getUTCMonth()) + "-" + 
-        twoDigits(date.getUTCDate()) + " " + 
-        twoDigits(date.getUTCHours()) + ":" + 
-        twoDigits(date.getUTCMinutes()) + ":" + 
-        twoDigits(date.getUTCSeconds());
-};
-function makeDate(date)
-{
-    if (_.isString(date)) {
-        date = new Date(date);
-    }
-    return date;
-};
 
 module.exports = HistoryDbAccessor;
