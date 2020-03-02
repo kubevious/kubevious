@@ -58,6 +58,7 @@ For more details on installation options visit [Deployment Repository].
 * [Enables Full Text Search](#enables-full-text-search)
 * [Capacity Planning and Resource Usage Optimization](#capacity-planning-and-resource-usage-optimization)
 * [Radioactive & Overprivileged Workloads](#radioactive--overprivileged-workloads)
+* [Time Machine](#time-machine)
 
 
 ## Visualizes Cluster In An Application Centric Way
@@ -110,6 +111,13 @@ Kubevious renders not only absolute resource request values, but also relative u
 Granting excessive control to workloads not only increases the risk of being hacked but also affects the stability of nodes and the entire cluster.
 
 Kubevious marks workloads and their corresponding namespaces as radioactive. Specifically, it checks for privileged containers, hostPID, hostNetwork, hostIPC flags, and mounts to sensitive host locations like docker.sock file, etc.  
+
+## Time Machine
+![Time Machine](https://github.com/kubevious/media/raw/master/screens/time-machine-1.png)
+
+With ever changing configuration it is hard to keep track and identify the source of the problem. 
+
+Kubvious allows you to travel back in time and navigate configuration as well as errors.
 
 # Authors
 Everyone is welcome to contribute. See [CONTRIBUTING] for instructions on how to contribute.
