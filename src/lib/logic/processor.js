@@ -137,23 +137,30 @@ class LogicProcessor
 
     process()
     {
-        this._logger.info("[process] BEGIN");
+        try
+        {
+            this._logger.info("[process] BEGIN");
 
-        var scope = new Scope(this._context);
-
-        this._processParsers(scope);
-        this._processPolishers(scope);
-        this._propagete(scope);
-
-        this._logger.info("[process] READY");
-
-        this._context.facadeRegistry.acceptItems(scope.extractItems());
-        this._context.facadeRegistry.updateLogicTree(scope.root.exportTree());
-        this._context.facadeRegistry.updateConfigTree(scope.configMap);
-
-        this._logger.info("[process] END");
-
-        return this._dumpToFile(scope);
+            var scope = new Scope(this._context);
+    
+            this._processParsers(scope);
+            this._processPolishers(scope);
+            this._propagete(scope);
+    
+            this._logger.info("[process] READY");
+    
+            this._context.facadeRegistry.acceptItems(scope.extractItems());
+            this._context.facadeRegistry.updateLogicTree(scope.root.exportTree());
+            this._context.facadeRegistry.updateConfigTree(scope.configMap);
+    
+            this._logger.info("[process] END");
+    
+            return this._dumpToFile(scope);
+        }
+        catch(reason)
+        {
+            this._logger.error("[process] ", reason);
+        }
     }
 
     _processParsers(scope)
@@ -228,7 +235,14 @@ class LogicProcessor
             });
         }
 
-        handlerInfo.handler(handlerArgs);
+        try
+        {
+            handlerInfo.handler(handlerArgs);
+        }
+        catch(reason)
+        {
+            this.logger.error("Error in %s parser. ", handlerInfo.name, reason);
+        }
 
         for(var alertInfo of handlerArgs.createdAlerts)
         {

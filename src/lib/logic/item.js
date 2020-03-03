@@ -141,12 +141,15 @@ class LogicItem
         return null;
     }
 
-    fetchByNaming(kind, naming)
+    fetchByNaming(kind, naming, skipCreateMissing)
     {
         var rn = LogicItem._makeRn(kind, naming);
         var child = this._children[rn];
         if (child) {
             return child;
+        }
+        if (skipCreateMissing) {
+            return null;
         }
         child = new LogicItem(this._scope, this, kind, naming);
         return child;

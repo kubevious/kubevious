@@ -13,11 +13,20 @@ module.exports = {
 
     handler: ({logger, scope, item, context, createK8sItem, createAlert, hasCreatedItems}) =>
     {
-        var app = getApp();
+        var scaleTargetRef = _.get(item.config, 'spec.scaleTargetRef');
+            if (!scaleTargetRef) {
+                return null;
+            }
 
-        if (!app) {
+        var appInfo = scope.getAppAndScope(
+            item.config.metadata.namespace, 
+            scaleTargetRef.name,
+            false);
+
+        if (!appInfo) {
             var rawContainer = scope.fetchRawContainer(item, "Autoscalers");
             createK8sItem(rawContainer);
+            createAlert('MissingApp', 'error', null, 'Could not find apps matching scaleTargetRef.');
             return;
         }
 
@@ -25,11 +34,9 @@ module.exports = {
         var max = item.config.spec.maxReplicas;
         var replicasInfo = "[" + min + ", " + max + "]";
 
-        createK8sItem(app);
+        createK8sItem(appInfo.app);
 
-        var namespaceScope = scope.getNamespaceScope(item.config.metadata.namespace);
-        var appScope = namespaceScope.apps[app.naming];
-        var appProps = appScope.properties;
+        var appProps = appInfo.appScope.properties;
         if (_.isNotNullOrUndefined(appProps['Replicas']))
         {
             appProps['Replicas'] += " " + replicasInfo;
@@ -41,15 +48,9 @@ module.exports = {
 
         /*** HELPERS ***/
 
-        function getApp()
+        function getAppInfo()
         {
-            var scaleTargetRef = _.get(item.config, 'spec.scaleTargetRef');
-            if (!scaleTargetRef) {
-                return null;
-            }
-
-            var namespace = scope.root.fetchByNaming("ns", item.config.metadata.namespace);
-            return namespace.fetchByNaming('app', scaleTargetRef.name);
+            
         }
     }
 }

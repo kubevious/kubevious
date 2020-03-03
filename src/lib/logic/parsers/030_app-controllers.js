@@ -20,23 +20,18 @@ module.exports = {
 
     handler: ({logger, scope, item, context, createK8sItem, createAlert, hasCreatedItems}) =>
     {
-        var namespaceScope = scope.getNamespaceScope(item.config.metadata.namespace);
-        var appScope = {
-            name: item.config.metadata.name,
-            ports: {},
-            properties: {
-                'Exposed': 'No'
-            }
-        };
-        namespaceScope.apps[appScope.name] = appScope;
+        var appInfo = scope.getAppAndScope(
+            item.config.metadata.namespace, 
+            item.config.metadata.name,
+            true);
 
-        var namespace = scope.root.fetchByNaming("ns", item.config.metadata.namespace);
-
-        var app = namespace.fetchByNaming("app", item.config.metadata.name);
+        var namespaceScope = appInfo.namespaceScope;
+        var appScope = appInfo.appScope;
+        var app = appInfo.app;
 
         var labelsMap = _.get(item.config, 'spec.template.metadata.labels');
         if (labelsMap) {
-            namespaceScope.appLabels.push({
+            appInfo.namespaceScope.appLabels.push({
                 labels: labelsMap,
                 name: item.config.metadata.name,
                 appItem: app

@@ -63,6 +63,35 @@ class LogicScope
         return this._namespaceScopes[name];
     }
 
+    getAppAndScope(ns, name, createIfMissing) {
+        var namespace = this.root.fetchByNaming("ns", ns);
+        var namespaceScope = this.getNamespaceScope(ns);
+
+        var app = namespace.fetchByNaming("app", name, !createIfMissing);
+        if (!app) {
+            return null; 
+        }
+
+        var appScope = namespaceScope.apps[name];
+        if (!appScope) {
+            appScope = {
+                name: name,
+                ports: {},
+                properties: {
+                    'Exposed': 'No'
+                }
+            };
+            namespaceScope.apps[name] = appScope;
+        }
+
+        return {
+            namespace: namespace,
+            app: app,
+            namespaceScope: namespaceScope,
+            appScope: appScope
+        }
+    }
+
     getInfraScope() {
         return this._infraScope;
     }
