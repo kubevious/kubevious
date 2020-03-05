@@ -31,7 +31,7 @@ Kubevious works with any Kubernetes distribution and runs within the cluster. De
 kubectl create namespace kubevious
 
 git clone https://github.com/kubevious/deploy.git kubevious-deploy.git
-cd kubevious-deploy.git/release/v0.2
+cd kubevious-deploy.git/release/v0.3
 
 helm template kubevious \
     --namespace kubevious \
