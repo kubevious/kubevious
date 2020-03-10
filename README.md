@@ -19,7 +19,8 @@ Kubevious also provides hints to operators to avoid and identify configurational
 <a href="https://youtu.be/YVBjt-9ugTg" target="_blank">
 <img src="https://github.com/kubevious/media/raw/master/videos/intro.gif" />
 </a>
-For a video with voice see in youtube: https://youtu.be/YVBjt-9ugTg
+
+See the collection of other demo videos: https://www.youtube.com/channel/UCTjfcEFrGjqtSGtry4ySUzQ
 
 # Live Demo
 See our live demo running on a model cluster: [https://demo.kubevious.io](https://demo.kubevious.io).
@@ -117,7 +118,7 @@ Kubevious marks workloads and their corresponding namespaces as radioactive. Spe
 
 With ever changing configuration it is hard to keep track and identify the source of the problem. 
 
-Kubvious allows you to travel back in time and navigate configuration as well as errors.
+Kubvious allows you to travel back in time and navigate configuration as well as errors. See time machine in action here: https://www.youtube.com/watch?v=bJssh_MUWgw
 
 # Authors
 Everyone is welcome to contribute. See [CONTRIBUTING] for instructions on how to contribute.
