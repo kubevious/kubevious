@@ -23,7 +23,7 @@ A clear and concise description of what you expected to happen.
 ### Screenshots
 If applicable, add screenshots to help explain your problem.
 
-### Enviroment Details:
+### Environment Details:
  - Kubernetes Distribution/Version [e.g. GKE v1.13.12-gke.25, OpenShift 4.3]
  - Browser [e.g. chrome, safari]
  - Version [e.g. v0.3]
