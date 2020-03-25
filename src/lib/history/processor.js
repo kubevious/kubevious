@@ -2,7 +2,7 @@ const Promise = require('the-promise');
 const _ = require('the-lodash');
 const HistoryAccessor = require("./db-accessor");
 const Snapshot = require('./snapshot');
-const DateUtils = require('../utils/date-utils');
+const DateUtils = require("kubevious-helpers").DateUtils;
 
 class HistoryProcessor
 {
@@ -224,7 +224,7 @@ class HistoryProcessor
 
         for(var item of items)
         {
-            if (item['config-kind'] != 'alerts')
+            if (item['config_kind'] != 'alerts')
             {
                 if (!dns[item.dn])
                 {
@@ -251,7 +251,7 @@ class HistoryProcessor
     {
         for(var item of snapshot.getItems())
         {
-            if (item['config-kind'] == 'alerts')
+            if (item['config_kind'] == 'alerts')
             {
                 if (_.isNullOrUndefined(alertsDict[item.dn])) {
                     alertsDict[item.dn] = 0;
@@ -277,7 +277,7 @@ class HistoryProcessor
                     present: 1,
                     dn: targetItem.dn,
                     kind: targetItem.kind,
-                    'config-kind': targetItem['config-kind'],
+                    'config_kind': targetItem['config_kind'],
                     name: targetItem.name,
                     config: targetItem.config
                 });
@@ -306,7 +306,7 @@ class HistoryProcessor
         var config = {
             dn: item.dn,
             kind: item.kind,
-            'config-kind': item['config-kind'],
+            'config_kind': item['config_kind'],
             config: item.config
         }
         if (item.name) {
@@ -329,7 +329,7 @@ class HistoryProcessor
             snapshot.addItem({
                 dn: item.dn,
                 kind: item.kind,
-                'config-kind': 'node',
+                'config_kind': 'node',
                 config: item.exportNode()
             });
 
@@ -339,7 +339,7 @@ class HistoryProcessor
                 snapshot.addItem({
                     dn: item.dn,
                     kind: item.kind,
-                    'config-kind': 'alerts',
+                    'config_kind': 'alerts',
                     config: item.extractAlerts()
                 });
             }
@@ -350,7 +350,7 @@ class HistoryProcessor
                 snapshot.addItem({
                     dn: item.dn,
                     kind: item.kind,
-                    'config-kind': 'props',
+                    'config_kind': 'props',
                     name: props.id,
                     config: props
                 })

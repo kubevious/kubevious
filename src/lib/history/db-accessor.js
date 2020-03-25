@@ -3,7 +3,7 @@ const _ = require('the-lodash');
 const SnapshotReader = require('./snapshot-reader');
 const Helpers = require('./helpers');
 const Snapshot = require('./snapshot');
-const DateUtils = require('../utils/date-utils');
+const DateUtils = require("kubevious-helpers").DateUtils;
 
 class HistoryDbAccessor
 {
@@ -30,15 +30,15 @@ class HistoryDbAccessor
         this._registerStatement('FIND_SNAPSHOT', 'SELECT * FROM `snapshots` WHERE `date` = ? ORDER BY `id` DESC LIMIT 1;');
         this._registerStatement('INSERT_SNAPSHOT', 'INSERT INTO `snapshots` (`date`) VALUES (?);');
 
-        this._registerStatement('INSERT_SNAPSHOT_ITEM', 'INSERT INTO `snap_items` (`snapshot_id`, `dn`, `kind`, `config-kind`, `name`, `config`) VALUES (?, ?, ?, ?, ?, ?);');
-        this._registerStatement('UPDATE_SNAPSHOT_ITEM', 'UPDATE `snap_items` SET `dn` = ?, `kind` = ?, `config-kind` = ?, `name` = ?, `config` = ? WHERE `id` = ?;');
+        this._registerStatement('INSERT_SNAPSHOT_ITEM', 'INSERT INTO `snap_items` (`snapshot_id`, `dn`, `kind`, `config_kind`, `name`, `config`) VALUES (?, ?, ?, ?, ?, ?);');
+        this._registerStatement('UPDATE_SNAPSHOT_ITEM', 'UPDATE `snap_items` SET `dn` = ?, `kind` = ?, `config_kind` = ?, `name` = ?, `config` = ? WHERE `id` = ?;');
         this._registerStatement('DELETE_SNAPSHOT_ITEM', 'DELETE FROM `snap_items` WHERE `id` = ?;');
 
         this._registerStatement('FIND_DIFF', 'SELECT * FROM `diffs` WHERE `snapshot_id` = ? AND `date` = ? AND `in_snapshot` = ? ORDER BY `id` DESC LIMIT 1;');
         this._registerStatement('INSERT_DIFF', 'INSERT INTO `diffs` (`snapshot_id`, `date`, `in_snapshot`, `summary`) VALUES (?, ?, ?, ?);');
 
-        this._registerStatement('INSERT_DIFF_ITEM', 'INSERT INTO `diff_items` (`diff_id`, `dn`, `kind`, `config-kind`, `name`, `present`, `config`) VALUES (?, ?, ?, ?, ?, ?, ?);');
-        this._registerStatement('UPDATE_DIFF_ITEM', 'UPDATE `diff_items` SET `dn` = ?, `kind` = ?, `config-kind` = ?, `name` = ?, `present` = ?, `config` = ? WHERE `id` = ?;');
+        this._registerStatement('INSERT_DIFF_ITEM', 'INSERT INTO `diff_items` (`diff_id`, `dn`, `kind`, `config_kind`, `name`, `present`, `config`) VALUES (?, ?, ?, ?, ?, ?, ?);');
+        this._registerStatement('UPDATE_DIFF_ITEM', 'UPDATE `diff_items` SET `dn` = ?, `kind` = ?, `config_kind` = ?, `name` = ?, `present` = ?, `config` = ? WHERE `id` = ?;');
         this._registerStatement('DELETE_DIFF_ITEM', 'DELETE FROM `diff_items` WHERE `id` = ?;');
 
         this._registerStatement('GET_DIFFS', 'SELECT * FROM diffs;');
@@ -163,7 +163,7 @@ class HistoryDbAccessor
                                 snapshotId,
                                 x.item.dn,
                                 x.item.kind,
-                                x.item['config-kind'],
+                                x.item['config_kind'],
                                 x.item.name,
                                 x.item.config
                             ]
@@ -176,7 +176,7 @@ class HistoryDbAccessor
                             params: [
                                 x.item.dn,
                                 x.item.kind,
-                                x.item['config-kind'],
+                                x.item['config_kind'],
                                 x.item.name,
                                 x.item.config,
                                 x.oldItemId
@@ -266,7 +266,7 @@ class HistoryDbAccessor
                                 diffId,
                                 x.item.dn,
                                 x.item.kind,
-                                x.item['config-kind'],
+                                x.item['config_kind'],
                                 x.item.name,
                                 x.item.present,
                                 x.item.config
@@ -280,7 +280,7 @@ class HistoryDbAccessor
                             params: [
                                 x.item.dn,
                                 x.item.kind,
-                                x.item['config-kind'],
+                                x.item['config_kind'],
                                 x.item.name,
                                 x.item.present,
                                 x.item.config,
@@ -298,7 +298,7 @@ class HistoryDbAccessor
                         };
                     }
 
-                    this.logger.info("[syncDiffItems] INVALID delta: ", x);
+                    this.logger.error("[syncDiffItems] INVALID delta: ", x);
                     throw new Error("INVALID");
                 })
                 // this.logger.info('[syncDiffItems] ', statements);

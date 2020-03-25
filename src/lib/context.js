@@ -4,7 +4,7 @@ const ConcreteRegistry = require('./concrete/registry');
 const FacadeRegistry = require('./facade/registry');
 const LogicProcessor = require('./logic/processor');
 const SearchEngine = require('./search/engine');
-const MysqlDriver = require("./utils/mysql-driver");
+const MySqlDriver = require("kubevious-helpers").MySqlDriver;
 const HistoryProcessor = require('./history/processor');
 const ClusterLeaderElector = require('./cluster/leader-elector')
 
@@ -14,7 +14,7 @@ class Context
     {
         this._logger = logger.sublogger("Context");
         this._loaders = [];
-        this._mysqlDriver = new MysqlDriver(logger);
+        this._mysqlDriver = new MySqlDriver(logger);
         this._concreteRegistry = new ConcreteRegistry(this);
         this._k8sParser = new K8sParser(this);
         this._searchEngine = new SearchEngine(this);
