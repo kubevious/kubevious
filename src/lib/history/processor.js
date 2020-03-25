@@ -3,6 +3,7 @@ const _ = require('the-lodash');
 const HistoryAccessor = require("./db-accessor");
 const Snapshot = require('./snapshot');
 const DateUtils = require("kubevious-helpers").DateUtils;
+const crypto = require('crypto');
 
 class HistoryProcessor
 {
@@ -10,7 +11,7 @@ class HistoryProcessor
     {
         this._context = context;
         this._logger = context.logger.sublogger('HistoryProcessor');
-        this._dbAccessor = new HistoryAccessor(this.logger, context.mysqlDriver);
+        this._dbAccessor = new HistoryAccessor(context, context.mysqlDriver);
         this._snapshotQueue = [];
         this._isProcessing = false;
         this._isScheduled = false;
@@ -26,6 +27,10 @@ class HistoryProcessor
 
     get logger() {
         return this._logger;
+    }
+
+    get debugObjectLogger() {
+        return this._context.debugObjectLogger;
     }
 
     acceptSnapshot(logicItemsMap)
@@ -80,22 +85,19 @@ class HistoryProcessor
         this.logger.info("[_processSnapshot] BEGIN. Item Count: %s", snapshot.count);
 
         return Promise.resolve()
-            .then(() => {
-                var writer = this.logger.outputStream("history-snapshot.json");
-                if (writer) {
-                    writer.write(_.cloneDeep(snapshot));
-                    writer.close();
-                }
-            })
+            .then(() => this.debugObjectLogger.dump("history-snapshot", 0, snapshot))
             .then(() => {
 
                 this._interation += 1;
+
+                this._calculateHashes(snapshot);
+                // throw new Error("ZZZ")
 
                 return this._dbAccessor.executeInTransaction(() => {
                     return Promise.resolve()
                         .then(() => this._persistSnapshot(snapshot))
                         .then(() => this._persistDiff(snapshot))
-                        .then(() => this._persistConfig())
+                        // .then(() => this._persistConfig())
                 });
 
             })
@@ -109,23 +111,49 @@ class HistoryProcessor
             });
     }
 
+    _calculateHashes(snapshot)
+    {
+        for(var item of snapshot.getItems())
+        {
+            item.config_hash = this._calculateObjectHash(item.config);
+        }
+    }
+
+    _calculateObjectHash(obj)
+    {
+        if (_.isNullOrUndefined(obj)) {
+            throw new Error('NO Object');
+        }
+
+        var str = _.stableStringify(obj);
+
+        const sha256 = crypto.createHash('sha256');
+        sha256.update(str);
+        var value = sha256.digest();
+        return value;
+    }
+
     _persistSnapshot(snapshot)
     {
-
         if (!this._shouldCreateNewDbSnapshot(snapshot)) {
             return;
         }
         this.logger.info("[_persistSnapshot] BEGIN. Item Count: %s", snapshot.count);
         return this._dbAccessor.fetchSnapshot(snapshot.date)
             .then(dbSnapshot => {
+                this.logger.info("[_persistSnapshot] ", dbSnapshot);
+
                 this._currentState.snapshot_id = dbSnapshot.id;
                 this._currentState.snapshot_date = dbSnapshot.date;
                 this._currentState.diff_in_snapshot = true;
                 this._currentState.diff_count = 0;
                 this._currentState.diff_item_count = 0;
-
-                this.logger.info("[_persistSnapshot] ", dbSnapshot);
-                return this._dbAccessor.syncSnapshotItems(dbSnapshot.id, snapshot);
+            })
+            .then(() => {
+                return this._dbAccessor.persistConfigHashes(snapshot.getItems());
+            })
+            .then(() => {
+                return this._dbAccessor.syncSnapshotItems(this._currentState.snapshot_id, snapshot);
             })
             .then(() => {
                 this.logger.info("[_persistSnapshot] END");
@@ -152,33 +180,21 @@ class HistoryProcessor
 
         var deltaSummary = this._constructDeltaSummary(snapshot, itemsDelta);
 
-        return this._dbAccessor.fetchDiff(this._currentState.snapshot_id,
-                                          snapshot.date,
-                                          this._currentState.diff_in_snapshot,
-                                          deltaSummary)
+        return Promise.resolve()
+            .then(() => this.debugObjectLogger.dump("history-diff-snapshot-", this._interation, snapshot))
+            .then(() => this.debugObjectLogger.dump("history-diff-latest-snapshot-", this._interation, this._latestSnapshot))
+            .then(() => this.debugObjectLogger.dump("history-diff-items-delta-", this._interation, itemsDelta))
+            .then(() => {
+                this._dbAccessor.fetchDiff(this._currentState.snapshot_id,
+                    snapshot.date,
+                    this._currentState.diff_in_snapshot,
+                    deltaSummary)
+            })
             .then(dbDiff => {
                 this._currentState.diff_id = dbDiff.id;
                 this._currentState.diff_date = dbDiff.date;
                 this._currentState.diff_in_snapshot = false;
                 this._currentState.diff_count += 1;
-
-                var writer = this.logger.outputStream("history-diff-snapshot-" + this._interation + ".json");
-                if (writer) {
-                    writer.write(_.cloneDeep(snapshot));
-                    writer.close();
-                }
-
-                var writer = this.logger.outputStream("history-diff-latest-snapshot-" + this._interation + ".json");
-                if (writer) {
-                    writer.write(_.cloneDeep(this._latestSnapshot));
-                    writer.close();
-                }
-
-                var writer = this.logger.outputStream("history-diff-items-delta-" + this._interation + ".json");
-                if (writer) {
-                    writer.write(_.cloneDeep(itemsDelta));
-                    writer.close();
-                }
 
                 this._currentState.diff_item_count += itemsDelta.length;
 
@@ -380,11 +396,7 @@ class HistoryProcessor
 
                 this._latestSnapshot = snapshot;
 
-                var writer = this.logger.outputStream("history-diff-latest-snapshot-" + this._interation + ".json");
-                if (writer) {
-                    writer.write(_.cloneDeep(this._latestSnapshot));
-                    writer.close();
-                }
+                this.debugObjectLogger.dump("history-diff-latest-snapshot-", this._interation, this._latestSnapshot);
 
                 return this._tryProcessSnapshot();
             })
