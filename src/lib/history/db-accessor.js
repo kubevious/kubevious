@@ -1,9 +1,9 @@
 const Promise = require('the-promise');
 const _ = require('the-lodash');
-const SnapshotReader = require('./snapshot-reader');
+const DateUtils = require("kubevious-helpers").DateUtils;
 const Helpers = require("kubevious-helpers").History.Helpers;
 const Snapshot = require("kubevious-helpers").History.Snapshot;
-const DateUtils = require("kubevious-helpers").DateUtils;
+const SnapshotReader = require("kubevious-helpers").History.SnapshotReader;
 
 class HistoryDbAccessor
 {

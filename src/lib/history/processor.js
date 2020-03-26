@@ -1,10 +1,10 @@
+const crypto = require('crypto');
 const Promise = require('the-promise');
 const _ = require('the-lodash');
 const HistoryAccessor = require("./db-accessor");
 const Snapshot = require("kubevious-helpers").History.Snapshot;
 const DateUtils = require("kubevious-helpers").DateUtils;
 const BufferUtils = require("kubevious-helpers").BufferUtils;
-const crypto = require('crypto');
 
 class HistoryProcessor
 {
