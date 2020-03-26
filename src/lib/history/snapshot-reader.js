@@ -1,7 +1,7 @@
 const Promise = require('the-promise');
 const _ = require('the-lodash');
-const SnapshotReconstructor = require('./snapshot-reconstructor');
-const Snapshot = require('./snapshot');
+const Snapshot = require("kubevious-helpers").History.Snapshot;
+const SnapshotReconstructor = require("kubevious-helpers").History.SnapshotReconstructor;
 
 class HistorySnapshotReader
 {

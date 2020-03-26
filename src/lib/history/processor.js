@@ -1,7 +1,7 @@
 const Promise = require('the-promise');
 const _ = require('the-lodash');
 const HistoryAccessor = require("./db-accessor");
-const Snapshot = require('./snapshot');
+const Snapshot = require("kubevious-helpers").History.Snapshot;
 const DateUtils = require("kubevious-helpers").DateUtils;
 const BufferUtils = require("kubevious-helpers").BufferUtils;
 const crypto = require('crypto');
@@ -446,14 +446,15 @@ class HistoryProcessor
 
                 this._cleanupSnapshot(snapshot);
 
-                this._logger.info("[_onDbConnected] this._latestSnapshotAlerts: ",
-                    this._latestSnapshotAlerts);
+                this._logger.info("[_onDbConnected] _latestSnapshotAlerts key count: %s", _.keys(this._latestSnapshotAlerts).length);
+                this._logger.silly("[_onDbConnected] this._latestSnapshotAlerts: ", this._latestSnapshotAlerts);
 
                 this.debugObjectLogger.dump("history-initial-latest-snapshot-", this._interation, this._latestSnapshot);
                 this.debugObjectLogger.dump("history-initial-latest-snapshot-alerts-", this._interation, this._latestSnapshotAlerts);
             })
             .then(() => {
                 this._isDbReady = true;
+                this._logger.info("[_onDbConnected] IS READY");
                 return this._tryProcessSnapshot();
             })
     }
