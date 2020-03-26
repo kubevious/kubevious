@@ -26,8 +26,10 @@ class HistorySnapshotReader
         this._registerStatement('GET_DIFFS_FOR_SNAPSHOT_AND_DATE', 'SELECT * FROM `diffs` WHERE `in_snapshot` = 0 AND `snapshot_id` = ? AND `date` <= ? ORDER BY `date`;');
 
         this._registerStatement('GET_SNAPSHOT_ITEMS', 'SELECT `id`, `dn`, `kind`, `config_kind`, `name`, `config_hash` FROM `snap_items` WHERE `snapshot_id` = ?');
+        this._registerStatement('GET_SNAPSHOT_ITEMS_WITH_CONFIG', 'SELECT `id`, `dn`, `kind`, `config_kind`, `name`, `config_hash`, `value` as `config` FROM `snap_items` INNER JOIN `config_hashes` ON `snap_items`.`config_hash` = `config_hashes`.`key` WHERE `snapshot_id` = ?');
 
         this._registerStatement('GET_DIFF_ITEMS', 'SELECT `id`, `dn`, `kind`, `config_kind`, `name`, `present`, `config_hash` FROM `diff_items` WHERE `diff_id` = ?');
+        this._registerStatement('GET_DIFF_ITEMS_WITH_CONFIG', 'SELECT `id`, `dn`, `kind`, `config_kind`, `name`, `present`, `config_hash`, `value` as `config` FROM `diff_items` INNER JOIN `config_hashes` ON `diff_items`.`config_hash` = `config_hashes`.`key` WHERE `diff_id` = ?');
     }
 
     _registerStatement()
@@ -45,9 +47,16 @@ class HistorySnapshotReader
         return this._execute('GET_DIFFS_FOR_SNAPSHOT_AND_DATE', [snapshotId, date]);
     }
 
-    querySnapshotItems(snapshotId)
+    querySnapshotItems(snapshotId, includeConfig)
     {
-        return this._execute('GET_SNAPSHOT_ITEMS', [snapshotId]);
+        if (includeConfig)
+        {
+            return this._execute('GET_SNAPSHOT_ITEMS_WITH_CONFIG', [snapshotId]);
+        }
+        else
+        {
+            return this._execute('GET_SNAPSHOT_ITEMS', [snapshotId]);
+        }
     }
 
     queryRecentSnapshot()
@@ -58,22 +67,29 @@ class HistorySnapshotReader
             });
     }
 
-    queryDiffItems(diffId)
+    queryDiffItems(diffId, includeConfig)
     {
-        return this._execute('GET_DIFF_ITEMS', [diffId]);
+        if (includeConfig)
+        {
+            return this._execute('GET_DIFF_ITEMS_WITH_CONFIG', [diffId]);
+        }
+        else
+        {
+            return this._execute('GET_DIFF_ITEMS', [diffId]);
+        }
     }
 
-    reconstructSnapshotById(snapshotId)
+    reconstructSnapshotById(snapshotId, includeConfig)
     {
         var snapshotReconstructor = null;
         return Promise.resolve()
-            .then(() => this.querySnapshotItems(snapshotId))
+            .then(() => this.querySnapshotItems(snapshotId, includeConfig))
             .then(snapshotItems => {
                 snapshotReconstructor = new SnapshotReconstructor(snapshotItems);
                 return this.queryDiffsForSnapshot(snapshotId)
             })
             .then(diffs => {
-                return this._queryDiffsItems(diffs)
+                return this._queryDiffsItems(diffs, includeConfig)
             })
             .then(diffsItems => {
                 snapshotReconstructor.applyDiffsItems(diffsItems);
@@ -82,7 +98,7 @@ class HistorySnapshotReader
             ;
     }
 
-    reconstructRecentShaphot()
+    reconstructRecentShaphot(includeConfig)
     {
         return this.queryRecentSnapshot()
             .then(snapshot => {
@@ -90,14 +106,14 @@ class HistorySnapshotReader
                 if (!snapshot) {
                     return new Snapshot();
                 }
-                return this.reconstructSnapshotById(snapshot.id);
+                return this.reconstructSnapshotById(snapshot.id, includeConfig);
             })
     }
 
-    _queryDiffsItems(diffs)
+    _queryDiffsItems(diffs, includeConfig)
     {
         return Promise.serial(diffs, diff => {
-            return this.queryDiffItems(diff.id);
+            return this.queryDiffItems(diff.id, includeConfig);
         });
     }
 

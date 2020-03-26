@@ -9,7 +9,9 @@ class DebugObjectLogger
 
     dump(name, iteration, obj)
     {
-        // return;
+        if (!process.env.LOG_TO_FILE) {
+            return;
+        }
 
         if (!obj) {
             return;

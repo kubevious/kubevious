@@ -15,7 +15,7 @@ class Context
     {
         this._logger = logger.sublogger("Context");
         this._loaders = [];
-        this._mysqlDriver = new MySqlDriver(logger, true);
+        this._mysqlDriver = new MySqlDriver(logger);
         this._concreteRegistry = new ConcreteRegistry(this);
         this._k8sParser = new K8sParser(this);
         this._searchEngine = new SearchEngine(this);

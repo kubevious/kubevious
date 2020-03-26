@@ -56,7 +56,7 @@ class HistoryDbAccessor
 
     updateConfig(key, value)
     {
-        var params = [key, value, key, value]; 
+        var params = [key, value, value]; 
         return this._execute('SET_CONFIG', params);
     }
 
@@ -266,9 +266,9 @@ class HistoryDbAccessor
                 var dbSnapshot = this._makeDbSnapshotFromItems(dbItems);
 
                 var itemsDelta = this._produceDelta(diffSnapshot, dbSnapshot);
-                // this.logger.info('[syncDiffItems] itemsDelta: ', itemsDelta);
 
                 var statements = itemsDelta.map(x => {
+
                     if (x.action == 'C')
                     {
                         return { 
@@ -277,10 +277,10 @@ class HistoryDbAccessor
                                 diffId,
                                 x.item.dn,
                                 x.item.kind,
-                                x.item['config_kind'],
+                                x.item.config_kind,
                                 x.item.name,
                                 x.item.present,
-                                x.item.config
+                                x.item.config_hash
                             ]
                         };
                     }
@@ -291,10 +291,10 @@ class HistoryDbAccessor
                             params: [
                                 x.item.dn,
                                 x.item.kind,
-                                x.item['config_kind'],
+                                x.item.config_kind,
                                 x.item.name,
                                 x.item.present,
-                                x.item.config,
+                                x.item.config_hash,
                                 x.oldItemId
                             ]
                         };
@@ -313,6 +313,7 @@ class HistoryDbAccessor
                     throw new Error("INVALID");
                 })
                 // this.logger.info('[syncDiffItems] ', statements);
+                // throw new Error("INVALID");
 
                 return this._executeMany(statements);
             });
@@ -329,9 +330,6 @@ class HistoryDbAccessor
             var shouldCreate = true;
             var targetItem = targetSnapshot.findById(key);
 
-            targetItem = _.clone(targetItem);
-            delete targetItem.config;
-
             var dbItemDict = dbSnapshot.findById(key)
             if (dbItemDict)
             {
@@ -341,7 +339,7 @@ class HistoryDbAccessor
                     if (shouldCreate)
                     {
                         shouldCreate = false;
-                        if (!_.fastDeepEqual(targetItem, dbItem))
+                        if (!BufferUtils.areEqual(targetItem.config_hash, dbItem.config_hash))
                         {
                             itemsDelta.push({
                                 action: 'U',
