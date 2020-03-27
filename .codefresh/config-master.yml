@@ -34,6 +34,7 @@ steps:
       - 'git clone https://${{CF_REPO_OWNER}}:$GITHUB_TOKEN@github.com/${{CF_REPO_OWNER}}/cicd.git cicd.git'
       - ls -la
       - ls -la cicd.git/
+
   inject_version:
     title: Inject Version
     stage: build
@@ -52,6 +53,17 @@ steps:
     type: build
     image_name: "kubevious/${{PRODUCT_NAME}}"
     stage: build
+
+  push:
+    title: "Pushing image to DockerHub"
+    type: "push"
+    stage: "push"
+    image_name: "kubevious/${{PRODUCT_NAME}}"
+    registry: "dockerhub"
+    candidate: "${{build}}"
+    tags:
+      - latest
+      - "${{DOCKER_TAG}}"
   process_versioning:
     title: Process Versioning
     stage: push
@@ -65,13 +77,3 @@ steps:
       - echo "PRODUCT_VERSION=${PRODUCT_VERSION}"
       - cf_export DOCKER_TAG="${PRODUCT_VERSION}"
       - /codefresh/volume/cicd.git/git-commit-push.sh "Version bump for ${PRODUCT_NAME} to ${PRODUCT_VERSION}"
-  push:
-    title: "Pushing image to DockerHub"
-    type: "push"
-    stage: "push"
-    image_name: "kubevious/${{PRODUCT_NAME}}"
-    registry: "dockerhub"
-    candidate: "${{build}}"
-    tags:
-      - latest
-      - "${{DOCKER_TAG}}"
