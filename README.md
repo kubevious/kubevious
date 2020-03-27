@@ -118,7 +118,7 @@ Kubevious marks workloads and their corresponding namespaces as radioactive. Spe
 
 With ever changing configuration it is hard to keep track and identify the source of the problem. 
 
-Kubvious allows you to travel back in time and navigate configuration as well as errors. See time machine in action here: https://www.youtube.com/watch?v=bJssh_MUWgw
+Kubvious allows you to travel back in time and navigate configuration as well as errors. See time machine in action here: https://youtu.be/Zb5ZIJEHONU
 
 # Authors
 Everyone is welcome to contribute. See [CONTRIBUTING] for instructions on how to contribute.
