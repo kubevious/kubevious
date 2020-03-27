@@ -1,6 +1,8 @@
 ###############################################################################
 # Step 1 : Builder image
 FROM node:12-alpine
+RUN apk update && apk upgrade && \
+    apk add --no-cache bash git openssh
 WORKDIR /app
 COPY src/package*.json ./
 RUN npm install --production

@@ -1,7 +1,7 @@
 {
   "name": "kubevious",
   "version": "1.0.1",
-  "description": "",
+  "description": "Kubevious backend",
   "main": "index.js",
   "scripts": {
     "test": "mocha"
