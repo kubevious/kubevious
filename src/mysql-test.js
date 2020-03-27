@@ -2,8 +2,8 @@ const _ = require('the-lodash');
 const logger = require('./logger');
 logger.info("init");
 
-const MysqlDriver = require("./lib/utils/mysql-driver");
-var mysqldriver = new MysqlDriver(logger);
+const MySqlDriver = require("kubevious-helpers").MySqlDriver;
+var mysqldriver = new MySqlDriver(logger, true);
 
 const HistoryAccessor = require("./lib/history/db-accessor");
 var historyAccessor = new HistoryAccessor(logger, mysqldriver);
@@ -16,7 +16,25 @@ mysqldriver.onConnect(() => {
 
     Promise.resolve()
         // .then(() => historyAccessor._snapshotReader.querySnapshotById(2))
-        .then(() => historyAccessor._snapshotReader.queryRecentSnapshot())
+        // .then(() => historyAccessor._snapshotReader.queryRecentSnapshot())
+        .then(() => {
+            return historyAccessor.
+                _execute('INSERT_SNAPSHOT_ITEM', [
+                    6,
+                    "root/ns-[addr]/app-[gprod-addr-main-app]/cont-[gprod-addr-main-app]/vol-[gprod-addr-main-app-consumes]",
+                    "vol",
+                    "alerts",
+                    "null",
+                    [
+                    {
+                        "id": "MissingConfig",
+                        "severity": "error",
+                        "msg": "Could not find ConfigMap addr-gprod-addr-main-app-consumes",
+                        "date": "2020-03-24T22:56:14.427Z"
+                    }
+                    ]
+                ]);
+        })
         .then(value => {
             logger.info("&&&&& ", value);
         })

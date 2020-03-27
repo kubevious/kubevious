@@ -1,23 +1,28 @@
 const Promise = require('the-promise');
 const _ = require('the-lodash');
-const SnapshotReader = require('./snapshot-reader');
-const Helpers = require('./helpers');
-const Snapshot = require('./snapshot');
-const DateUtils = require('../utils/date-utils');
+const DateUtils = require("kubevious-helpers").DateUtils;
+const Helpers = require("kubevious-helpers").History.Helpers;
+const Snapshot = require("kubevious-helpers").History.Snapshot;
+const SnapshotReader = require("kubevious-helpers").History.SnapshotReader;
 
 class HistoryDbAccessor
 {
-    constructor(logger, driver)
+    constructor(context, driver)
     {
-        this._logger = logger.sublogger('HistoryDbAccessor');
+        this._context = context;
+        this._logger = context.logger.sublogger('HistoryDbAccessor');
         this._driver = driver;
-        this._snapshotReader = new SnapshotReader(logger, driver);
+        this._snapshotReader = new SnapshotReader(this.logger, driver);
 
         this._registerStatements();
     }
 
     get logger() {
         return this._logger;
+    }
+
+    get debugObjectLogger() {
+        return this._context.debugObjectLogger;
     }
 
     get snapshotReader() {
@@ -30,26 +35,28 @@ class HistoryDbAccessor
         this._registerStatement('FIND_SNAPSHOT', 'SELECT * FROM `snapshots` WHERE `date` = ? ORDER BY `id` DESC LIMIT 1;');
         this._registerStatement('INSERT_SNAPSHOT', 'INSERT INTO `snapshots` (`date`) VALUES (?);');
 
-        this._registerStatement('INSERT_SNAPSHOT_ITEM', 'INSERT INTO `snap_items` (`snapshot_id`, `dn`, `kind`, `config-kind`, `name`, `config`) VALUES (?, ?, ?, ?, ?, ?);');
-        this._registerStatement('UPDATE_SNAPSHOT_ITEM', 'UPDATE `snap_items` SET `dn` = ?, `kind` = ?, `config-kind` = ?, `name` = ?, `config` = ? WHERE `id` = ?;');
+        this._registerStatement('INSERT_SNAPSHOT_ITEM', 'INSERT INTO `snap_items` (`snapshot_id`, `dn`, `kind`, `config_kind`, `name`, `config_hash`) VALUES (?, ?, ?, ?, ?, ?);');
+        this._registerStatement('UPDATE_SNAPSHOT_ITEM', 'UPDATE `snap_items` SET `dn` = ?, `kind` = ?, `config_kind` = ?, `name` = ?, `config_hash` = ? WHERE `id` = ?;');
         this._registerStatement('DELETE_SNAPSHOT_ITEM', 'DELETE FROM `snap_items` WHERE `id` = ?;');
 
         this._registerStatement('FIND_DIFF', 'SELECT * FROM `diffs` WHERE `snapshot_id` = ? AND `date` = ? AND `in_snapshot` = ? ORDER BY `id` DESC LIMIT 1;');
         this._registerStatement('INSERT_DIFF', 'INSERT INTO `diffs` (`snapshot_id`, `date`, `in_snapshot`, `summary`) VALUES (?, ?, ?, ?);');
 
-        this._registerStatement('INSERT_DIFF_ITEM', 'INSERT INTO `diff_items` (`diff_id`, `dn`, `kind`, `config-kind`, `name`, `present`, `config`) VALUES (?, ?, ?, ?, ?, ?, ?);');
-        this._registerStatement('UPDATE_DIFF_ITEM', 'UPDATE `diff_items` SET `dn` = ?, `kind` = ?, `config-kind` = ?, `name` = ?, `present` = ?, `config` = ? WHERE `id` = ?;');
+        this._registerStatement('INSERT_DIFF_ITEM', 'INSERT INTO `diff_items` (`diff_id`, `dn`, `kind`, `config_kind`, `name`, `present`, `config_hash`) VALUES (?, ?, ?, ?, ?, ?, ?);');
+        this._registerStatement('UPDATE_DIFF_ITEM', 'UPDATE `diff_items` SET `dn` = ?, `kind` = ?, `config_kind` = ?, `name` = ?, `present` = ?, `config_hash` = ? WHERE `id` = ?;');
         this._registerStatement('DELETE_DIFF_ITEM', 'DELETE FROM `diff_items` WHERE `id` = ?;');
 
         this._registerStatement('GET_DIFFS', 'SELECT * FROM diffs;');
 
         this._registerStatement('GET_CONFIG', 'SELECT * FROM `config` WHERE `key` = ?;');
-        this._registerStatement('SET_CONFIG', 'INSERT INTO `config`(`key`, `value`) VALUES(?, ?) ON DUPLICATE KEY UPDATE `key` = ?, `value` = ?;');
+        this._registerStatement('SET_CONFIG', 'INSERT INTO `config`(`key`, `value`) VALUES(?, ?) ON DUPLICATE KEY UPDATE `value` = ?;');
+
+        this._registerStatement('INSERT_CONFIG_HASH', 'INSERT IGNORE INTO `config_hashes`(`key`, `value`) VALUES(?, ?);');
     }
 
     updateConfig(key, value)
     {
-        var params = [key, value, key, value]; 
+        var params = [key, value, value]; 
         return this._execute('SET_CONFIG', params);
     }
 
@@ -116,6 +123,29 @@ class HistoryDbAccessor
         return snapshot;
     }
 
+    persistConfigHashes(configHashes)
+    {
+        this.logger.info("[persistConfigHashes] BEGIN, count: %s", configHashes.length);
+
+        return Promise.resolve()
+            .then(() => {
+                var statements = configHashes.map(x => {
+                    return { 
+                        id: 'INSERT_CONFIG_HASH',
+                        params: [
+                            x.config_hash,
+                            x.config
+                        ]
+                    };
+                })
+
+                return this._executeMany(statements);
+            })
+            .then(() => {
+                this.logger.info("[persistConfigHashes] END");
+            });
+    }
+
     syncSnapshotItems(snapshotId, snapshot)
     {
         this.logger.info("[syncSnapshotItems] BEGIN, item count: %s", snapshot.count);
@@ -126,32 +156,13 @@ class HistoryDbAccessor
                 var dbSnapshot = this._makeDbSnapshotFromItems(dbItems);
                 this.logger.info("[syncSnapshotItems] dbSnapshot count: %s", dbSnapshot.count);
 
-                {
-                    var writer = this.logger.outputStream("history-snapshot-target.json");
-                    if (writer) {
-                        writer.write(_.cloneDeep(snapshot));
-                        writer.close();
-                    }
-                }
-    
-                {
-                    var writer = this.logger.outputStream("history-snapshot-db.json");
-                    if (writer) {
-                        writer.write(_.cloneDeep(dbSnapshot));
-                        writer.close();
-                    }
-                }
+                this.debugObjectLogger.dump("history-snapshot-target", 0, snapshot);
+                this.debugObjectLogger.dump("history-snapshot-db", 0, dbSnapshot);
 
-                var itemsDelta = this.produceDelta(snapshot, dbSnapshot);
+                var itemsDelta = this._produceDelta(snapshot, dbSnapshot);
                 this.logger.info("[syncSnapshotItems] itemsDelta count: %s", itemsDelta.length);
 
-                {
-                    var writer = this.logger.outputStream("history-items-delta.json");
-                    if (writer) {
-                        writer.write(_.cloneDeep(itemsDelta));
-                        writer.close();
-                    }
-                }
+                this.debugObjectLogger.dump("history-items-delta", 0, itemsDelta);
                 // this.logger.info("[syncSnapshotItems] ", itemsDelta);
 
                 var statements = itemsDelta.map(x => {
@@ -163,9 +174,9 @@ class HistoryDbAccessor
                                 snapshotId,
                                 x.item.dn,
                                 x.item.kind,
-                                x.item['config-kind'],
+                                x.item.config_kind,
                                 x.item.name,
-                                x.item.config
+                                x.item.config_hash
                             ]
                         };
                     }
@@ -176,9 +187,9 @@ class HistoryDbAccessor
                             params: [
                                 x.item.dn,
                                 x.item.kind,
-                                x.item['config-kind'],
+                                x.item.config_kind,
                                 x.item.name,
-                                x.item.config,
+                                x.item.config_hash,
                                 x.oldItemId
                             ]
                         };
@@ -254,10 +265,10 @@ class HistoryDbAccessor
             .then(dbItems => {
                 var dbSnapshot = this._makeDbSnapshotFromItems(dbItems);
 
-                var itemsDelta = this.produceDelta(diffSnapshot, dbSnapshot);
-                // this.logger.info('[syncDiffItems] itemsDelta: ', itemsDelta);
+                var itemsDelta = this._produceDelta(diffSnapshot, dbSnapshot);
 
                 var statements = itemsDelta.map(x => {
+
                     if (x.action == 'C')
                     {
                         return { 
@@ -266,10 +277,10 @@ class HistoryDbAccessor
                                 diffId,
                                 x.item.dn,
                                 x.item.kind,
-                                x.item['config-kind'],
+                                x.item.config_kind,
                                 x.item.name,
                                 x.item.present,
-                                x.item.config
+                                x.item.config_hash
                             ]
                         };
                     }
@@ -280,10 +291,10 @@ class HistoryDbAccessor
                             params: [
                                 x.item.dn,
                                 x.item.kind,
-                                x.item['config-kind'],
+                                x.item.config_kind,
                                 x.item.name,
                                 x.item.present,
-                                x.item.config,
+                                x.item.config_hash,
                                 x.oldItemId
                             ]
                         };
@@ -298,17 +309,18 @@ class HistoryDbAccessor
                         };
                     }
 
-                    this.logger.info("[syncDiffItems] INVALID delta: ", x);
+                    this.logger.error("[syncDiffItems] INVALID delta: ", x);
                     throw new Error("INVALID");
                 })
                 // this.logger.info('[syncDiffItems] ', statements);
+                // throw new Error("INVALID");
 
                 return this._executeMany(statements);
             });
     }
 
     /* DIFF ITEMS END */
-    produceDelta(targetSnapshot, dbSnapshot)
+    _produceDelta(targetSnapshot, dbSnapshot)
     {
         this.logger.info("[produceDelta] targetSnapshot count: %s",  targetSnapshot.count);
         var itemsDelta = [];
@@ -317,6 +329,7 @@ class HistoryDbAccessor
         {
             var shouldCreate = true;
             var targetItem = targetSnapshot.findById(key);
+
             var dbItemDict = dbSnapshot.findById(key)
             if (dbItemDict)
             {
@@ -326,7 +339,7 @@ class HistoryDbAccessor
                     if (shouldCreate)
                     {
                         shouldCreate = false;
-                        if (!_.fastDeepEqual(targetItem, dbItem))
+                        if (!BufferUtils.areEqual(targetItem.config_hash, dbItem.config_hash))
                         {
                             itemsDelta.push({
                                 action: 'U',

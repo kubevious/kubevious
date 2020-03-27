@@ -1,6 +1,6 @@
 const Promise = require('the-promise');
 const _ = require('lodash');
-const EventDampener = require('../utils/event-dampener');
+const EventDampener = require('kubevious-helpers').EventDampener;
 const ConcreteItem = require('./item');
 
 class ConcreteRegistry

@@ -4,9 +4,10 @@ const ConcreteRegistry = require('./concrete/registry');
 const FacadeRegistry = require('./facade/registry');
 const LogicProcessor = require('./logic/processor');
 const SearchEngine = require('./search/engine');
-const MysqlDriver = require("./utils/mysql-driver");
+const MySqlDriver = require("kubevious-helpers").MySqlDriver;
 const HistoryProcessor = require('./history/processor');
 const ClusterLeaderElector = require('./cluster/leader-elector')
+const DebugObjectLogger = require('./utils/debug-object-logger');
 
 class Context
 {
@@ -14,7 +15,7 @@ class Context
     {
         this._logger = logger.sublogger("Context");
         this._loaders = [];
-        this._mysqlDriver = new MysqlDriver(logger);
+        this._mysqlDriver = new MySqlDriver(logger);
         this._concreteRegistry = new ConcreteRegistry(this);
         this._k8sParser = new K8sParser(this);
         this._searchEngine = new SearchEngine(this);
@@ -22,6 +23,8 @@ class Context
         this._logicProcessor = new LogicProcessor(this);
 
         this._facadeRegistry = new FacadeRegistry(this);
+
+        this._debugObjectLogger = new DebugObjectLogger(this);
 
         this._areLoadersReady = false;
 
@@ -64,6 +67,10 @@ class Context
 
     get areLoadersReady() {
         return this._areLoadersReady;
+    }
+
+    get debugObjectLogger() {
+        return this._debugObjectLogger;
     }
 
     addLoader(loader)
