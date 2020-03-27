@@ -48,6 +48,8 @@ steps:
       - source version.sh
       - echo "module.exports = \"${PRODUCT_VERSION}\";" > /codefresh/volume/${PRODUCT_NAME}/src/version.js
       - cat /codefresh/volume/${PRODUCT_NAME}/src/version.js
+      - cf_export PRODUCT_VERSION="${PRODUCT_VERSION}"
+      - cf_export DOCKER_TAG="${PRODUCT_VERSION}"
   build:
     title: "Building Docker Image"
     type: build
@@ -73,7 +75,4 @@ steps:
     commands:
       - pwd
       - ls -la
-      - source version.sh
-      - echo "PRODUCT_VERSION=${PRODUCT_VERSION}"
-      - cf_export DOCKER_TAG="${PRODUCT_VERSION}"
       - /codefresh/volume/cicd.git/git-commit-push.sh "Version bump for ${PRODUCT_NAME} to ${PRODUCT_VERSION}"
