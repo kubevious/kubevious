@@ -39,7 +39,8 @@ class Server
             logger: this.logger.sublogger(name),
             router,
             app: this._app,
-            context: this._context
+            context: this._context,
+            collector: this._context.collector
         }
         
         const module = require('./routers/' + name)
