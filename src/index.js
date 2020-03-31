@@ -6,10 +6,6 @@ const context = new Context(logger);
 
 context.setupServer();
 
-const LocalLoader = require('./lib/loaders/local');
-var loader = new LocalLoader(context);
-context.addLoader(loader);
-
 context.run();
 
 

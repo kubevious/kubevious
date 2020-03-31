@@ -59,10 +59,6 @@ module.exports = ({router, app, logger, context}) => {
         res.send(context.facadeRegistry.configTree);
     })
 
-    router.get('/concrete/registry', function (req, res) {
-        res.send(context.concreteRegistry.dump());
-    })
-
     router.get('/search', function (req, res) {
         if (!req.query.criteria) {
             return res.status(400).send({

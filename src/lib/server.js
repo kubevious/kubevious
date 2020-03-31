@@ -17,8 +17,11 @@ class Server
 
     run()
     {
+        this._app.use(express.json());
+
         this._loadRouter('top');
         this._loadRouter('api');
+        this._loadRouter('collector');
 
         const port = 4000;
         this._app.listen(port, () => {

@@ -3,7 +3,9 @@ MY_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE
 MY_DIR="$(dirname $MY_PATH)"
 cd $MY_DIR
 
-export LOG_TO_FILE=true
-export NODE_ENV=development
-export GENERATE_ONLY=true
-node src/mock/generate-only
+export NODE_ENV=production
+# export DEBUG=express:*
+#  --max_old_space_size=2048
+export MYSQL_HOST=localhost
+export MYSQL_PORT=3306
+node src/
