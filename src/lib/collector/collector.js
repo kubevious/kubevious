@@ -14,6 +14,8 @@ class Collector
 
         this._snapshots = {};
         this._diffs = {};
+
+        this._iteration = 0;
     }
 
     get logger() {
@@ -137,6 +139,13 @@ class Collector
     _acceptSnapshot(snapshotInfo)
     {
         this.logger.info("[_acceptSnapshot] item count: %s", _.keys(snapshotInfo.items).length);
+        // for(var item of _.values(snapshotInfo.items))
+        // {
+        //     this.logger.info("[_acceptSnapshot] %s", item.dn);
+        // }
+
+        this._iteration++;
+        this._context.debugObjectLogger.dump('collector-snapshot-info-', this._iteration, snapshotInfo);
     }
 
 }
