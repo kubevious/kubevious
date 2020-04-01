@@ -18,6 +18,7 @@ class FacadeRegistry
     acceptCurrentSnapshot(snapshotInfo)
     {
         this._context.registry.accept(snapshotInfo);
+        this._context.searchEngine.accept(snapshotInfo);
 
         //     this._context.historyProcessor.acceptSnapshot(value);
 

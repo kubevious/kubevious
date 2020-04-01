@@ -1,5 +1,6 @@
 const _ = require("the-lodash");
 const FlexSearch = require("flexsearch");
+const DocsHelper = require("kubevious-helpers").Docs;
 
 class SearchEngine
 {
@@ -14,6 +15,23 @@ class SearchEngine
         return this._logger;
     }
 
+    accept(snapshotInfo)
+    {
+        this.reset()
+
+        for(var item of _.values(snapshotInfo.items))
+        {
+            if (item.config_kind == 'node')
+            {
+                this.addSnapshotItemToIndex(item.dn, item.config);
+            } else if (item.config_kind == 'props') {
+
+            } else if (item.config_kind == 'alerts') {
+
+            }
+        }
+    }
+
     reset()
     {
         this._index = new FlexSearch({
@@ -25,7 +43,16 @@ class SearchEngine
         });
     }
 
-    addToIndex(item)
+    addSnapshotItemToIndex(dn, item)
+    {
+        var doc = [ dn ];
+        var prettyKind = DocsHelper.prettyKind(item.kind);
+        doc.push(prettyKind);
+        doc = doc.join(' ');
+        this._index.add(dn, doc);
+    }
+
+    addLogicItemToIndex(item)
     {
         var doc = _.clone(item.namingArray);
         doc.push(item.prettyKind);

@@ -21,7 +21,7 @@ class RegistryState
         return this._logger;
     }
 
-    get tree() {
+    getTree() {
         return this._tree;
     }
 

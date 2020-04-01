@@ -4,7 +4,7 @@ module.exports = ({router, app, logger, context}) => {
 
     router.get('/tree', function (req, res) {
         var state = context.registry.getCurrentState();
-        res.send(state.tree);
+        res.send(state.getTree());
     })
 
     router.get('/node', function (req, res) {
@@ -16,7 +16,6 @@ module.exports = ({router, app, logger, context}) => {
         var state = context.registry.getCurrentState();
         res.send(state.getNode(req.query.dn, req.query['inc-children']));
     })
-
 
     router.get('/children', function (req, res) {
         if (!req.query.dn) {
