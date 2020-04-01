@@ -60,10 +60,6 @@ class FacadeRegistry
         return value;
     }
 
-    getItemList() {
-        return _.keys(this._itemsMap);
-    }
-
     getItem(dn) {
         var value = this._itemsMap[dn];
         if (!value) {
@@ -99,6 +95,11 @@ class FacadeRegistry
             return [];
         }
         return value.extractAlerts();
+    }
+
+    acceptCurrentSnapshot(snapshotInfo)
+    {
+        this._context.registry.accept(snapshotInfo);
     }
 }
 

@@ -144,8 +144,10 @@ class Collector
         //     this.logger.info("[_acceptSnapshot] %s", item.dn);
         // }
 
-        this._iteration++;
-        this._context.debugObjectLogger.dump('collector-snapshot-info-', this._iteration, snapshotInfo);
+        // this._iteration++;
+        // this._context.debugObjectLogger.dump('collector-snapshot-info-', this._iteration, snapshotInfo);
+
+        this._context.facadeRegistry.acceptCurrentSnapshot(snapshotInfo);
     }
 
 }

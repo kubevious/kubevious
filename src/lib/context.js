@@ -3,6 +3,7 @@ const FacadeRegistry = require('./facade/registry');
 const SearchEngine = require('./search/engine');
 const MySqlDriver = require("kubevious-helpers").MySqlDriver;
 const HistoryProcessor = require('./history/processor');
+const Registry = require('./registry/registry');
 const Collector = require('./collector/collector');
 const ClusterLeaderElector = require('./cluster/leader-elector')
 const DebugObjectLogger = require('./utils/debug-object-logger');
@@ -16,6 +17,7 @@ class Context
         this._searchEngine = new SearchEngine(this);
         this._historyProcessor = new HistoryProcessor(this);
         this._collector = new Collector(this);
+        this._registry = new Registry(this);
 
         this._facadeRegistry = new FacadeRegistry(this);
 
@@ -48,6 +50,10 @@ class Context
 
     get collector() {
         return this._collector;
+    }
+
+    get registry() {
+        return this._registry;
     }
 
     get debugObjectLogger() {
