@@ -24,10 +24,6 @@ class SearchEngine
             if (item.config_kind == 'node')
             {
                 this.addSnapshotItemToIndex(item.dn, item.config);
-            } else if (item.config_kind == 'props') {
-
-            } else if (item.config_kind == 'alerts') {
-
             }
         }
     }

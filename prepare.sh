@@ -5,3 +5,4 @@ cd $MY_DIR
 
 cd src
 npm install
+npm update kubevious-helpers

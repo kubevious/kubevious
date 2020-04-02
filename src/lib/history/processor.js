@@ -35,19 +35,17 @@ class HistoryProcessor
         return this._context.debugObjectLogger;
     }
 
-    acceptSnapshot(logicItemsMap)
+    accept(snapshotInfo)
     {
         if (this._skipProduceHistory) {
             return;
         }
         
-        this._logger.info("[acceptItems] ...");
-        var date = new Date();
-
-        var snapshot = this._produceSnapshot(logicItemsMap, date);
-        this._logger.info("[acceptItems] snapshot item count: %s", snapshot.getItems().length);
+        this._logger.info("[accept] begin");
+        var snapshot = this._produceSnapshot(_.values(snapshotInfo.items), snapshotInfo.date);
+        this._logger.info("[accept] snapshot item count: %s", snapshot.getItems().length);
         this._snapshotQueue.push(snapshot);
-        this._logger.info("[acceptItems] snapshots in queue: %s", this._snapshotQueue.length);
+        this._logger.info("[accept] snapshots in queue: %s", this._snapshotQueue.length);
 
         this._filterSnapshots();
 
@@ -382,44 +380,17 @@ class HistoryProcessor
             .then(() => this._dbAccessor.updateConfig('STATE', this._currentState));
     }
 
-    _produceSnapshot(logicItemsMap, date)
+    _produceSnapshot(items, date)
     {
-        var snapshot = new Snapshot();
+        this._logger.info("[_produceSnapshot] date: %s, count: %s", date, items.length);
 
-        for(var item of _.values(logicItemsMap))
+        var snapshot = new Snapshot(date);
+
+        for(var item of items)
         {
-            snapshot.addItem({
-                dn: item.dn,
-                kind: item.kind,
-                config_kind: 'node',
-                config: item.exportNode()
-            });
-
-            var alerts = item.extractAlerts();
-            if (alerts.length > 0) 
-            {
-                snapshot.addItem({
-                    dn: item.dn,
-                    kind: item.kind,
-                    config_kind: 'alerts',
-                    config: alerts
-                });
-            }
-
-            var properties = item.extractProperties();
-            for(var props of properties)
-            {
-                snapshot.addItem({
-                    dn: item.dn,
-                    kind: item.kind,
-                    config_kind: 'props',
-                    name: props.id,
-                    config: props
-                })
-            }
+            var cloned = _.clone(item);
+            snapshot.addItem(cloned);
         }
-
-        snapshot.setDate(date);
 
         return snapshot;
     }

@@ -19,14 +19,7 @@ class FacadeRegistry
     {
         this._context.registry.accept(snapshotInfo);
         this._context.searchEngine.accept(snapshotInfo);
-
-        //     this._context.historyProcessor.acceptSnapshot(value);
-
-        //     this._context.searchEngine.reset();
-        //     for(var item of _.values(this._itemsMap))
-        //     {
-        //         this._context.searchEngine.addToIndex(item);
-        //     }
+        this._context.historyProcessor.accept(snapshotInfo);
     }
 }
 
