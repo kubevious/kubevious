@@ -3,6 +3,10 @@ MY_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE
 MY_DIR="$(dirname $MY_PATH)"
 cd $MY_DIR
 
-cd src
-npm install
-npm update kubevious-helpers
+
+export LOG_TO_FILE=true
+export NODE_ENV=development
+# export DEBUG=express:*
+export MYSQL_HOST=localhost
+export MYSQL_PORT=3306
+nodemon src/

@@ -17,8 +17,11 @@ class Server
 
     run()
     {
+        this._app.use(express.json());
+
         this._loadRouter('top');
         this._loadRouter('api');
+        this._loadRouter('collector');
 
         const port = 4000;
         this._app.listen(port, () => {
@@ -36,7 +39,8 @@ class Server
             logger: this.logger.sublogger(name),
             router,
             app: this._app,
-            context: this._context
+            context: this._context,
+            collector: this._context.collector
         }
         
         const module = require('./routers/' + name)
