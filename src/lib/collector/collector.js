@@ -110,7 +110,7 @@ class Collector
 
         var newSnapshotId = uuidv4();
         var newSnapshotInfo = {
-            date: diffInfo.date,
+            date: new Date(diffInfo.date),
             items: _.clone(snapshotInfo.items)
         };
         this._snapshots[newSnapshotId] = newSnapshotInfo;

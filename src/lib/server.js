@@ -17,7 +17,7 @@ class Server
 
     run()
     {
-        this._app.use(express.json());
+        this._app.use(express.json({limit: '10mb'}));
 
         this._loadRouter('top');
         this._loadRouter('api');

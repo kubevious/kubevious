@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const Promise = require('the-promise');
 const _ = require('the-lodash');
+const moment = require('moment');
 const HistoryAccessor = require("./db-accessor");
 const Snapshot = require("kubevious-helpers").History.Snapshot;
 const DateUtils = require("kubevious-helpers").DateUtils;
@@ -43,11 +44,14 @@ class HistoryProcessor
         
         this._logger.info("[accept] begin");
         var snapshot = this._produceSnapshot(_.values(snapshotInfo.items), snapshotInfo.date);
-        this._logger.info("[accept] snapshot item count: %s", snapshot.getItems().length);
+        this._logger.info("[accept] snapshot %s, item count: %s", snapshot.date.toISOString(), snapshot.getItems().length);
         this._snapshotQueue.push(snapshot);
         this._logger.info("[accept] snapshots in queue: %s", this._snapshotQueue.length);
 
         this._filterSnapshots();
+
+        this._snapshotQueue = _.orderBy(this._snapshotQueue, ['date']);
+        this._logger.info("[accept] queue dates: ", this._snapshotQueue.map(x => x.date));
 
         this._tryProcessSnapshot();
     }
@@ -82,7 +86,7 @@ class HistoryProcessor
 
     _processSnapshot(snapshot)
     {
-        this.logger.info("[_processSnapshot] BEGIN. Item Count: %s", snapshot.count);
+        this.logger.info("[_processSnapshot] BEGIN. %s, Item Count: %s", snapshot.date.toISOString(), snapshot.count);
 
         return Promise.resolve()
             .then(() => this.debugObjectLogger.dump("history-snapshot", 0, snapshot))
@@ -382,7 +386,7 @@ class HistoryProcessor
 
     _produceSnapshot(items, date)
     {
-        this._logger.info("[_produceSnapshot] date: %s, count: %s", date, items.length);
+        this._logger.info("[_produceSnapshot] date: %s, count: %s", date.toISOString(), items.length);
 
         var snapshot = new Snapshot(date);
 
@@ -432,6 +436,11 @@ class HistoryProcessor
 
     _tryProcessSnapshot()
     {
+        if (this._scheduledTimer) {
+            clearTimeout(this._scheduledTimer);
+            this._scheduledTimer = null;
+        }
+        
         if (!this._isDbReady) {
             return;
         }
@@ -450,13 +459,20 @@ class HistoryProcessor
             return;
         }
 
-        this._logger.info("[_tryProcessSnapshot] BEGIN");
+        if (this._snapshotQueue.length == 0) {
+            this._logger.info("[_tryProcessSnapshot] empty");
+            return;
+        } else {
+            this._logger.info("[_tryProcessSnapshot] begin");
+        }
+
         if (!this._context.mysqlDriver.isConnected)
         {
             this._logger.warn("[_tryProcessSnapshot] not connected to db");
             return;
         }
 
+        this._logger.info("[_tryProcessSnapshot] queue size: %s", this._snapshotQueue.length);
         if (!this._canProcessSnapshotNow())
         {
             this._rescheduleProcess();
@@ -464,7 +480,7 @@ class HistoryProcessor
         }
 
         if (this._snapshotQueue.length == 0) {
-            this._logger.info("[_tryProcessSnapshot] empty");
+            this._logger.info("[_tryProcessSnapshot] now empty");
             return;
         }
 
@@ -489,20 +505,32 @@ class HistoryProcessor
         if (!this._currentState.diff_date) {
             return true;
         }
+        this.logger.silly("[_canProcessSnapshotNow] last date: %s", this._currentState.diff_date);
 
-        while(this._snapshotQueue.length > 0)
+        var targetDate = moment(this._currentState.diff_date).add(1, 'm').toDate();
+        this.logger.silly("[_canProcessSnapshotNow] target date: %s", targetDate.toISOString());
+
+        var snapshotsPastTargetDate = this._snapshotQueue.filter(x => x.date >= targetDate);
+        if (snapshotsPastTargetDate.length > 0) {
+            this.logger.silly("[_canProcessSnapshotNow] some are past target date: ", snapshotsPastTargetDate.map(x => x.date.toISOString() ));
+            this._snapshotQueue = snapshotsPastTargetDate;
+            return true;
+        }
+
+        var latestSnapshot = _.maxBy(this._snapshotQueue, x => x.date);
+        this._snapshotQueue = [latestSnapshot];
+
+        var now = new Date();
+        this.logger.silly("[_canProcessSnapshotNow] now: %s", now.toISOString());
+
+        if (now >= moment(targetDate).add(1, 'm').toDate()) {
+            this.logger.silly("[_canProcessSnapshotNow] now >= targetDate + 1min");
+            return true;
+        }
+
+        if (this._snapshotQueue.length > 0)
         {
-            var snapshot = this._snapshotQueue[0];
-            var seconds = DateUtils.diffSeconds(snapshot.date, this._currentState.diff_date);
-            if (seconds < 60) {
-                if (this._snapshotQueue.length > 1) {
-                    this._snapshotQueue.shift();
-                } else {
-                    return false;
-                }
-            } else {
-                return true;
-            }
+            return false;
         }
 
         return true;
@@ -511,15 +539,14 @@ class HistoryProcessor
     _rescheduleProcess()
     {
         this._logger.info("[_rescheduleProcess]");
-        if (this._isScheduled) {
+        if (this._scheduledTimer) {
             return;
         }
-        this._isScheduled = true;
 
-        setTimeout(() => {
-            this._isScheduled = false;
+        this._scheduledTimer = setTimeout(() => {
+            this._scheduledTimer = null;
             this._tryProcessSnapshot();
-        }, 5000);
+        }, 10*1000);
     }
 }
 
