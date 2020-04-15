@@ -14,7 +14,7 @@ steps:
       - export PRODUCT_NAME="kubevious"
       - cf_export PRODUCT_NAME="${PRODUCT_NAME}"
       - cf_export GITHUB_TOKEN=$(codefresh get context github --decrypt -o yaml | yq -y .spec.data.auth.password)
-      - cf_export CICD_INFO_PATH="/codefresh/volume/cicd.git/${PRODUCT_NAME}"
+      - cf_export CICD_REPO_PATH="/codefresh/volume/cicd.git"
   main_clone:
     type: "git-clone"
     title: Clone Main Repo
@@ -40,7 +40,7 @@ steps:
     stage: build
     image: codefresh/cli
     shell: bash
-    working_directory: "${{CICD_INFO_PATH}}"
+    working_directory: "${{CICD_REPO_PATH}}/${{PRODUCT_NAME}}"
     commands:
       - pwd
       - ls -la
@@ -71,7 +71,7 @@ steps:
     stage: push
     image: codefresh/cli
     shell: bash
-    working_directory: "${{CICD_INFO_PATH}}"
+    working_directory: "${{CICD_REPO_PATH}}"
     commands:
       - pwd
       - ls -la
