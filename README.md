@@ -120,7 +120,7 @@ Kubevious provides correlated view across Roles, Bindings, ServiceAccounts and A
 
 ![RBAC Shared ServiceAccount](https://github.com/kubevious/media/raw/master/screens/rbac-2.png)
 
-Just like in case of ConfigMaps, the ServiceAccounts, Roles and Bindings can be marked with "Shared-By" flag. That would mean that the SercieAccount, Role or Binding is used elsewhere, and any changes to would affect other applications as well. 
+Just like in case of ConfigMaps, the ServiceAccounts, Roles and Bindings can be marked with "Shared-By" flag. That would mean that the ServiceAccount, Role or Binding is used elsewhere, and any changes to would affect other applications as well. 
 
 # Authors
 Everyone is welcome to contribute. See [CONTRIBUTING] for instructions on how to contribute.
