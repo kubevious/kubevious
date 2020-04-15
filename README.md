@@ -50,6 +50,7 @@ For more details on installation options visit [Deployment Repository].
 * [Capacity Planning and Resource Usage Optimization](#capacity-planning-and-resource-usage-optimization)
 * [Radioactive & Overprivileged Workloads](#radioactive--overprivileged-workloads)
 * [Time Machine](#time-machine)
+* [Correlated RBAC](#correlated-rbac)
 
 
 ## Visualizes Cluster In An Application Centric Way
@@ -109,6 +110,17 @@ Kubevious marks workloads and their corresponding namespaces as radioactive. Spe
 With ever changing configuration it is hard to keep track and identify the source of the problem. 
 
 Kubvious allows you to travel back in time and navigate configuration as well as errors. See time machine in action here: https://youtu.be/Zb5ZIJEHONU
+
+## Correlated RBAC
+![RBAC Multiple ClusterRoles](https://github.com/kubevious/media/raw/master/screens/rbac-1.png)
+
+Things get messy when it comes to Kubernetes RBAC. There are too many indirections and links to navigate to identify permissions applied to pods.
+
+Kubevious provides correlated view across Roles, Bindings, ServiceAccounts and Applications. Kubevious goes one step further and combines permissions across all relevant roles and presents them in a single role matrix. 
+
+![RBAC Shared ServiceAccount](https://github.com/kubevious/media/raw/master/screens/rbac-2.png)
+
+Just like in case of ConfigMaps, the ServiceAccounts, Roles and Bindings can be marked with "Shared-By" flag. That would mean that the SercieAccount, Role or Binding is used elsewhere, and any changes to would affect other applications as well. 
 
 # Authors
 Everyone is welcome to contribute. See [CONTRIBUTING] for instructions on how to contribute.
