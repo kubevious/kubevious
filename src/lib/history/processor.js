@@ -13,7 +13,7 @@ class HistoryProcessor
     {
         this._context = context;
         this._logger = context.logger.sublogger('HistoryProcessor');
-        this._dbAccessor = new HistoryAccessor(context, context.mysqlDriver);
+        this._dbAccessor = new HistoryAccessor(context, context.database.driver);
         this._snapshotQueue = [];
         this._isProcessing = false;
         this._isScheduled = false;
@@ -25,7 +25,7 @@ class HistoryProcessor
         // TODO: Temporary
         // this._skipProduceHistory = true;
 
-        context.mysqlDriver.onConnect(this._onDbConnected.bind(this));
+        context.database.driver.onConnect(this._onDbConnected.bind(this));
     }
 
     get logger() {
@@ -466,7 +466,7 @@ class HistoryProcessor
             this._logger.info("[_tryProcessSnapshot] begin");
         }
 
-        if (!this._context.mysqlDriver.isConnected)
+        if (!this._context.database.driver.isConnected)
         {
             this._logger.warn("[_tryProcessSnapshot] not connected to db");
             return;

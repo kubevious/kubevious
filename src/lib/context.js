@@ -1,7 +1,7 @@
 const Promise = require('the-promise');
 const FacadeRegistry = require('./facade/registry');
 const SearchEngine = require('./search/engine');
-const MySqlDriver = require("kubevious-helpers").MySqlDriver;
+const Database = require('./db');
 const HistoryProcessor = require('./history/processor');
 const DataStore = require('./store/data-store');
 const Registry = require('./registry/registry');
@@ -14,7 +14,7 @@ class Context
     constructor(logger)
     {
         this._logger = logger.sublogger("Context");
-        this._mysqlDriver = new MySqlDriver(logger);
+        this._database = new Database(logger);
         this._searchEngine = new SearchEngine(this);
         this._historyProcessor = new HistoryProcessor(this);
         this._dataStore = new DataStore(this);
@@ -35,7 +35,11 @@ class Context
     }
 
     get mysqlDriver() {
-        return this._mysqlDriver;
+        return this.database.driver;
+    }
+
+    get database() {
+        return this._database;
     }
 
     get facadeRegistry() {
@@ -84,7 +88,7 @@ class Context
     run()
     {
         return Promise.resolve()
-            .then(() => this._mysqlDriver.connect())
+            .then(() => this._database.init())
             .then(() => this._dataStore.init())
             .then(() => this._runServer())
             .catch(reason => {
