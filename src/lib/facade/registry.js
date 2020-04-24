@@ -20,6 +20,7 @@ class FacadeRegistry
         this._context.registry.accept(snapshotInfo);
         this._context.searchEngine.accept(snapshotInfo);
         this._context.historyProcessor.accept(snapshotInfo);
+        this._context.dataStore.accept(snapshotInfo);
     }
 }
 

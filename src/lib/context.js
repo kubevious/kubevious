@@ -3,6 +3,7 @@ const FacadeRegistry = require('./facade/registry');
 const SearchEngine = require('./search/engine');
 const MySqlDriver = require("kubevious-helpers").MySqlDriver;
 const HistoryProcessor = require('./history/processor');
+const DataStore = require('./store/data-store');
 const Registry = require('./registry/registry');
 const Collector = require('./collector/collector');
 const ClusterLeaderElector = require('./cluster/leader-elector')
@@ -16,6 +17,7 @@ class Context
         this._mysqlDriver = new MySqlDriver(logger);
         this._searchEngine = new SearchEngine(this);
         this._historyProcessor = new HistoryProcessor(this);
+        this._dataStore = new DataStore(this);
         this._collector = new Collector(this);
         this._registry = new Registry(this);
 
@@ -46,6 +48,10 @@ class Context
 
     get historyProcessor() {
         return this._historyProcessor;
+    }
+
+    get dataStore() {
+        return this._dataStore;
     }
 
     get collector() {
@@ -79,6 +85,7 @@ class Context
     {
         return Promise.resolve()
             .then(() => this._mysqlDriver.connect())
+            .then(() => this._dataStore.init())
             .then(() => this._runServer())
             .catch(reason => {
                 console.log("***** ERROR *****");
