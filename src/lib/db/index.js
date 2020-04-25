@@ -22,6 +22,20 @@ class Database
         return this._driver;
     }
 
+    get isConnected() {
+        return this._driver.isConnected;
+    }
+
+    onConnect(cb)
+    {
+        return this._driver.onConnect(cb);
+    }
+
+    registerStatement(id, sql)
+    {
+        return this._driver.registerStatement(id, sql);
+    }
+
     init()
     {
         this._logger.info("[init]")

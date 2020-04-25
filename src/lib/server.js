@@ -1,6 +1,7 @@
 const express = require('express');
 const PromiseRouter = require('express-promise-router');
 const Promise = require("the-promise");
+const morgan = require('morgan')
 
 class Server
 {
@@ -17,11 +18,14 @@ class Server
 
     run()
     {
+        this._app.use(morgan('tiny'))
+
         this._app.use(express.json({limit: '10mb'}));
 
         this._loadRouter('top');
         this._loadRouter('api');
         this._loadRouter('collector');
+        this._loadRouter('policy');
 
         const port = 4000;
         this._app.listen(port, () => {

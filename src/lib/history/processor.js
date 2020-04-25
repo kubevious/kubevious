@@ -25,7 +25,7 @@ class HistoryProcessor
         // TODO: Temporary
         // this._skipProduceHistory = true;
 
-        context.database.driver.onConnect(this._onDbConnected.bind(this));
+        context.database.onConnect(this._onDbConnected.bind(this));
     }
 
     get logger() {
@@ -466,7 +466,7 @@ class HistoryProcessor
             this._logger.info("[_tryProcessSnapshot] begin");
         }
 
-        if (!this._context.database.driver.isConnected)
+        if (!this._context.database.isConnected)
         {
             this._logger.warn("[_tryProcessSnapshot] not connected to db");
             return;
