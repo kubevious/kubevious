@@ -108,6 +108,13 @@ class RegistryState
         this._buildChildrenMap();
 
         this._tree = this._buildTreeNode('root');
+
+        if (!this._tree) {
+            this._tree = {
+                kind: 'root',
+                rn: 'root'
+            }
+        }
     }
 
     _addTreeNode(dn, node)
