@@ -18,16 +18,19 @@ class PolicyAccessor
 
     _registerStatements()
     {
-        this._driver.registerStatement('POLICY_QUERY_ALL', 'SELECT `id`, `name` FROM `policies`;');
+        this._driver.registerStatement('POLICY_QUERY_ALL', 'SELECT `id`, `name`, `enabled` FROM `policies`;');
         this._driver.registerStatement('POLICY_QUERY', 'SELECT * FROM `policies` WHERE `id` = ?;');
-        this._driver.registerStatement('POLICY_CREATE', 'INSERT INTO `policies`(`name`, `script`) VALUES (?, ?)');
+        this._driver.registerStatement('POLICY_CREATE', 'INSERT INTO `policies`(`name`, `enabled`, `target`, `script`) VALUES (?, ?, ?, ?)');
         this._driver.registerStatement('POLICY_DELETE', 'DELETE FROM `policies` WHERE `id` = ?;');
-        this._driver.registerStatement('POLICY_UPDATE', 'UPDATE `policies` SET `name` = ?, `script` = ? WHERE `id` = ?;');
+        this._driver.registerStatement('POLICY_UPDATE', 'UPDATE `policies` SET `name` = ?, `enabled` = ?, `target` = ?, `script` = ?  WHERE `id` = ?;');
     }
 
     listAll()
     {
         return this._execute('POLICY_QUERY_ALL')
+            .then(result => {
+                return result.map(x => this._massageDbPolicy(x));
+            })
     }
 
     getPolicy(id)
@@ -35,13 +38,13 @@ class PolicyAccessor
         var params = [ id ];
         return this._execute('POLICY_QUERY', params)
             .then(result => {
-                return _.head(result) || null;
+                return this._massageDbPolicy(_.head(result));
             });
     }
 
     createPolicy(config)
     {
-        var params = [ config.name, config.script ];
+        var params = [ config.name, config.enabled, config.target, config.script ];
         return this._execute('POLICY_CREATE', params)
             .then(result => {
                 var row = _.clone(config);
@@ -61,7 +64,7 @@ class PolicyAccessor
 
     updatePolicy(id, config)
     {
-        var params = [ config.name, config.script, id ];
+        var params = [ config.name, config.enabled, config.target, config.script, id ];
         return this._execute('POLICY_UPDATE', params)
             .then(result => {
                 var row = _.clone(config);
@@ -75,6 +78,14 @@ class PolicyAccessor
         return this._driver.executeStatement(statementId, params);
     }
 
+    _massageDbPolicy(policy)
+    {
+        if (!policy) {
+            return null;
+        }
+        policy.enabled = policy.enabled ? true : false;
+        return policy;
+    }
 }
 
 module.exports = PolicyAccessor;
