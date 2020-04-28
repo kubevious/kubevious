@@ -26,6 +26,14 @@ module.exports = ({router, app, logger, context}) => {
             });
     })
 
+    router.post('/import', function (req, res) {
+        return context.policyAccessor
+            .importPolicies(req.body)
+            .then(result => {
+                res.json(result);
+            });
+    })
+
     router.get('/:id', function (req, res) {
         return context.policyAccessor
             .getPolicy(req.params.id)

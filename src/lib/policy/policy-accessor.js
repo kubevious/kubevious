@@ -78,9 +78,22 @@ class PolicyAccessor
     {
         return this._execute('POLICY_QUERY_EXPORT')
             .then(result => {
-                console.log('result', result)
                 return result.map(x => this._massageDbPolicy(x));
             })
+    }
+
+    importPolicies(policies)
+    {
+        const result = []
+
+        return new Promise((resolve, reject) => {
+            policies.map(policy => {
+                this.createPolicy(policy)
+                    .then(res => result.push(res))
+            })
+
+            resolve(result)
+        })
     }
 
     _execute(statementId, params)
