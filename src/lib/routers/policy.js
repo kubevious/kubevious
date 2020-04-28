@@ -10,6 +10,14 @@ module.exports = ({router, app, logger, context}) => {
             });
     })
 
+    router.get('/export', function (req, res) {
+        return context.policyAccessor
+            .exportPolicies()
+            .then(result => {
+                res.json(result)
+            });
+    })
+
     router.post('/', function (req, res) {
         return context.policyAccessor
             .createPolicy(req.body)

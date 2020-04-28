@@ -20,6 +20,7 @@ class PolicyAccessor
     {
         this._driver.registerStatement('POLICY_QUERY_ALL', 'SELECT `id`, `name`, `enabled` FROM `policies`;');
         this._driver.registerStatement('POLICY_QUERY', 'SELECT * FROM `policies` WHERE `id` = ?;');
+        this._driver.registerStatement('POLICY_QUERY_EXPORT', 'SELECT `name`, `target`, `script`, `enabled` FROM `policies`;');
         this._driver.registerStatement('POLICY_CREATE', 'INSERT INTO `policies`(`name`, `enabled`, `target`, `script`) VALUES (?, ?, ?, ?)');
         this._driver.registerStatement('POLICY_DELETE', 'DELETE FROM `policies` WHERE `id` = ?;');
         this._driver.registerStatement('POLICY_UPDATE', 'UPDATE `policies` SET `name` = ?, `enabled` = ?, `target` = ?, `script` = ?  WHERE `id` = ?;');
@@ -71,6 +72,15 @@ class PolicyAccessor
                 row.id = id;
                 return row;
             });
+    }
+
+    exportPolicies()
+    {
+        return this._execute('POLICY_QUERY_EXPORT')
+            .then(result => {
+                console.log('result', result)
+                return result.map(x => this._massageDbPolicy(x));
+            })
     }
 
     _execute(statementId, params)
