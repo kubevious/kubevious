@@ -26,7 +26,7 @@ See the collection of other demo videos: https://www.youtube.com/channel/UCTjfcE
 See our live demo running on a model cluster: [https://demo.kubevious.io](https://demo.kubevious.io).
 
 # Running Kubevious
-Kubevious works with any Kubernetes distribution and runs within the cluster. Deploy using Helm:
+Kubevious works with any Kubernetes distribution and runs within the cluster. Deploy using Helm v3:
 
 ```sh
 kubectl create namespace kubevious
