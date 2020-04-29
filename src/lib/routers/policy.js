@@ -58,5 +58,13 @@ module.exports = ({router, app, logger, context}) => {
             });
     })
 
+    router.delete('/', function (req, res) {
+        return context.policyAccessor
+            .deleteAllPolicies()
+            .then(result => {
+                res.json(result);
+            });
+    })
+
     app.use('/api/v1/policy', router);
 };
