@@ -25,7 +25,6 @@ class Server
         this._loadRouter('top');
         this._loadRouter('api');
         this._loadRouter('collector');
-        this._loadRouter('policy');
         this._loadRouter('rule');
 
         const port = 4000;
