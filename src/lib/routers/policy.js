@@ -28,7 +28,7 @@ module.exports = ({router, app, logger, context}) => {
 
     router.post('/import', function (req, res) {
         return context.policyAccessor
-            .importPolicies(req.body)
+            .importPolicies(req.body, true)
             .then(result => {
                 res.json(result);
             });
