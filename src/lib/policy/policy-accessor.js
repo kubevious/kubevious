@@ -100,43 +100,80 @@ class PolicyAccessor
             })
     }
 
-    importPolicies(policies)
+    importPolicies(policies, deleteExtra)
     {
         return this.listAllFields().then(res => {
-            const allPolicies = _.makeDict(res, x => x.name, x => ({ config: x }))
-            const importedPolicies = _.makeDict(policies, x => x.name, x => ({ config: x }))
+            const dbRules = _.makeDict(res, x => x.name, x => { 
+                var item = {
+                    id: x.id
+                };
+                delete x.id;
+                item.config = x;
+                return item;
+            });
+
+            const targetRules = _.makeDict(policies, x => x.name)
+            
+            this.logger.info("dbRules: ", dbRules);
+            this.logger.info("targetRules: ", targetRules);
 
             const itemsDelta = [];
 
-            for (let key in importedPolicies)
+            for (let key in targetRules)
             {
-                let targetItem = importedPolicies[key]
-                let dbItemDict = allPolicies[key]
-
-                const { name, script, target, enabled } = targetItem.config
-
-                if (dbItemDict)
+                let targetRuleConfig = targetRules[key]
+                let dbRule = dbRules[key]
+                if (dbRule)
                 {
-                    this.updatePolicy(dbItemDict.config.id, targetItem.config)
-                    itemsDelta.push({ name, target, script, enabled });
+                    if (!_.fastDeepEqual(targetRuleConfig, dbRule.config))
+                    {
+                        itemsDelta.push({ 
+                            action: 'U',
+                            id: dbRule.id,
+                            config: targetRuleConfig
+                        });
+                    }
                 } else {
-                    this.createPolicy(targetItem.config)
-                    itemsDelta.push({ name, target, script, enabled });
+                    itemsDelta.push({ 
+                        action: 'C',
+                        config: targetRuleConfig
+                    });
                 }
             }
 
-            for (let key in allPolicies)
+            if (deleteExtra)
             {
-                let dbItemDict = allPolicies[key]
-                let targetItem = importedPolicies[key]
-
-                if (!targetItem)
+                for (let key in dbRules)
                 {
-                    this.deletePolicy(dbItemDict.config.id)
+                    let dbRule = dbRules[key]
+                    let targetRuleConfig = targetRules[key]
+    
+                    if (!targetRuleConfig)
+                    {
+                        itemsDelta.push({ 
+                            action: 'D',
+                            id: dbRule.id
+                        });
+                    }
                 }
             }
 
-            return itemsDelta
+            this.logger.info("itemsDelta: ", itemsDelta);
+
+            return Promise.serial(itemsDelta, delta => {
+                    if (delta.action == 'C')
+                    {
+                        return this.createPolicy(delta.config);
+                    }
+                    if (delta.action == 'U')
+                    {
+                        return this.updatePolicy(delta.id, delta.config);
+                    }
+                    if (delta.action == 'D')
+                    {
+                        return this.deletePolicy(delta.id);
+                    }
+                });
         })
     }
 
