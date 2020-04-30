@@ -79,5 +79,14 @@ CREATE TABLE IF NOT EXISTS `policies` (
 PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+CREATE TABLE IF NOT EXISTS `rules` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(128) NOT NULL,
+  `enabled` TINYINT NOT NULL,
+  `target` TEXT NOT NULL,
+  `script` TEXT NOT NULL,
+PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 INSERT IGNORE INTO `config`(`key`, `value`)
 VALUES('DB_SCHEMA', '{ "version": 3 }')
