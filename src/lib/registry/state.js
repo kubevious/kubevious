@@ -98,7 +98,7 @@ class RegistryState
                 this._addTreeNode(item.dn, item.config);
             } else if (item.config_kind == 'props') {
                 var assets = this._fetchAssets(item.dn);
-                assets.props.push(item.config);
+                assets.props[item.config.id] = item.config;
             } else if (item.config_kind == 'alerts') {
                 var assets = this._fetchAssets(item.dn);
                 assets.alerts = item.config;
@@ -169,7 +169,7 @@ class RegistryState
         var assets = this._assetMap[dn];
         if (!assets) {
             return {
-                props: [],
+                props: {},
                 alerts: []
             }
         }
@@ -181,7 +181,7 @@ class RegistryState
         var assets = this._assetMap[dn];
         if (!assets) {
             assets = {
-                props: [],
+                props: {},
                 alerts: []
             }
             this._assetMap[dn] = assets;

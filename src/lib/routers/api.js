@@ -34,7 +34,9 @@ module.exports = ({router, app, logger, context}) => {
              });
         }
         var state = context.registry.getCurrentState();
-        res.send(state.getAssets(req.query.dn));
+        var assets = state.getAssets(req.query.dn);
+        assets.props = _.values(assets.props);
+        res.send(assets);
     })
 
     /*************************/
