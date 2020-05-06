@@ -2,7 +2,7 @@ module.exports = function(logger, driver) {
     logger.info("MIGRATING v3");
 
     var sql = "" + 
-    "CREATE TABLE IF NOT EXISTS `policies` (" + 
+    "CREATE TABLE IF NOT EXISTS `rules` (" + 
         "`id` int unsigned NOT NULL AUTO_INCREMENT," + 
         "`name` varchar(128) NOT NULL," + 
         "`enabled` TINYINT NOT NULL," + 

@@ -1,9 +1,9 @@
 version: '3.3'
 services:
 
- mysql:
+ mysql-kubevious:
   image: 'mysql:8.0.19'
-  container_name: 'mysql-kubevius'
+  container_name: 'mysql-kubevious'
   volumes:
     - ./runtime-data:/var/lib/mysql:rw
     - ./db-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
