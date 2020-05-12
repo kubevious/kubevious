@@ -1,11 +1,11 @@
 const Promise = require('the-promise');
 const _ = require('the-lodash');
 
-class PolicyProcessor
+class RuleProcessor
 {
     constructor(context)
     {
-        this._logger = context.logger.sublogger("PolicyProcessor");
+        this._logger = context.logger.sublogger("RuleProcessor");
         context.database.onConnect(this._onDbConnected.bind(this));
     }
 
@@ -20,4 +20,4 @@ class PolicyProcessor
     }
 }
 
-module.exports = PolicyProcessor;
+module.exports = RuleProcessor;
