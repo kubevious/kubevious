@@ -36,14 +36,14 @@ class HistoryProcessor
         return this._context.debugObjectLogger;
     }
 
-    accept(snapshotInfo)
+    accept(state)
     {
         if (this._skipProduceHistory) {
             return;
         }
         
         this._logger.info("[accept] begin");
-        var snapshot = this._produceSnapshot(_.values(snapshotInfo.items), snapshotInfo.date);
+        var snapshot = this._produceSnapshot(state);
         this._logger.info("[accept] snapshot %s, item count: %s", snapshot.date.toISOString(), snapshot.getItems().length);
         this._snapshotQueue.push(snapshot);
         this._logger.info("[accept] snapshots in queue: %s", this._snapshotQueue.length);
@@ -384,16 +384,44 @@ class HistoryProcessor
             .then(() => this._dbAccessor.updateConfig('STATE', this._currentState));
     }
 
-    _produceSnapshot(items, date)
+    _produceSnapshot(state)
     {
-        this._logger.info("[_produceSnapshot] date: %s, count: %s", date.toISOString(), items.length);
+        this._logger.info("[_produceSnapshot] date: %s, count: %s", state.date.toISOString(), state.getCount());
 
-        var snapshot = new Snapshot(date);
-
-        for(var item of items)
+        var snapshot = new Snapshot(state.date);
+        for(var node of state.getNodes())
         {
-            var cloned = _.clone(item);
-            snapshot.addItem(cloned);
+            {
+                snapshot.addItem({
+                    config_kind: 'node',
+                    dn: node.dn,
+                    kind: node.config.kind,
+                    config: node.config
+                });
+            }
+            
+            var assets = state.getAssets(node.dn);
+            {
+                if (_.keys(assets.props).length > 0)
+                {
+                    snapshot.addItem({
+                        config_kind: 'props',
+                        dn: node.dn,
+                        kind: node.config.kind,
+                        name: node.config.id,
+                        config: node.config
+                    });
+                }
+                if (assets.alerts.length > 0)
+                {
+                    snapshot.addItem({
+                        config_kind: 'alerts',
+                        dn: node.dn,
+                        kind: node.config.kind,
+                        config: node.config
+                    });
+                }
+            }
         }
 
         return snapshot;

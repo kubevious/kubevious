@@ -4,10 +4,9 @@ const DnUtils = require('kubevious-helpers').DnUtils;
 
 class RegistryState
 {
-    constructor(logger, snapshotInfo)
+    constructor(snapshotInfo)
     {
-        this._logger = logger;
-
+        this._date = snapshotInfo.date;
         this._tree = null;
         this._nodeMap = {};
         this._treeMap = {};
@@ -17,8 +16,13 @@ class RegistryState
         this._transform(snapshotInfo);
     }
 
-    get logger() {
-        return this._logger;
+    get date() {
+        return this._date;
+    }
+
+    getCount()
+    {
+        return _.keys(this._nodeMap).length;
     }
 
     getTree() {
@@ -54,6 +58,14 @@ class RegistryState
     {
         var assets = this._getAssets(dn);
         return assets;
+    }
+
+    getNodes()
+    {
+        return _.keys(this._nodeMap).map(dn => ({
+            dn: dn,
+            config: this._nodeMap[dn]
+        }));
     }
 
     _getChildren(dn)

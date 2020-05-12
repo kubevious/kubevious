@@ -18,6 +18,13 @@ class RuleProcessor
         this._logger.info("[_onDbConnected] ...");
         return Promise.resolve()
     }
+
+    execute(snapshotInfo)
+    {
+        this._logger.info("[execute] %s", snapshotInfo.constructor.name)
+        this._logger.info("[execute] ", _.keys(snapshotInfo.items))
+        return;
+    }
 }
 
 module.exports = RuleProcessor;

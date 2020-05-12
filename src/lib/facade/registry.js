@@ -1,5 +1,7 @@
 const Promise = require('the-promise');
 const _ = require('lodash');
+const Snapshot = require("kubevious-helpers").History.Snapshot;
+const RegistryState = require('../registry/state');
 
 class FacadeRegistry
 {
@@ -17,11 +19,18 @@ class FacadeRegistry
 
     acceptCurrentSnapshot(snapshotInfo)
     {
-        this._context.registry.accept(snapshotInfo);
-        this._context.searchEngine.accept(snapshotInfo);
-        this._context.historyProcessor.accept(snapshotInfo);
-        this._context.dataStore.accept(snapshotInfo);
+        // this.logger.info(snapshotInfo);
+        var registryState = new RegistryState(snapshotInfo)
+        return Promise.resolve()
+            .then(() => this._context.ruleProcessor.execute(registryState))
+            .then(() => {
+                this._context.registry.accept(registryState);
+                this._context.searchEngine.accept(registryState);
+                this._context.historyProcessor.accept(registryState);
+                // this._context.dataStore.accept(snapshotInfo);
+            })
     }
+
 }
 
 module.exports = FacadeRegistry;
