@@ -19,12 +19,15 @@ class RuleProcessor
         return Promise.resolve()
     }
 
-    execute(snapshotInfo)
+    execute(state)
     {
-        this._logger.info("[execute] %s", snapshotInfo.constructor.name)
-        this._logger.info("[execute] ", _.keys(snapshotInfo.items))
-        return;
+        this._logger.info("[execute] date: %s, count: %s", 
+            state.date.toISOString(),
+            state.getCount())
+
     }
+
+    
 }
 
 module.exports = RuleProcessor;

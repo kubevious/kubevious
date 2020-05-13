@@ -68,6 +68,16 @@ class RegistryState
         }));
     }
 
+    getNodeDns()
+    {
+        return _.keys(this._nodeMap);
+    }
+
+    editableNode(dn)
+    {
+        return this._nodeMap[dn];
+    }
+
     _getChildren(dn)
     {
         var result = [];
@@ -199,6 +209,12 @@ class RegistryState
             this._assetMap[dn] = assets;
         }
         return assets;
+    }
+
+    raiseAlert(dn, alertInfo)
+    {
+        var assets = this._fetchAssets(dn);
+        assets.alerts.push(alertInfo);
     }
 
 }

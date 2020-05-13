@@ -404,13 +404,16 @@ class HistoryProcessor
             {
                 if (_.keys(assets.props).length > 0)
                 {
-                    snapshot.addItem({
-                        config_kind: 'props',
-                        dn: node.dn,
-                        kind: node.config.kind,
-                        name: node.config.id,
-                        config: node.config
-                    });
+                    for(var props of _.values(assets.props))
+                    {
+                        snapshot.addItem({
+                            config_kind: 'props',
+                            dn: node.dn,
+                            kind: node.config.kind,
+                            name: props.id,
+                            config: props
+                        });
+                    }
                 }
                 if (assets.alerts.length > 0)
                 {
@@ -418,7 +421,7 @@ class HistoryProcessor
                         config_kind: 'alerts',
                         dn: node.dn,
                         kind: node.config.kind,
-                        config: node.config
+                        config: assets.alerts
                     });
                 }
             }
