@@ -1,6 +1,6 @@
 const Promise = require('the-promise');
 const _ = require('lodash');
-const State = require('./state');
+const RegistryState = require('kubevious-helpers').RegistryState;
 
 class Registry
 {
@@ -9,7 +9,7 @@ class Registry
         this._context = context;
         this._logger = context.logger.sublogger("Registry");
 
-        this._currentState = new State({ date: new Date(), items: {}});
+        this._currentState = new RegistryState({ date: new Date(), items: {}});
     }
 
     get logger() {

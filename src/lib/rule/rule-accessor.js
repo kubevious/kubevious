@@ -22,6 +22,7 @@ class RuleAccessor
         this._driver.registerStatement('RULE_QUERY', 'SELECT * FROM `rules` WHERE `id` = ?;');
         this._driver.registerStatement('RULE_QUERY_EXPORT', 'SELECT `name`, `target`, `script`, `enabled` FROM `rules`;');
         this._driver.registerStatement('RULE_QUERY_ALL_FIELDS', 'SELECT `id`, `name`, `target`, `script`, `enabled` FROM `rules`;');
+        this._driver.registerStatement('RULE_QUERY_ENABLED', 'SELECT `id`, `name`, `target`, `script` FROM `rules` WHERE `enabled` = 1;');
         this._driver.registerStatement('RULE_CREATE', 'INSERT INTO `rules`(`name`, `enabled`, `target`, `script`) VALUES (?, ?, ?, ?)');
         this._driver.registerStatement('RULE_DELETE', 'DELETE FROM `rules` WHERE `id` = ?;');
         this._driver.registerStatement('RULE_UPDATE', 'UPDATE `rules` SET `name` = ?, `enabled` = ?, `target` = ?, `script` = ?  WHERE `id` = ?;');
@@ -41,6 +42,11 @@ class RuleAccessor
             .then(result => {
                 return result.map(x => this._massageDbRule(x));
             })
+    }
+
+    queryEnabledRules()
+    {
+        return this._execute('RULE_QUERY_ENABLED');
     }
 
     getRule(id)
