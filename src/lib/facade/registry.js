@@ -2,6 +2,7 @@ const Promise = require('the-promise');
 const _ = require('lodash');
 const Snapshot = require("kubevious-helpers").History.Snapshot;
 const RegistryState = require('../registry/state');
+const AlertCountProcessor = require('../processing/alert-count-processor');
 
 class FacadeRegistry
 {
@@ -23,6 +24,10 @@ class FacadeRegistry
         var registryState = new RegistryState(snapshotInfo)
         return Promise.resolve()
             .then(() => this._context.ruleProcessor.execute(registryState))
+            .then(() => {
+                var alertCountProcessor = new AlertCountProcessor(this.logger, registryState);
+                return alertCountProcessor.execute(registryState);
+            })
             .then(() => {
                 this._context.registry.accept(registryState);
                 this._context.searchEngine.accept(registryState);
