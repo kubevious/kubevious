@@ -29,6 +29,9 @@ class RuleProcessor
 
         return this._fetchRules()
             .then(rules => this._processRules(state, rules))
+            .then(() => {
+                this.logger.info('[execute] END');
+            })
     }
 
     _fetchRules()
@@ -47,18 +50,20 @@ class RuleProcessor
     
     _processRule(state, rule)
     {
-        this.logger.info('[_processRule] ', rule);
+        this.logger.info('[_processRule] Begin: ', rule);
 
         var processor = new KubikRuleProcessor(state, rule);
         return processor.process()
             .then(result => {
-                this.logger.verbose('[_processRule] RESULT: ', result);
+                this.logger.silly('[_processRule] RESULT: ', result);
+                this.logger.silly('[_processRule] RESULT ITEMS: ', result.ruleItems);
 
-                console.log(result);
                 if (result.success)
                 {
                     for(var dn of _.keys(result.ruleItems))
                     {
+                        this.logger.debug('[_processRule] RuleItem: %s', dn);
+
                         var severity = null;
                         var ruleItemInfo = result.ruleItems[dn];
 
@@ -81,6 +86,10 @@ class RuleProcessor
                             });
                         }
                     }
+                }
+                else
+                {
+                    this.logger.error('[_processRule] Failed: ', result.messages);
                 }
             });
     }
