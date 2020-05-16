@@ -58,5 +58,25 @@ module.exports = ({router, app, logger, context}) => {
             });
     })
 
+    router.get('/:id/data', function (req, res) {
+        var data = {
+            items: [],
+            logs: []
+        }
+        return context.ruleAccessor
+            .getRule(req.params.id)
+            .then(result => {
+                if (result) {
+                    return Promise.all([
+                        context.ruleAccessor.getRuleItems(result.name).then(x => { data.items = x; }),
+                        context.ruleAccessor.getRuleLogs(result.name).then(x => { data.logs = x; }),
+                    ])
+                }
+            })
+            .then(() => {
+                res.json(data);
+            });
+    })
+
     app.use('/api/v1/rule', router);
 };

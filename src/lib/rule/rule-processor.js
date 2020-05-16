@@ -1,6 +1,8 @@
 const Promise = require('the-promise');
 const _ = require('the-lodash');
 const KubikRuleProcessor = require('kubevious-kubik').RuleProcessor;
+const MySqlTableSynchronizer = require('kubevious-helpers').MySqlTableSynchronizer;
+
 
 class RuleProcessor
 {
@@ -9,6 +11,23 @@ class RuleProcessor
         this._context = context;
         this._logger = context.logger.sublogger("RuleProcessor");
         context.database.onConnect(this._onDbConnected.bind(this));
+
+        this._ruleItemsSynchronizer = new MySqlTableSynchronizer(
+            this._logger, 
+            context.database.driver, 
+            'rule_items', 
+            [], 
+            ['name', 'dn', 'has_error', 'has_warning']
+        );
+
+        this._ruleLogsSynchronizer = new MySqlTableSynchronizer(
+            this._logger, 
+            context.database.driver, 
+            'rule_logs', 
+            [], 
+            ['name', 'kind', 'msg']
+        );
+
     }
 
     get logger() {
@@ -27,8 +46,14 @@ class RuleProcessor
             state.date.toISOString(),
             state.getCount())
 
+        var executionContext = {
+            ruleItems: [],
+            ruleLogs: []
+        }
+
         return this._fetchRules()
-            .then(rules => this._processRules(state, rules))
+            .then(rules => this._processRules(state, rules, executionContext))
+            .then(() => this._saveRuleData(executionContext))
             .then(() => {
                 this.logger.info('[execute] END');
             })
@@ -43,12 +68,12 @@ class RuleProcessor
             });
     }
 
-    _processRules(state, rules)
+    _processRules(state, rules, executionContext)
     {
-        return Promise.serial(rules, x => this._processRule(state, x));
+        return Promise.serial(rules, x => this._processRule(state, x, executionContext));
     }
     
-    _processRule(state, rule)
+    _processRule(state, rule, executionContext)
     {
         this.logger.info('[_processRule] Begin: ', rule);
 
@@ -69,8 +94,20 @@ class RuleProcessor
 
                         if (ruleItemInfo.hasError) {
                             severity = 'error';
+                            executionContext.ruleItems.push({
+                                name: rule.name,
+                                dn: dn,
+                                has_error: 1,
+                                has_warning: 0
+                            });
                         } else if (ruleItemInfo.hasWarning) {
                             severity = 'error';
+                            executionContext.ruleItems.push({
+                                name: rule.name,
+                                dn: dn,
+                                has_error: 0,
+                                has_warning: 1
+                            });
                         }
 
                         if (severity) 
@@ -84,15 +121,46 @@ class RuleProcessor
                                     id: rule.name
                                 }
                             });
+
+                            
                         }
                     }
                 }
                 else
                 {
                     this.logger.error('[_processRule] Failed: ', result.messages);
+
+                    for(var msg of result.messages)
+                    {
+                        executionContext.ruleLogs.push({
+                            name: rule.name,
+                            kind: 'error',
+                            msg: msg
+                        });
+                    }
                 }
             });
     }
+
+    _saveRuleData(executionContext)
+    {
+        return Promise.resolve()
+            .then(() => this._syncRuleItems(executionContext))
+            .then(() => this._syncRuleLogs(executionContext))
+    }
+
+    _syncRuleItems(executionContext)
+    {
+        this.logger.info('[_syncRuleItems] Begin', executionContext.ruleItems);
+        return this._ruleItemsSynchronizer.execute({}, executionContext.ruleItems);
+    }
+
+    _syncRuleLogs(executionContext)
+    {
+        this.logger.info('[_syncRuleLogs] Begin', executionContext.ruleLogs);
+        return this._ruleLogsSynchronizer.execute({}, executionContext.ruleLogs);
+    }
+    
     
 }
 

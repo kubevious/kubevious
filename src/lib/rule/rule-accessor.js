@@ -26,6 +26,11 @@ class RuleAccessor
         this._driver.registerStatement('RULE_CREATE', 'INSERT INTO `rules`(`name`, `enabled`, `target`, `script`) VALUES (?, ?, ?, ?)');
         this._driver.registerStatement('RULE_DELETE', 'DELETE FROM `rules` WHERE `id` = ?;');
         this._driver.registerStatement('RULE_UPDATE', 'UPDATE `rules` SET `name` = ?, `enabled` = ?, `target` = ?, `script` = ?  WHERE `id` = ?;');
+
+        this._driver.registerStatement('RULE_ITEMS_QUERY', 'SELECT `dn`, `has_error`, `has_warning` FROM `rule_items` WHERE `name` = ?;');
+
+        this._driver.registerStatement('RULE_LOGS_QUERY', 'SELECT `kind`, `msg` FROM `rule_logs` WHERE `name` = ?;');
+
     }
 
     listAll()
@@ -167,6 +172,24 @@ class RuleAccessor
                     }
                 });
         })
+    }
+
+    getRuleItems(name)
+    {
+        var params = [ name ];
+        return this._execute('RULE_ITEMS_QUERY', params)
+            .then(result => {
+                return result;
+            });
+    }
+
+    getRuleLogs(name)
+    {
+        var params = [ name ];
+        return this._execute('RULE_LOGS_QUERY', params)
+            .then(result => {
+                return result;
+            });
     }
 
     _execute(statementId, params)
