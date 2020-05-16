@@ -70,13 +70,31 @@ CREATE TABLE IF NOT EXISTS `diff_items` (
   CONSTRAINT `diff_item_config_hash` FOREIGN KEY (`config_hash`) REFERENCES `config_hashes` (`key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+
 CREATE TABLE IF NOT EXISTS `rules` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(128) NOT NULL,
   `enabled` TINYINT NOT NULL,
   `target` TEXT NOT NULL,
   `script` TEXT NOT NULL,
-PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE IF NOT EXISTS `rule_logs` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(128) NOT NULL,
+  `kind` varchar(128) NOT NULL,
+  `msg` TEXT NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE IF NOT EXISTS `rule_items` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(128) NOT NULL,
+  `dn` varchar(1024) NOT NULL,
+  `has_error` TINYINT,
+  `has_warning` TINYINT,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 INSERT IGNORE INTO `config`(`key`, `value`)
