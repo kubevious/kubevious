@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS `rule_logs` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(128) NOT NULL,
   `kind` varchar(128) NOT NULL,
-  `msg` TEXT NOT NULL,
+  `msg` json NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
