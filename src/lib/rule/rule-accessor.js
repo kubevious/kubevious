@@ -18,10 +18,10 @@ class RuleAccessor
 
     _registerStatements()
     {
-        this._driver.registerStatement('RULE_QUERY_ALL', 'SELECT `id`, `name`, `enabled` FROM `rules`;');
+        this._driver.registerStatement('RULES_QUERY', 'SELECT `id`, `name`, `target`, `script`, `enabled` FROM `rules`;');
+        this._driver.registerStatement('RULES_QUERY_COMBINED', 'SELECT  `rules`.`id`, `rules`.`name`, `rules`.`enabled`, COUNT(`rule_logs`.`id`) as error_count FROM `rules` LEFT OUTER JOIN `rule_logs` ON `rules`.`name` = `rule_logs`.`name` GROUP BY `rules`.`id`;');
         this._driver.registerStatement('RULE_QUERY', 'SELECT * FROM `rules` WHERE `id` = ?;');
         this._driver.registerStatement('RULE_QUERY_EXPORT', 'SELECT `name`, `target`, `script`, `enabled` FROM `rules`;');
-        this._driver.registerStatement('RULE_QUERY_ALL_FIELDS', 'SELECT `id`, `name`, `target`, `script`, `enabled` FROM `rules`;');
         this._driver.registerStatement('RULE_QUERY_ENABLED', 'SELECT `id`, `name`, `target`, `script` FROM `rules` WHERE `enabled` = 1;');
         this._driver.registerStatement('RULE_CREATE', 'INSERT INTO `rules`(`name`, `enabled`, `target`, `script`) VALUES (?, ?, ?, ?)');
         this._driver.registerStatement('RULE_DELETE', 'DELETE FROM `rules` WHERE `id` = ?;');
@@ -33,17 +33,17 @@ class RuleAccessor
 
     }
 
-    listAll()
+    queryAllCombined()
     {
-        return this._execute('RULE_QUERY_ALL')
+        return this._execute('RULES_QUERY_COMBINED')
             .then(result => {
                 return result.map(x => this._massageDbRule(x));
             })
     }
 
-    listAllFields()
+    queryAll()
     {
-        return this._execute('RULE_QUERY_ALL_FIELDS')
+        return this._execute('RULES_QUERY')
             .then(result => {
                 return result.map(x => this._massageDbRule(x));
             })
@@ -104,7 +104,7 @@ class RuleAccessor
 
     importRules(rules, deleteExtra)
     {
-        return this.listAllFields().then(res => {
+        return this.queryAll().then(res => {
             const dbRules = _.makeDict(res, x => x.name, x => { 
                 var item = {
                     id: x.id

@@ -4,7 +4,7 @@ module.exports = ({router, app, logger, context}) => {
 
     router.get('/', function (req, res) {
         return context.ruleAccessor
-            .listAll()
+            .queryAllCombined()
             .then(result => {
                 res.json(result);
             });
@@ -35,10 +35,25 @@ module.exports = ({router, app, logger, context}) => {
     })
 
     router.get('/:id', function (req, res) {
+        var data = null;
+
         return context.ruleAccessor
             .getRule(req.params.id)
             .then(result => {
-                res.json(result);
+                if (result) {
+                    data = {
+                        rule: result,
+                        items: [],
+                        logs: []
+                    }
+                    return Promise.all([
+                        context.ruleAccessor.getRuleItems(result.name).then(x => { data.items = x; }),
+                        context.ruleAccessor.getRuleLogs(result.name).then(x => { data.logs = x; }),
+                    ])
+                }
+            })
+            .then(() => {
+                res.json(data);
             });
     })
 
@@ -55,26 +70,6 @@ module.exports = ({router, app, logger, context}) => {
             .deleteRule(req.params.id)
             .then(result => {
                 res.json(result);
-            });
-    })
-
-    router.get('/:id/data', function (req, res) {
-        var data = {
-            items: [],
-            logs: []
-        }
-        return context.ruleAccessor
-            .getRule(req.params.id)
-            .then(result => {
-                if (result) {
-                    return Promise.all([
-                        context.ruleAccessor.getRuleItems(result.name).then(x => { data.items = x; }),
-                        context.ruleAccessor.getRuleLogs(result.name).then(x => { data.logs = x; }),
-                    ])
-                }
-            })
-            .then(() => {
-                res.json(data);
             });
     })
 
