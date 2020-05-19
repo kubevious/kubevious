@@ -1,7 +1,9 @@
+const Promise = require('the-promise');
+
 module.exports = function(logger, driver) {
     logger.info("MIGRATING v3");
 
-    var sql = "" + 
+    var queryies = [
 
     "CREATE TABLE IF NOT EXISTS `rules` (" + 
         "`id` int unsigned NOT NULL AUTO_INCREMENT," +
@@ -14,7 +16,7 @@ module.exports = function(logger, driver) {
         "PRIMARY KEY (`id`)" +
     ") ENGINE=InnoDB DEFAULT CHARSET=latin1;"
 
-    + 
+    ,
 
     "CREATE TABLE IF NOT EXISTS `rule_statuses` (" +
         "`id` int unsigned NOT NULL AUTO_INCREMENT," +
@@ -27,7 +29,7 @@ module.exports = function(logger, driver) {
         "KEY `name` (`name`)" +
     ") ENGINE=InnoDB DEFAULT CHARSET=latin1;"
 
-    +
+    ,
 
     "CREATE TABLE IF NOT EXISTS `rule_logs` (" +
         "`id` int unsigned NOT NULL AUTO_INCREMENT," +
@@ -38,7 +40,7 @@ module.exports = function(logger, driver) {
         "KEY `name` (`name`)" + 
     ") ENGINE=InnoDB DEFAULT CHARSET=latin1;"
 
-    +
+    ,
 
     "CREATE TABLE IF NOT EXISTS `rule_items` (" +
         "`id` int unsigned NOT NULL AUTO_INCREMENT," +
@@ -50,7 +52,7 @@ module.exports = function(logger, driver) {
         "KEY `name` (`name`)" + 
     ") ENGINE=InnoDB DEFAULT CHARSET=latin1;"
 
-    ;
+    ];
 
-    return driver.executeSql(sql);
+    return Promise.serial(queryies, x => driver.executeSql(x));
 }

@@ -4,3 +4,7 @@ DROP TABLE diffs;
 DROP TABLE snap_items;
 DROP TABLE snapshots;
 DROP TABLE config_hashes;
+DROP TABLE rule_items;
+DROP TABLE rule_logs;
+DROP TABLE rule_statuses;
+DROP TABLE rules;
