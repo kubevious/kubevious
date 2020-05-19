@@ -164,10 +164,12 @@ class RuleProcessor
 
     _saveRuleData(executionContext)
     {
-        return Promise.resolve()
-            .then(() => this._syncRuleStatuses(executionContext))
-            .then(() => this._syncRuleItems(executionContext))
-            .then(() => this._syncRuleLogs(executionContext))
+        return this._context.database.driver.executeInTransaction(() => {
+            return Promise.resolve()
+                .then(() => this._syncRuleStatuses(executionContext))
+                .then(() => this._syncRuleItems(executionContext))
+                .then(() => this._syncRuleLogs(executionContext))
+        });
     }
 
     _syncRuleStatuses(executionContext)
