@@ -18,14 +18,17 @@ class Server
 
     run()
     {
-        this._app.use(morgan('tiny'))
+        if (process.env.NODE_ENV == 'development')
+        {
+            this._app.use(morgan('tiny'))
+        }
 
         this._app.use(express.json({limit: '10mb'}));
 
         this._loadRouter('top');
         this._loadRouter('api');
         this._loadRouter('collector');
-        this._loadRouter('policy');
+        this._loadRouter('rule');
 
         const port = 4000;
         this._app.listen(port, () => {

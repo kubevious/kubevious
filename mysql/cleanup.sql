@@ -4,3 +4,7 @@ DELETE FROM diffs;
 DELETE FROM snap_items;
 DELETE FROM snapshots;
 DELETE FROM config_hashes;
+DELETE FROM rule_items;
+DELETE FROM rule_logs;
+DELETE FROM rule_statuses;
+DELETE FROM rules;

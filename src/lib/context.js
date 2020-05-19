@@ -8,8 +8,8 @@ const Registry = require('./registry/registry');
 const Collector = require('./collector/collector');
 const ClusterLeaderElector = require('./cluster/leader-elector')
 const DebugObjectLogger = require('./utils/debug-object-logger');
-const PolicyAccessor = require('./policy/policy-accessor');
-const PolicyProcessor = require('./policy/policy-processor');
+const RuleAccessor = require('./rule/rule-accessor')
+const RuleProcessor = require('./rule/rule-processor')
 
 class Context
 {
@@ -27,8 +27,8 @@ class Context
 
         this._debugObjectLogger = new DebugObjectLogger(this);
 
-        this._policyAccessor = new PolicyAccessor(this);
-        this._policyProcessor = new PolicyProcessor(this);
+        this._ruleAccessor = new RuleAccessor(this);
+        this._ruleProcessor = new RuleProcessor(this);
 
         this._server = null;
         this._k8sClient = null;
@@ -75,12 +75,12 @@ class Context
         return this._debugObjectLogger;
     }
 
-    get policyAccessor() {
-        return this._policyAccessor;
+    get ruleAccessor() {
+        return this._ruleAccessor;
     }
 
-    get policyProcessor() {
-        return this._policyProcessor;
+    get ruleProcessor() {
+        return this._ruleProcessor;
     }
 
     setupServer()

@@ -15,16 +15,13 @@ class SearchEngine
         return this._logger;
     }
 
-    accept(snapshotInfo)
+    accept(state)
     {
         this.reset()
 
-        for(var item of _.values(snapshotInfo.items))
+        for(var node of state.getNodes())
         {
-            if (item.config_kind == 'node')
-            {
-                this.addSnapshotItemToIndex(item.dn, item.config);
-            }
+            this.addSnapshotItemToIndex(node.dn, node.config);
         }
     }
 
