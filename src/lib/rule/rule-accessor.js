@@ -1,5 +1,6 @@
 const Promise = require('the-promise');
 const _ = require('the-lodash');
+const HashUtils = require('kubevious-helpers').HashUtils;
 
 class RuleAccessor
 {
@@ -19,18 +20,17 @@ class RuleAccessor
     _registerStatements()
     {
         this._driver.registerStatement('RULES_QUERY', 'SELECT `id`, `name`, `target`, `script`, `enabled` FROM `rules`;');
-        this._driver.registerStatement('RULES_QUERY_COMBINED', 'SELECT  `rules`.`id`, `rules`.`name`, `rules`.`enabled`, COUNT(`rule_logs`.`id`) as error_count FROM `rules` LEFT OUTER JOIN `rule_logs` ON `rules`.`name` = `rule_logs`.`name` GROUP BY `rules`.`id`;');
-        this._driver.registerStatement('RULE_QUERY', 'SELECT * FROM `rules` WHERE `id` = ?;');
+        this._driver.registerStatement('RULES_QUERY_COMBINED', 'SELECT  `rules`.`id`, `rules`.`name`, `rules`.`enabled`, `rules`.`hash`, `rule_statuses`.`error_count` as error_count, `rule_statuses`.`item_count` as item_count, `rule_statuses`.`hash` as status_hash FROM `rules` LEFT OUTER JOIN `rule_statuses` ON `rules`.`name` = `rule_statuses`.`name`;');
+        this._driver.registerStatement('RULE_QUERY', 'SELECT  `rules`.`id`, `rules`.`name`, `rules`.`enabled`, `rules`.`target`, `rules`.`script`, `rules`.`hash`, `rule_statuses`.`error_count` as error_count, `rule_statuses`.`item_count` as item_count, `rule_statuses`.`hash` as status_hash FROM `rules` LEFT OUTER JOIN `rule_statuses` ON `rules`.`name` = `rule_statuses`.`name` WHERE `rules`.`id` = ?;');
         this._driver.registerStatement('RULE_QUERY_EXPORT', 'SELECT `name`, `target`, `script`, `enabled` FROM `rules`;');
-        this._driver.registerStatement('RULE_QUERY_ENABLED', 'SELECT `id`, `name`, `target`, `script` FROM `rules` WHERE `enabled` = 1;');
-        this._driver.registerStatement('RULE_CREATE', 'INSERT INTO `rules`(`name`, `enabled`, `target`, `script`) VALUES (?, ?, ?, ?)');
+        this._driver.registerStatement('RULE_QUERY_ENABLED', 'SELECT `id`, `name`, `hash`, `target`, `script` FROM `rules` WHERE `enabled` = 1;');
+        this._driver.registerStatement('RULE_CREATE', 'INSERT INTO `rules`(`name`, `enabled`, `target`, `script`, `date`, `hash`) VALUES (?, ?, ?, ?, ?, ?)');
         this._driver.registerStatement('RULE_DELETE', 'DELETE FROM `rules` WHERE `id` = ?;');
-        this._driver.registerStatement('RULE_UPDATE', 'UPDATE `rules` SET `name` = ?, `enabled` = ?, `target` = ?, `script` = ?  WHERE `id` = ?;');
+        this._driver.registerStatement('RULE_UPDATE', 'UPDATE `rules` SET `name` = ?, `enabled` = ?, `target` = ?, `script` = ?, `date` = ?, `hash` = ?  WHERE `id` = ?;');
 
         this._driver.registerStatement('RULE_ITEMS_QUERY', 'SELECT `dn`, `has_error`, `has_warning` FROM `rule_items` WHERE `name` = ?;');
 
         this._driver.registerStatement('RULE_LOGS_QUERY', 'SELECT `kind`, `msg` FROM `rule_logs` WHERE `name` = ?;');
-
     }
 
     queryAllCombined()
@@ -65,11 +65,20 @@ class RuleAccessor
 
     createRule(config)
     {
-        var params = [ config.name, config.enabled, config.target, config.script ];
+        var ruleObj = this._makeRuleObj(config);
+        var params = [ 
+            ruleObj.name,
+            ruleObj.enabled,
+            ruleObj.target,
+            ruleObj.script,
+            ruleObj.date,
+            ruleObj.hash
+        ];
         return this._execute('RULE_CREATE', params)
             .then(result => {
-                var row = _.clone(config);
+                var row = ruleObj;
                 row.id = result.insertId;
+                delete row.hash;
                 return row;
             });
     }
@@ -85,10 +94,18 @@ class RuleAccessor
 
     updateRule(id, config)
     {
-        var params = [ config.name, config.enabled, config.target, config.script, id ];
+        var ruleObj = this._makeRuleObj(config);
+        var params = [ 
+            ruleObj.name, 
+            ruleObj.enabled, 
+            ruleObj.target, 
+            ruleObj.script,
+            ruleObj.date,
+            ruleObj.hash,
+            id ];
         return this._execute('RULE_UPDATE', params)
             .then(result => {
-                var row = _.clone(config);
+                var row = ruleObj;
                 row.id = id;
                 return row;
             });
@@ -203,7 +220,44 @@ class RuleAccessor
             return null;
         }
         rule.enabled = rule.enabled ? true : false;
+
+        if (rule.hash)
+        {
+            rule.isCurrent = false;
+            if (rule.status_hash) {
+                rule.isCurrent = rule.hash.equals(rule.status_hash);
+            }
+            delete rule.hash;
+            delete rule.status_hash;
+        }
+
+        if (!rule.enabled) {
+            rule.isCurrent = true;
+        }
+
+        if (!rule.error_count) {
+            rule.error_count = 0;
+        }
+
+        if (!rule.item_count) {
+            rule.item_count = 0;
+        }
+
         return rule;
+    }
+
+    _makeRuleObj(config)
+    {
+        var ruleObj = {
+            name: config.name,
+            enabled: config.enabled,
+            target: config.target,
+            script: config.script,
+            date: new Date()
+        }
+        var hash = HashUtils.calculateObjectHash(ruleObj);
+        ruleObj.hash = hash;
+        return ruleObj;
     }
 }
 

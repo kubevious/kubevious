@@ -35,10 +35,39 @@ module.exports = ({router, app, logger, context}) => {
     })
 
     router.get('/:id', function (req, res) {
+        return queryRule(req.params.id)
+            .then(data => {
+                res.json(data);
+            });
+    })
+
+    router.put('/:id', function (req, res) {
+        return context.ruleAccessor
+            .updateRule(req.params.id, req.body)
+            .then(result => {
+                return queryRule(req.params.id);
+            })
+            .then(data => {
+                res.json(data);
+            });
+    })
+
+    router.delete('/:id', function (req, res) {
+        return context.ruleAccessor
+            .deleteRule(req.params.id)
+            .then(result => {
+                res.json(result);
+            });
+    })
+
+    app.use('/api/v1/rule', router);
+
+    function queryRule(id)
+    {
         var data = null;
 
         return context.ruleAccessor
-            .getRule(req.params.id)
+            .getRule(id)
             .then(result => {
                 if (result) {
                     data = {
@@ -52,26 +81,6 @@ module.exports = ({router, app, logger, context}) => {
                     ])
                 }
             })
-            .then(() => {
-                res.json(data);
-            });
-    })
-
-    router.put('/:id', function (req, res) {
-        return context.ruleAccessor
-            .updateRule(req.params.id, req.body)
-            .then(result => {
-                res.json(result);
-            });
-    })
-
-    router.delete('/:id', function (req, res) {
-        return context.ruleAccessor
-            .deleteRule(req.params.id)
-            .then(result => {
-                res.json(result);
-            });
-    })
-
-    app.use('/api/v1/rule', router);
+            .then(() => data);
+    }
 };

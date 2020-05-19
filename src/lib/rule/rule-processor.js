@@ -12,6 +12,14 @@ class RuleProcessor
         this._logger = context.logger.sublogger("RuleProcessor");
         context.database.onConnect(this._onDbConnected.bind(this));
 
+        this._ruleStatusesSynchronizer = new MySqlTableSynchronizer(
+            this._logger, 
+            context.database.driver, 
+            'rule_statuses', 
+            [], 
+            ['name', 'hash', 'date', 'error_count', 'item_count']
+        );
+
         this._ruleItemsSynchronizer = new MySqlTableSynchronizer(
             this._logger, 
             context.database.driver, 
@@ -47,6 +55,7 @@ class RuleProcessor
             state.getCount())
 
         var executionContext = {
+            ruleStatuses: {},
             ruleItems: [],
             ruleLogs: []
         }
@@ -75,7 +84,16 @@ class RuleProcessor
     
     _processRule(state, rule, executionContext)
     {
-        this.logger.info('[_processRule] Begin: ', rule);
+        this.logger.info('[_processRule] Begin: %s', rule.name);
+        this.logger.verbose('[_processRule] Begin: ', rule);
+
+        executionContext.ruleStatuses[rule.name] = {
+            name: rule.name,
+            hash: rule.hash,
+            date: new Date(),
+            error_count: 0,
+            item_count: 0
+        };
 
         var processor = new KubikRuleProcessor(state, rule);
         return processor.process()
@@ -122,7 +140,7 @@ class RuleProcessor
                                 }
                             });
 
-                            
+                            executionContext.ruleStatuses[rule.name].item_count++;
                         }
                     }
                 }
@@ -137,6 +155,8 @@ class RuleProcessor
                             kind: 'error',
                             msg: msg
                         });
+
+                        executionContext.ruleStatuses[rule.name].error_count++;
                     }
                 }
             });
@@ -145,22 +165,31 @@ class RuleProcessor
     _saveRuleData(executionContext)
     {
         return Promise.resolve()
+            .then(() => this._syncRuleStatuses(executionContext))
             .then(() => this._syncRuleItems(executionContext))
             .then(() => this._syncRuleLogs(executionContext))
     }
 
+    _syncRuleStatuses(executionContext)
+    {
+        this.logger.info('[_syncRuleStatuses] Begin');
+        this.logger.verbose('[_syncRuleStatuses] Begin', executionContext.ruleStatuses);
+        return this._ruleStatusesSynchronizer.execute({}, _.values(executionContext.ruleStatuses));
+    }
+
     _syncRuleItems(executionContext)
     {
-        this.logger.info('[_syncRuleItems] Begin', executionContext.ruleItems);
+        this.logger.info('[_syncRuleItems] Begin');
+        this.logger.verbose('[_syncRuleItems] Begin', executionContext.ruleItems);
         return this._ruleItemsSynchronizer.execute({}, executionContext.ruleItems);
     }
 
     _syncRuleLogs(executionContext)
     {
-        this.logger.info('[_syncRuleLogs] Begin', executionContext.ruleLogs);
+        this.logger.info('[_syncRuleLogs] Begin');
+        this.logger.verbose('[_syncRuleLogs] Begin', executionContext.ruleLogs);
         return this._ruleLogsSynchronizer.execute({}, executionContext.ruleLogs);
     }
-    
     
 }
 
