@@ -21,6 +21,7 @@ class HistoryProcessor
         this._currentState = null;
         this._interation = 0;
         this._isDbReady = false;
+        this._usedHashes = {};
 
         // TODO: Temporary
         // this._skipProduceHistory = true;
@@ -159,9 +160,16 @@ class HistoryProcessor
 
     _persistConfigHashes(configHashes)
     {
+        var newHashes = configHashes.filter(x => !this._usedHashes[x.config_hash]);
         return Promise.resolve()
             .then(() => {
-                return this._dbAccessor.persistConfigHashes(configHashes);
+                return this._dbAccessor.persistConfigHashes(newHashes);
+            })
+            .then(() => {
+                for(var x of newHashes)
+                {
+                    this._usedHashes[x.config_hash] = true;
+                }
             });
     }
 
