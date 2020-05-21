@@ -147,7 +147,13 @@ class Collector
         // this._iteration++;
         // this._context.debugObjectLogger.dump('collector-snapshot-info-', this._iteration, snapshotInfo);
 
-        this._context.facadeRegistry.acceptCurrentSnapshot(snapshotInfo);
+        var safeSnapshot = this._safeClone(snapshotInfo);
+        this._context.facadeRegistry.acceptCurrentSnapshot(safeSnapshot);
+    }
+
+    _safeClone(snapshotInfo)
+    {
+        return _.cloneDeep(snapshotInfo);
     }
 
 }
