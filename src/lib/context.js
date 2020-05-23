@@ -10,6 +10,7 @@ const ClusterLeaderElector = require('./cluster/leader-elector')
 const DebugObjectLogger = require('./utils/debug-object-logger');
 const RuleAccessor = require('./rule/rule-accessor')
 const RuleProcessor = require('./rule/rule-processor')
+const HistorySnapshotReader = require("kubevious-helpers").History.SnapshotReader;
 
 class Context
 {
@@ -29,6 +30,8 @@ class Context
 
         this._ruleAccessor = new RuleAccessor(this);
         this._ruleProcessor = new RuleProcessor(this);
+
+        this._historySnapshotReader = new HistorySnapshotReader(logger, this._database.driver);
 
         this._server = null;
         this._k8sClient = null;
@@ -81,6 +84,10 @@ class Context
 
     get ruleProcessor() {
         return this._ruleProcessor;
+    }
+
+    get historySnapshotReader() {
+        return this._historySnapshotReader;
     }
 
     setupServer()

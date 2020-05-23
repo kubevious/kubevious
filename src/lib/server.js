@@ -28,6 +28,7 @@ class Server
         this._loadRouter('top');
         this._loadRouter('api');
         this._loadRouter('collector');
+        this._loadRouter('history');
         this._loadRouter('rule');
 
         const port = 4000;
@@ -47,7 +48,8 @@ class Server
             router,
             app: this._app,
             context: this._context,
-            collector: this._context.collector
+            collector: this._context.collector,
+            history: this._context.historySnapshotReader
         }
         
         const module = require('./routers/' + name)
