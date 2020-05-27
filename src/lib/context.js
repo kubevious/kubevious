@@ -11,6 +11,7 @@ const DebugObjectLogger = require('./utils/debug-object-logger');
 const RuleAccessor = require('./rule/rule-accessor')
 const RuleProcessor = require('./rule/rule-processor')
 const HistorySnapshotReader = require("kubevious-helpers").History.SnapshotReader;
+const WebSocketServer = require('./websocket/server');
 
 class Context
 {
@@ -90,6 +91,10 @@ class Context
         return this._historySnapshotReader;
     }
 
+    get websocket() {
+        return this._websocket;
+    }
+
     setupServer()
     {
         const Server = require("./server");
@@ -111,6 +116,7 @@ class Context
             .then(() => this._database.init())
             .then(() => this._dataStore.init())
             .then(() => this._runServer())
+            .then(() => this._setupWebSocket())
             .catch(reason => {
                 console.log("***** ERROR *****");
                 console.log(reason);
@@ -126,6 +132,11 @@ class Context
         }
 
         this._server.run()
+    }
+
+    _setupWebSocket()
+    {
+        this._websocket = new WebSocketServer(this, this._server.httpServer);
     }
 }
 
