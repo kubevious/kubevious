@@ -17,7 +17,7 @@ class RuleProcessor
             context.database.driver, 
             'rule_statuses', 
             [], 
-            ['name', 'hash', 'date', 'error_count', 'item_count']
+            ['rule_id', 'hash', 'date', 'error_count', 'item_count']
         );
 
         this._ruleItemsSynchronizer = new MySqlTableSynchronizer(
@@ -25,7 +25,7 @@ class RuleProcessor
             context.database.driver, 
             'rule_items', 
             [], 
-            ['name', 'dn', 'has_error', 'has_warning']
+            ['rule_id', 'dn', 'has_error', 'has_warning']
         );
 
         this._ruleLogsSynchronizer = new MySqlTableSynchronizer(
@@ -33,7 +33,7 @@ class RuleProcessor
             context.database.driver, 
             'rule_logs', 
             [], 
-            ['name', 'kind', 'msg']
+            ['rule_id', 'kind', 'msg']
         );
 
     }
@@ -63,6 +63,7 @@ class RuleProcessor
         return this._fetchRules()
             .then(rules => this._processRules(state, rules, executionContext))
             .then(() => this._saveRuleData(executionContext))
+            .then(() => this._context.ruleCache.acceptExecutionContext(executionContext))
             .then(() => {
                 this.logger.info('[execute] END');
             })
@@ -87,8 +88,8 @@ class RuleProcessor
         this.logger.info('[_processRule] Begin: %s', rule.name);
         this.logger.verbose('[_processRule] Begin: ', rule);
 
-        executionContext.ruleStatuses[rule.name] = {
-            name: rule.name,
+        executionContext.ruleStatuses[rule.id] = {
+            rule_id: rule.id,
             hash: rule.hash,
             date: new Date(),
             error_count: 0,
@@ -113,7 +114,7 @@ class RuleProcessor
                         if (ruleItemInfo.hasError) {
                             severity = 'error';
                             executionContext.ruleItems.push({
-                                name: rule.name,
+                                rule_id: rule.id,
                                 dn: dn,
                                 has_error: 1,
                                 has_warning: 0
@@ -121,7 +122,7 @@ class RuleProcessor
                         } else if (ruleItemInfo.hasWarning) {
                             severity = 'error';
                             executionContext.ruleItems.push({
-                                name: rule.name,
+                                rule_id: rule.id,
                                 dn: dn,
                                 has_error: 0,
                                 has_warning: 1
@@ -140,7 +141,7 @@ class RuleProcessor
                                 }
                             });
 
-                            executionContext.ruleStatuses[rule.name].item_count++;
+                            executionContext.ruleStatuses[rule.id].item_count++;
                         }
                     }
                 }
@@ -151,12 +152,12 @@ class RuleProcessor
                     for(var msg of result.messages)
                     {
                         executionContext.ruleLogs.push({
-                            name: rule.name,
+                            rule_id: rule.id,
                             kind: 'error',
                             msg: msg
                         });
 
-                        executionContext.ruleStatuses[rule.name].error_count++;
+                        executionContext.ruleStatuses[rule.id].error_count++;
                     }
                 }
             });
@@ -175,21 +176,21 @@ class RuleProcessor
     _syncRuleStatuses(executionContext)
     {
         this.logger.info('[_syncRuleStatuses] Begin');
-        this.logger.verbose('[_syncRuleStatuses] Begin', executionContext.ruleStatuses);
+        this.logger.info('[_syncRuleStatuses] Begin', executionContext.ruleStatuses);
         return this._ruleStatusesSynchronizer.execute({}, _.values(executionContext.ruleStatuses));
     }
 
     _syncRuleItems(executionContext)
     {
         this.logger.info('[_syncRuleItems] Begin');
-        this.logger.verbose('[_syncRuleItems] Begin', executionContext.ruleItems);
+        this.logger.info('[_syncRuleItems] Begin', executionContext.ruleItems);
         return this._ruleItemsSynchronizer.execute({}, executionContext.ruleItems);
     }
 
     _syncRuleLogs(executionContext)
     {
         this.logger.info('[_syncRuleLogs] Begin');
-        this.logger.verbose('[_syncRuleLogs] Begin', executionContext.ruleLogs);
+        this.logger.info('[_syncRuleLogs] Begin', executionContext.ruleLogs);
         return this._ruleLogsSynchronizer.execute({}, executionContext.ruleLogs);
     }
     

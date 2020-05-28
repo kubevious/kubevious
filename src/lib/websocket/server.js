@@ -2,13 +2,10 @@ const WebSocketServer = require('websocket-subscription-server').WebSocketServer
 
 class Server
 {
-    constructor(context, httpServer)
+    constructor(context)
     {
         this._context = context;
         this._logger = context.logger.sublogger("WebSocketServer");
-
-        this._socket = new WebSocketServer(httpServer, '/socket');
-        this._socket.run();
 
         this.database.onConnect(this._onDbConnected.bind(this));
     }
@@ -21,21 +18,35 @@ class Server
         return this._context.database;
     }
 
+    run(httpServer)
+    {
+        this._socket = new WebSocketServer(httpServer, '/socket');
+        this._socket.run();
+    }
+
     _onDbConnected()
     {
         this.logger.info("[onDbConnected]");
-
-        return this._queryRules();
     }
 
-    _queryRules()
+    update(key, value)
     {
-        return this._context.ruleAccessor
-            .queryAllCombined()
-            .then(result => {
-                this._logger.info("RULES: ", result);
-                this._socket.update({ kind: 'rules' }, result);
-            });
+        this.logger.info("[update] ", key, value);
+
+        if (!this._socket) {
+            return;
+        }
+        this._socket.update(key, value);
+    }
+
+    updateScope(key, value)
+    {
+        this.logger.info("[updateScope] ", key, value);
+        
+        if (!this._socket) {
+            return;
+        }
+        this._socket.updateScope(key, value);
     }
 }
 

@@ -52,6 +52,7 @@ class Server
             logger: this.logger.sublogger(name),
             router,
             app: this._app,
+            websocket: this._context.websocket,
             context: this._context,
             collector: this._context.collector,
             history: this._context.historySnapshotReader

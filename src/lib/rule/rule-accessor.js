@@ -19,18 +19,22 @@ class RuleAccessor
 
     _registerStatements()
     {
-        this._driver.registerStatement('RULES_QUERY', 'SELECT `id`, `name`, `target`, `script`, `enabled` FROM `rules`;');
-        this._driver.registerStatement('RULES_QUERY_COMBINED', 'SELECT  `rules`.`id`, `rules`.`name`, `rules`.`enabled`, `rules`.`hash`, `rule_statuses`.`error_count` as error_count, `rule_statuses`.`item_count` as item_count, `rule_statuses`.`hash` as status_hash FROM `rules` LEFT OUTER JOIN `rule_statuses` ON `rules`.`name` = `rule_statuses`.`name`;');
-        this._driver.registerStatement('RULE_QUERY', 'SELECT  `rules`.`id`, `rules`.`name`, `rules`.`enabled`, `rules`.`target`, `rules`.`script`, `rules`.`hash`, `rule_statuses`.`error_count` as error_count, `rule_statuses`.`item_count` as item_count, `rule_statuses`.`hash` as status_hash FROM `rules` LEFT OUTER JOIN `rule_statuses` ON `rules`.`name` = `rule_statuses`.`name` WHERE `rules`.`id` = ?;');
+        this._driver.registerStatement('RULES_QUERY', 'SELECT `id`, `name`, `target`, `script`, `enabled`, `hash`, `date` FROM `rules`;');
+        this._driver.registerStatement('RULES_STATUES_QUERY', 'SELECT `rule_id`, `hash`, `date`, `error_count`, `item_count` FROM `rule_statuses`;');
+        this._driver.registerStatement('RULES_ITEMS_QUERY', 'SELECT `rule_id`, `dn`, `has_error`, `has_warning` FROM `rule_items`;');
+        this._driver.registerStatement('RULES_LOGS_QUERY', 'SELECT `rule_id`, `kind`, `msg` FROM `rule_logs`;');
+
+        this._driver.registerStatement('RULES_QUERY_COMBINED', 'SELECT  `rules`.`id`, `rules`.`name`, `rules`.`enabled`, `rules`.`hash`, `rule_statuses`.`error_count` as error_count, `rule_statuses`.`item_count` as item_count, `rule_statuses`.`hash` as status_hash FROM `rules` LEFT OUTER JOIN `rule_statuses` ON `rules`.`id` = `rule_statuses`.`rule_id`;');
+        this._driver.registerStatement('RULE_QUERY', 'SELECT  `rules`.`id`, `rules`.`name`, `rules`.`enabled`, `rules`.`target`, `rules`.`script`, `rules`.`hash`, `rule_statuses`.`error_count` as error_count, `rule_statuses`.`item_count` as item_count, `rule_statuses`.`hash` as status_hash FROM `rules` LEFT OUTER JOIN `rule_statuses` ON `rules`.`id` = `rule_statuses`.`rule_id` WHERE `rules`.`id` = ?;');
         this._driver.registerStatement('RULE_QUERY_EXPORT', 'SELECT `name`, `target`, `script`, `enabled` FROM `rules`;');
         this._driver.registerStatement('RULE_QUERY_ENABLED', 'SELECT `id`, `name`, `hash`, `target`, `script` FROM `rules` WHERE `enabled` = 1;');
         this._driver.registerStatement('RULE_CREATE', 'INSERT INTO `rules`(`name`, `enabled`, `target`, `script`, `date`, `hash`) VALUES (?, ?, ?, ?, ?, ?)');
         this._driver.registerStatement('RULE_DELETE', 'DELETE FROM `rules` WHERE `id` = ?;');
         this._driver.registerStatement('RULE_UPDATE', 'UPDATE `rules` SET `name` = ?, `enabled` = ?, `target` = ?, `script` = ?, `date` = ?, `hash` = ?  WHERE `id` = ?;');
 
-        this._driver.registerStatement('RULE_ITEMS_QUERY', 'SELECT `dn`, `has_error`, `has_warning` FROM `rule_items` WHERE `name` = ?;');
+        this._driver.registerStatement('RULE_ITEMS_QUERY', 'SELECT `dn`, `has_error`, `has_warning` FROM `rule_items` WHERE `rule_id` = ?;');
 
-        this._driver.registerStatement('RULE_LOGS_QUERY', 'SELECT `kind`, `msg` FROM `rule_logs` WHERE `name` = ?;');
+        this._driver.registerStatement('RULE_LOGS_QUERY', 'SELECT `kind`, `msg` FROM `rule_logs` WHERE `rule_id` = ?;');
     }
 
     queryAllCombined()
@@ -52,6 +56,21 @@ class RuleAccessor
     queryEnabledRules()
     {
         return this._execute('RULE_QUERY_ENABLED');
+    }
+
+    queryAllRuleStatuses()
+    {
+        return this._execute('RULES_STATUES_QUERY');
+    }
+
+    queryAllRuleItems()
+    {
+        return this._execute('RULES_ITEMS_QUERY')
+    }
+
+    queryAllRuleLogs()
+    {
+        return this._execute('RULES_LOGS_QUERY')
     }
 
     getRule(id)
@@ -191,18 +210,18 @@ class RuleAccessor
         })
     }
 
-    getRuleItems(name)
+    getRuleItems(rule_id)
     {
-        var params = [ name ];
+        var params = [ rule_id ];
         return this._execute('RULE_ITEMS_QUERY', params)
             .then(result => {
                 return result;
             });
     }
 
-    getRuleLogs(name)
+    getRuleLogs(rule_id)
     {
-        var params = [ name ];
+        var params = [ rule_id ];
         return this._execute('RULE_LOGS_QUERY', params)
             .then(result => {
                 return result;
@@ -223,24 +242,7 @@ class RuleAccessor
 
         if (rule.hash)
         {
-            rule.isCurrent = false;
-            if (rule.status_hash) {
-                rule.isCurrent = rule.hash.equals(rule.status_hash);
-            }
-            delete rule.hash;
-            delete rule.status_hash;
-        }
-
-        if (!rule.enabled) {
-            rule.isCurrent = true;
-        }
-
-        if (!rule.error_count) {
-            rule.error_count = 0;
-        }
-
-        if (!rule.item_count) {
-            rule.item_count = 0;
+            rule.hash = rule.hash.toString('hex');
         }
 
         return rule;

@@ -1,13 +1,14 @@
 const _ = require('the-lodash');
 
-module.exports = ({router, app, logger, context}) => {
+module.exports = ({router, app, logger, context, websocket}) => {
 
     router.get('/', function (req, res) {
-        return context.ruleAccessor
-            .queryAllCombined()
-            .then(result => {
-                res.json(result);
-            });
+        var result = context.ruleCache.queryRuleList();
+        res.json(result);
+    })
+
+    router.get('/debug', function (req, res) {
+        res.json(context.ruleCache._ruleConfigDict);
     })
 
     router.get('/export', function (req, res) {
@@ -19,68 +20,55 @@ module.exports = ({router, app, logger, context}) => {
     })
 
     router.post('/', function (req, res) {
+        var newRule = null;
         return context.ruleAccessor
             .createRule(req.body)
             .then(result => {
-                res.json(result);
-            });
+                newRule = result;
+            })
+            .finally(() => context.ruleCache.triggerListUpdate())
+            .then(() => {
+                res.json(newRule);
+            })
     })
 
     router.post('/import', function (req, res) {
         return context.ruleAccessor
             .importRules(req.body.data, req.body.deleteExtra)
-            .then(result => {
-                res.json(result);
+            .finally(() => context.ruleCache.triggerListUpdate())
+            .then(() => {
+                res.json({});
             });
     })
 
     router.get('/:id', function (req, res) {
-        return queryRule(req.params.id)
-            .then(data => {
-                res.json(data);
-            });
+        var result = context.ruleCache.queryRule(req.params.id);
+        res.json(result);
+    })
+
+    router.get('/:id/results', function (req, res) {
+        var result = context.ruleCache.getRuleStatus(req.params.id);
+        res.json(result);
     })
 
     router.put('/:id', function (req, res) {
         return context.ruleAccessor
             .updateRule(req.params.id, req.body)
-            .then(result => {
-                return queryRule(req.params.id);
+            .finally(() => context.ruleCache.triggerListUpdate())
+            .then(() => {
+                var result = context.ruleCache.queryRule(req.params.id);
+                res.json(result);
             })
-            .then(data => {
-                res.json(data);
-            });
     })
 
     router.delete('/:id', function (req, res) {
         return context.ruleAccessor
             .deleteRule(req.params.id)
-            .then(result => {
-                res.json(result);
+            .finally(() => context.ruleCache.triggerListUpdate())
+            .then(() => {
+                res.json({});
             });
     })
 
     app.use('/api/v1/rule', router);
-
-    function queryRule(id)
-    {
-        var data = null;
-
-        return context.ruleAccessor
-            .getRule(id)
-            .then(result => {
-                if (result) {
-                    data = {
-                        rule: result,
-                        items: [],
-                        logs: []
-                    }
-                    return Promise.all([
-                        context.ruleAccessor.getRuleItems(result.name).then(x => { data.items = x; }),
-                        context.ruleAccessor.getRuleLogs(result.name).then(x => { data.logs = x; }),
-                    ])
-                }
-            })
-            .then(() => data);
-    }
 };
