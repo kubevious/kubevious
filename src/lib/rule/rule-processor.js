@@ -120,7 +120,7 @@ class RuleProcessor
                                 has_warning: 0
                             });
                         } else if (ruleItemInfo.hasWarning) {
-                            severity = 'error';
+                            severity = 'warn';
                             executionContext.ruleItems.push({
                                 rule_id: rule.id,
                                 dn: dn,
@@ -133,7 +133,7 @@ class RuleProcessor
                         {
                             state.raiseAlert(dn, {
                                 id: 'rule-' + rule.name,
-                                severity: "error",
+                                severity: severity,
                                 msg: 'Rule ' + rule.name + ' failed.',
                                 source: {
                                     kind: 'rule',
