@@ -15,7 +15,8 @@ class RuleCache
 
         this._userRules = [];
         this._ruleConfigDict = {};
-        this._ruleResultDict = {};
+        this._ruleExecResultDict = {};
+        this._ruleStatusDict = {};
     }
 
     get logger() {
@@ -27,9 +28,10 @@ class RuleCache
         this._logger.info("[_onDbConnected] ...");
 
         return Promise.resolve()
-        .then(() => this._refreshRuleConfigs())
-        .then(() => this._refreshStatuses())
-        .then(() => this._recalculateRuleList())
+            .then(() => this._refreshRuleConfigs())
+            .then(() => this._refreshExecutionStatuses())
+            .then(() => this._recalculateRuleList())
+            .then(() => this._notifyRulesDetails())
     }
 
     triggerListUpdate()
@@ -37,6 +39,7 @@ class RuleCache
         return Promise.resolve()
             .then(() => this._refreshRuleConfigs())
             .then(() => this._recalculateRuleList())
+            .then(() => this._notifyRulesDetails())
     }
 
     _refreshRuleConfigs()
@@ -106,7 +109,7 @@ class RuleCache
         return userRule;
     }
 
-    _refreshStatuses()
+    _refreshExecutionStatuses()
     {
         var executionContext = {
             ruleStatuses: {},
@@ -135,35 +138,45 @@ class RuleCache
     {
         this._acceptExecutionContext(executionContext);
         this._recalculateRuleList();
+        this._notifyRulesDetails();
     }
 
     _acceptExecutionContext(executionContext)
     {
-        this._ruleResultDict = {};
+        this._ruleExecResultDict = {};
 
         for(var status of _.values(executionContext.ruleStatuses))
         {
-            this._fetchRuleResult(status.rule_id).status = status;
+            this._fetchRuleExecResult(status.rule_id).status = status;
             status.hash = status.hash.toString('hex');
             delete status.rule_id;
         }
         for(var item of executionContext.ruleItems)
         {
-            this._fetchRuleResult(item.rule_id).items.push(item);
+            this._fetchRuleExecResult(item.rule_id).items.push(item);
             delete item.rule_id;
         }
         for(var log of executionContext.ruleLogs)
         {
-            this._fetchRuleResult(log.rule_id).logs.push(log);
+            this._fetchRuleExecResult(log.rule_id).logs.push(log);
             delete log.rule_id;
         }
-
-        return this._notifyRuleDetails();
     }
 
-    _notifyRuleDetails()
+    _notifyRulesDetails()
     {
-        var data = _.values(this._ruleResultDict).map(x => ({
+        this._ruleStatusDict = {};
+        for(var ruleResult of _.values(this._ruleExecResultDict))
+        {
+            this._ruleStatusDict[ruleResult.id] = {
+                    id: ruleResult.id,
+                    status: this._calcRuleInfo(ruleResult.id),
+                    items: ruleResult.items,
+                    logs: ruleResult.logs
+                }
+        }
+
+        var data = _.values(this._ruleStatusDict).map(x => ({
             target: { id: x.id },
             value: x
         }));
@@ -173,23 +186,23 @@ class RuleCache
 
     getRuleStatus(id)
     {
-        if (this._ruleResultDict[id]) {
-            return this._ruleResultDict[id];
+        if (this._ruleStatusDict[id]) {
+            return this._ruleStatusDict[id];
         }
         return null;
     }
 
-    _fetchRuleResult(id)
+    _fetchRuleExecResult(id)
     {
-        if (!this._ruleResultDict[id]) {
-            this._ruleResultDict[id] = {
+        if (!this._ruleExecResultDict[id]) {
+            this._ruleExecResultDict[id] = {
                 id: id,
                 status: null,
                 items: [],
                 logs: []
             }
         }
-        return this._ruleResultDict[id];
+        return this._ruleExecResultDict[id];
     }
 
     _calcRuleInfo(id)
@@ -203,7 +216,7 @@ class RuleCache
         var ruleConfig = this._ruleConfigDict[id];
         if (ruleConfig)
         {
-            var ruleResult = this._ruleResultDict[id];
+            var ruleResult = this._ruleExecResultDict[id];
             if (ruleResult)
             {
                 var status = ruleResult.status;
