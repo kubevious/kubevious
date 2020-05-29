@@ -20,7 +20,7 @@ class Server
 
     run(httpServer)
     {
-        this._socket = new WebSocketServer(httpServer, '/socket');
+        this._socket = new WebSocketServer(this._logger.sublogger('WebSocket'), httpServer, '/socket');
         this._socket.run();
     }
 
@@ -31,7 +31,7 @@ class Server
 
     update(key, value)
     {
-        this.logger.info("[update] ", key, value);
+        this.logger.debug("[update] ", key, value);
 
         if (!this._socket) {
             return;
@@ -41,7 +41,7 @@ class Server
 
     updateScope(key, value)
     {
-        this.logger.info("[updateScope] ", key, value);
+        this.logger.debug("[updateScope] ", key, value);
         
         if (!this._socket) {
             return;

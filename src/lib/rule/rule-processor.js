@@ -176,21 +176,21 @@ class RuleProcessor
     _syncRuleStatuses(executionContext)
     {
         this.logger.info('[_syncRuleStatuses] Begin');
-        this.logger.info('[_syncRuleStatuses] Begin', executionContext.ruleStatuses);
+        this.logger.debug('[_syncRuleStatuses] Begin', executionContext.ruleStatuses);
         return this._ruleStatusesSynchronizer.execute({}, _.values(executionContext.ruleStatuses));
     }
 
     _syncRuleItems(executionContext)
     {
         this.logger.info('[_syncRuleItems] Begin');
-        this.logger.info('[_syncRuleItems] Begin', executionContext.ruleItems);
+        this.logger.debug('[_syncRuleItems] Begin', executionContext.ruleItems);
         return this._ruleItemsSynchronizer.execute({}, executionContext.ruleItems);
     }
 
     _syncRuleLogs(executionContext)
     {
         this.logger.info('[_syncRuleLogs] Begin');
-        this.logger.info('[_syncRuleLogs] Begin', executionContext.ruleLogs);
+        this.logger.debug('[_syncRuleLogs] Begin', executionContext.ruleLogs);
         return this._ruleLogsSynchronizer.execute({}, executionContext.ruleLogs);
     }
     

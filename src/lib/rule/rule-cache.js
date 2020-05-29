@@ -216,19 +216,27 @@ class RuleCache
         var ruleConfig = this._ruleConfigDict[id];
         if (ruleConfig)
         {
-            var ruleResult = this._ruleExecResultDict[id];
-            if (ruleResult)
+            if (ruleConfig.enabled)
             {
-                var status = ruleResult.status;
-                if (status)
+                var ruleResult = this._ruleExecResultDict[id];
+                if (ruleResult)
                 {
-                    if (ruleConfig.hash == status.hash) {
-                        info.isCurrent = true;
+                    var status = ruleResult.status;
+                    if (status)
+                    {
+                        if (ruleConfig.hash == status.hash) {
+                            info.isCurrent = true;
+                        }
+                        info.error_count = status.error_count;
+                        info.item_count = status.item_count;
                     }
-                    info.error_count = status.error_count;
-                    info.item_count = status.item_count;
                 }
             }
+            else
+            {
+                info.isCurrent = true;
+            }
+            
         }
         
         return info;
