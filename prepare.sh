@@ -6,4 +6,4 @@ cd $MY_DIR
 cd src
 rm -rf node_modules/
 npm install
-npm update kubevious-helpers kubevious-kubik
+npm update kubevious-helpers kubevious-kubik websocket-subscription-server

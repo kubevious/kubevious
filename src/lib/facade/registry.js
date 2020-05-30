@@ -32,11 +32,56 @@ class FacadeRegistry
                 return processor.execute(registryState);
             })
             .then(() => {
+                var bundle = registryState.buildBundle();
+                this._acceptBundle(bundle);
+
                 this._context.registry.accept(registryState);
                 this._context.searchEngine.accept(registryState);
                 this._context.historyProcessor.accept(registryState);
                 // this._context.dataStore.accept(snapshotInfo);
             })
+    }
+
+    _acceptBundle(bundle)
+    {
+        {
+            var items = [];
+            for(var x of bundle.nodes)
+            {
+                items.push({
+                    target: { dn: x.dn },
+                    value: x.config,
+                    value_hash: x.config_hash,
+                });
+            }
+            this._context.websocket.updateScope({ kind: 'node' }, items);
+        }
+
+        {
+            var items = [];
+            for(var x of bundle.children)
+            {
+                items.push({
+                    target: { dn: x.dn },
+                    value: x.config,
+                    value_hash: x.config_hash,
+                });
+            }
+            this._context.websocket.updateScope({ kind: 'children' }, items);
+        }
+
+        {
+            var items = [];
+            for(var x of bundle.assets)
+            {
+                items.push({
+                    target: { dn: x.dn },
+                    value: x.config,
+                    value_hash: x.config_hash,
+                });
+            }
+            this._context.websocket.updateScope({ kind: 'assets' }, items);
+        }
     }
 
 }

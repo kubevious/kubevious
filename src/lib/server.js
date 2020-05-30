@@ -10,10 +10,15 @@ class Server
         this._context = context;
         this._logger = context.logger.sublogger("Server");
         this._app = express();
+        this._httpServer = null;
     }
 
     get logger() {
         return this._logger;
+    }
+
+    get httpServer() {
+        return this._httpServer;
     }
 
     run()
@@ -32,7 +37,7 @@ class Server
         this._loadRouter('rule');
 
         const port = 4000;
-        this._app.listen(port, () => {
+        this._httpServer = this._app.listen(port, () => {
             this.logger.info("listening on port %s", port);
         });
     }
@@ -47,6 +52,7 @@ class Server
             logger: this.logger.sublogger(name),
             router,
             app: this._app,
+            websocket: this._context.websocket,
             context: this._context,
             collector: this._context.collector,
             history: this._context.historySnapshotReader

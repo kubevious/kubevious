@@ -20,36 +20,36 @@ module.exports = function(logger, driver) {
 
     "CREATE TABLE IF NOT EXISTS `rule_statuses` (" +
         "`id` int unsigned NOT NULL AUTO_INCREMENT," +
-        "`name` varchar(128) NOT NULL," +
+        "`rule_id` int unsigned NOT NULL," +
         "`hash` BINARY(32) NOT NULL," +
         "`date` DATETIME NOT NULL," +
         "`error_count` int unsigned NOT NULL," +
         "`item_count` int unsigned NOT NULL," +
         "PRIMARY KEY (`id`)," +
-        "KEY `name` (`name`)" +
+        "KEY `rule_id` (`rule_id`)" +
     ") ENGINE=InnoDB DEFAULT CHARSET=latin1;"
 
     ,
 
     "CREATE TABLE IF NOT EXISTS `rule_logs` (" +
         "`id` int unsigned NOT NULL AUTO_INCREMENT," +
-        "`name` varchar(128) NOT NULL," +
+        "`rule_id` int unsigned NOT NULL," +
         "`kind` varchar(128) NOT NULL," +
         "`msg` json NOT NULL," +
         "PRIMARY KEY (`id`)," + 
-        "KEY `name` (`name`)" + 
+        "KEY `rule_id` (`rule_id`)" +
     ") ENGINE=InnoDB DEFAULT CHARSET=latin1;"
 
     ,
 
     "CREATE TABLE IF NOT EXISTS `rule_items` (" +
         "`id` int unsigned NOT NULL AUTO_INCREMENT," +
-        "`name` varchar(128) NOT NULL," +
+        "`rule_id` int unsigned NOT NULL," +
         "`dn` varchar(1024) NOT NULL," + 
         "`has_error` TINYINT," +
         "`has_warning` TINYINT," +
         "PRIMARY KEY (`id`)," + 
-        "KEY `name` (`name`)" + 
+        "KEY `rule_id` (`rule_id`)" +
     ") ENGINE=InnoDB DEFAULT CHARSET=latin1;"
 
     ];
