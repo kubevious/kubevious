@@ -35,6 +35,7 @@ class Server
         this._loadRouter('collector');
         this._loadRouter('history');
         this._loadRouter('rule');
+        this._loadRouter('marker');
 
         const port = 4000;
         this._httpServer = this._app.listen(port, () => {

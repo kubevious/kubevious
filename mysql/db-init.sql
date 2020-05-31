@@ -112,5 +112,25 @@ CREATE TABLE IF NOT EXISTS `rule_items` (
   KEY `rule_id` (`rule_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+
+CREATE TABLE IF NOT EXISTS `markers` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(128) NOT NULL, 
+  `shape` varchar(128) NOT NULL, 
+  `color` varchar(128) NOT NULL, 
+  `propagate` TINYINT NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+CREATE TABLE IF NOT EXISTS `marker_items` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `marker_id` int unsigned NOT NULL,
+  `dn` varchar(1024) NOT NULL, 
+  PRIMARY KEY (`id`), 
+  KEY `marker_id` (`marker_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
 INSERT IGNORE INTO `config`(`key`, `value`)
 VALUES('DB_SCHEMA', '{ "version": 3 }')

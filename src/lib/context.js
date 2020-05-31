@@ -8,6 +8,8 @@ const Registry = require('./registry/registry');
 const Collector = require('./collector/collector');
 const ClusterLeaderElector = require('./cluster/leader-elector')
 const DebugObjectLogger = require('./utils/debug-object-logger');
+const MarkerAccessor = require('./rule/marker-accessor')
+const MarkerCache = require('./rule/marker-cache')
 const RuleAccessor = require('./rule/rule-accessor')
 const RuleCache = require('./rule/rule-cache')
 const RuleProcessor = require('./rule/rule-processor')
@@ -30,6 +32,8 @@ class Context
 
         this._debugObjectLogger = new DebugObjectLogger(this);
 
+        this._markerAccessor = new MarkerAccessor(this);
+        this._markerCache = new MarkerCache(this);
         this._ruleAccessor = new RuleAccessor(this);
         this._ruleCache = new RuleCache(this);
         this._ruleProcessor = new RuleProcessor(this);
@@ -81,6 +85,14 @@ class Context
 
     get debugObjectLogger() {
         return this._debugObjectLogger;
+    }
+
+    get markerAccessor() {
+        return this._markerAccessor;
+    }
+
+    get markerCache() {
+        return this._markerCache;
     }
 
     get ruleAccessor() {

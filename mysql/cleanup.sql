@@ -8,3 +8,5 @@ DELETE FROM rule_items;
 DELETE FROM rule_logs;
 DELETE FROM rule_statuses;
 DELETE FROM rules;
+DELETE FROM marker_items;
+DELETE FROM markers;
