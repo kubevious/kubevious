@@ -21,7 +21,7 @@ class RuleAccessor
     {
         this._driver.registerStatement('RULES_QUERY', 'SELECT `id`, `name`, `target`, `script`, `enabled`, `hash`, `date` FROM `rules`;');
         this._driver.registerStatement('RULES_STATUES_QUERY', 'SELECT `rule_id`, `hash`, `date`, `error_count`, `item_count` FROM `rule_statuses`;');
-        this._driver.registerStatement('RULES_ITEMS_QUERY', 'SELECT `rule_id`, `dn`, `has_error`, `has_warning` FROM `rule_items`;');
+        this._driver.registerStatement('RULES_ITEMS_QUERY', 'SELECT `rule_id`, `dn`, `has_error`, `has_warning`, `markers` FROM `rule_items`;');
         this._driver.registerStatement('RULES_LOGS_QUERY', 'SELECT `rule_id`, `kind`, `msg` FROM `rule_logs`;');
 
         this._driver.registerStatement('RULES_QUERY_COMBINED', 'SELECT  `rules`.`id`, `rules`.`name`, `rules`.`enabled`, `rules`.`hash`, `rule_statuses`.`error_count` as error_count, `rule_statuses`.`item_count` as item_count, `rule_statuses`.`hash` as status_hash FROM `rules` LEFT OUTER JOIN `rule_statuses` ON `rules`.`id` = `rule_statuses`.`rule_id`;');
@@ -32,7 +32,7 @@ class RuleAccessor
         this._driver.registerStatement('RULE_DELETE', 'DELETE FROM `rules` WHERE `id` = ?;');
         this._driver.registerStatement('RULE_UPDATE', 'UPDATE `rules` SET `name` = ?, `enabled` = ?, `target` = ?, `script` = ?, `date` = ?, `hash` = ?  WHERE `id` = ?;');
 
-        this._driver.registerStatement('RULE_ITEMS_QUERY', 'SELECT `dn`, `has_error`, `has_warning` FROM `rule_items` WHERE `rule_id` = ?;');
+        this._driver.registerStatement('RULE_ITEMS_QUERY', 'SELECT `dn`, `has_error`, `has_warning`, `markers` FROM `rule_items` WHERE `rule_id` = ?;');
 
         this._driver.registerStatement('RULE_LOGS_QUERY', 'SELECT `kind`, `msg` FROM `rule_logs` WHERE `rule_id` = ?;');
     }

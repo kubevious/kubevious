@@ -28,6 +28,7 @@ class MarkerAccessor
         this._driver.registerStatement('MARKER_DELETE', 'DELETE FROM `markers` WHERE `id` = ?;');
         this._driver.registerStatement('MARKER_UPDATE', 'UPDATE `markers` SET `name` = ?, `shape` = ?, `color` = ?, `propagate` = ? WHERE `id` = ?;');
 
+        this._driver.registerStatement('MARKERS_ITEMS_QUERY', 'SELECT `marker_id`, `dn` FROM `marker_items`;');
         this._driver.registerStatement('MARKER_ITEMS_QUERY', 'SELECT `dn` FROM `marker_items` WHERE `marker_id` = ?;');
     }
 
@@ -113,7 +114,22 @@ class MarkerAccessor
             synchronizer.markSkipDelete();
         }
 
+        for(var x of markers)
+        {
+            if (!x.propagate) {
+                x.propagate = false;
+            }
+        }
+
         return synchronizer.execute({}, markers);
+    }
+
+    getMarkersItems()
+    {
+        return this._execute('MARKERS_ITEMS_QUERY', [])
+            .then(result => {
+                return result;
+            });
     }
 
     getMarkerItems(marker_id)
@@ -130,7 +146,7 @@ class MarkerAccessor
         return this._driver.executeStatement(statementId, params);
     }
 
-      _massageDbMarker(marker)
+    _massageDbMarker(marker)
     {
         if (!marker) {
             return null;

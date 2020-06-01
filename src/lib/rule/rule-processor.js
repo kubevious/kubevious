@@ -25,7 +25,7 @@ class RuleProcessor
             context.database.driver, 
             'rule_items', 
             [], 
-            ['rule_id', 'dn', 'has_error', 'has_warning']
+            ['rule_id', 'dn', 'has_error', 'has_warning', 'markers']
         );
 
         this._ruleLogsSynchronizer = new MySqlTableSynchronizer(
@@ -35,6 +35,15 @@ class RuleProcessor
             [], 
             ['rule_id', 'kind', 'msg']
         );
+
+        this._markerItemsSynchronizer = new MySqlTableSynchronizer(
+            this._logger, 
+            context.database.driver, 
+            'marker_items', 
+            [], 
+            ['marker_id', 'dn']
+        );
+
 
     }
 
@@ -57,13 +66,15 @@ class RuleProcessor
         var executionContext = {
             ruleStatuses: {},
             ruleItems: [],
-            ruleLogs: []
+            ruleLogs: [],
+            markerItems: []
         }
 
         return this._fetchRules()
             .then(rules => this._processRules(state, rules, executionContext))
             .then(() => this._saveRuleData(executionContext))
             .then(() => this._context.ruleCache.acceptExecutionContext(executionContext))
+            .then(() => this._context.markerCache.acceptExecutionContext(executionContext))
             .then(() => {
                 this.logger.info('[execute] END');
             })
@@ -111,22 +122,20 @@ class RuleProcessor
                         var severity = null;
                         var ruleItemInfo = result.ruleItems[dn];
 
+                        var ruleItem = {
+                            has_error: 0,
+                            has_warning: 0
+                        };
+                        var shouldUseRuleItem = false;
+
                         if (ruleItemInfo.hasError) {
                             severity = 'error';
-                            executionContext.ruleItems.push({
-                                rule_id: rule.id,
-                                dn: dn,
-                                has_error: 1,
-                                has_warning: 0
-                            });
+                            ruleItem.has_error = 1;
+                            shouldUseRuleItem = true;
                         } else if (ruleItemInfo.hasWarning) {
                             severity = 'warn';
-                            executionContext.ruleItems.push({
-                                rule_id: rule.id,
-                                dn: dn,
-                                has_error: 0,
-                                has_warning: 1
-                            });
+                            ruleItem.has_warning = 1;
+                            shouldUseRuleItem = true;
                         }
 
                         if (severity) 
@@ -140,8 +149,38 @@ class RuleProcessor
                                     id: rule.name
                                 }
                             });
+                        }
 
+                        if (ruleItemInfo.marks)
+                        {
+                            for(var marker of _.keys(ruleItemInfo.marks))
+                            {
+                                state.raiseMarker(dn, marker);
+                                shouldUseRuleItem = true;
+                                if (!ruleItem.markers) {
+                                    ruleItem.markers = [];
+                                }
+                                ruleItem.markers.push(marker);
+
+
+                                var markerId = this._context.markerCache.getMarkerId(marker);
+                                if (markerId)
+                                {
+                                    executionContext.markerItems.push({
+                                        marker_id: markerId,
+                                        dn: dn
+                                    });
+                                }
+                            }
+                        }
+
+                        if (shouldUseRuleItem)
+                        {
                             executionContext.ruleStatuses[rule.id].item_count++;
+
+                            ruleItem.rule_id = rule.id;
+                            ruleItem.dn = dn;
+                            executionContext.ruleItems.push(ruleItem);
                         }
                     }
                 }
@@ -170,6 +209,7 @@ class RuleProcessor
                 .then(() => this._syncRuleStatuses(executionContext))
                 .then(() => this._syncRuleItems(executionContext))
                 .then(() => this._syncRuleLogs(executionContext))
+                .then(() => this._syncMarkerItems(executionContext));
         });
     }
 
@@ -192,6 +232,13 @@ class RuleProcessor
         this.logger.info('[_syncRuleLogs] Begin');
         this.logger.debug('[_syncRuleLogs] Begin', executionContext.ruleLogs);
         return this._ruleLogsSynchronizer.execute({}, executionContext.ruleLogs);
+    }
+
+    _syncMarkerItems(executionContext)
+    {
+        this.logger.info('[_syncRuleItems] Begin');
+        this.logger.debug('[_syncRuleItems] Begin', executionContext.markerItems);
+        return this._markerItemsSynchronizer.execute({}, executionContext.markerItems);
     }
     
 }
