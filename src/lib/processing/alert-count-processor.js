@@ -25,16 +25,16 @@ class AlertCountProcessor
     _processNode(dn)
     {
         var node = this._state.editableNode(dn);
-        node.alertCount = {
+        node.selfAlertCount = {
         };
 
         var assets = this._state.getAssets(dn);
         for(var alert of assets.alerts)
         {
-            if (!node.alertCount[alert.severity]) {
-                node.alertCount[alert.severity] = 0;
+            if (!node.selfAlertCount[alert.severity]) {
+                node.selfAlertCount[alert.severity] = 0;
             }
-            node.alertCount[alert.severity] += 1;
+            node.selfAlertCount[alert.severity] += 1;
         }
     }
 
