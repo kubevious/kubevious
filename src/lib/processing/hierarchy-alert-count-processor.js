@@ -4,7 +4,7 @@ class HierarchyAlertCountProcessor
 {
     constructor(logger, state)
     {
-        this._logger = logger.sublogger("AlertCountProcessor");
+        this._logger = logger.sublogger("HierarchyAlertCountProcessor");
         this._state = state;
     }
 
