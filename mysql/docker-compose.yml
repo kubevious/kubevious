@@ -3,7 +3,9 @@ services:
 
  mysql-kubevious:
   image: 'mysql:8.0.19'
-  container_name: 'mysql-kubevious'
+  container_name: 'kubevious-mysql'
+  networks:
+    - kubevious
   volumes:
     - ./runtime-data:/var/lib/mysql:rw
     - ./db-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
@@ -14,5 +16,9 @@ services:
     MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
   ports:
     - '3306:3306'
+
+networks:
+  kubevious:
+    external: true
 # volumes:
   # db_data:

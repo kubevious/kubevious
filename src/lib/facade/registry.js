@@ -3,6 +3,8 @@ const _ = require('lodash');
 const RegistryState = require('kubevious-helpers').RegistryState;
 const ParserAlertsPreprocessor = require('../processing/parser-alerts-preprocessor');
 const AlertCountProcessor = require('../processing/alert-count-processor');
+const HierarchyAlertCountProcessor = require('../processing/hierarchy-alert-count-processor');
+const ChildrenCountProcessor = require('../processing/children-count-processor');
 
 class FacadeRegistry
 {
@@ -24,12 +26,20 @@ class FacadeRegistry
         return Promise.resolve()
             .then(() => {
                 var processor = new ParserAlertsPreprocessor(this.logger, registryState);
-                return processor.execute(registryState);
+                return processor.execute();
             })
             .then(() => this._context.ruleProcessor.execute(registryState))
             .then(() => {
                 var processor = new AlertCountProcessor(this.logger, registryState);
-                return processor.execute(registryState);
+                return processor.execute();
+            })
+            .then(() => {
+                var processor = new HierarchyAlertCountProcessor(this.logger, registryState);
+                return processor.execute();
+            })
+            .then(() => {
+                var processor = new ChildrenCountProcessor(this.logger, registryState);
+                return processor.execute();
             })
             .then(() => {
                 var bundle = registryState.buildBundle();

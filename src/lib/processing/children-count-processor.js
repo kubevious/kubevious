@@ -1,8 +1,10 @@
-class AlertCountProcessor
+const _ = require('lodash');
+
+class ChildrenCountProcessor
 {
     constructor(logger, state)
     {
-        this._logger = logger.sublogger("AlertCountProcessor");
+        this._logger = logger.sublogger("ChildrenCountProcessor");
         this._state = state;
     }
 
@@ -25,19 +27,10 @@ class AlertCountProcessor
     _processNode(dn)
     {
         var node = this._state.editableNode(dn);
-        node.selfAlertCount = {
-        };
-
-        var assets = this._state.getAssets(dn);
-        for(var alert of assets.alerts)
-        {
-            if (!node.selfAlertCount[alert.severity]) {
-                node.selfAlertCount[alert.severity] = 0;
-            }
-            node.selfAlertCount[alert.severity] += 1;
-        }
+        var childrenDns = this._state.getChildrenDns(dn);
+        node.childrenCount = childrenDns.length;
     }
 
 }
 
-module.exports = AlertCountProcessor;
+module.exports = ChildrenCountProcessor;
