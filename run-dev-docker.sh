@@ -7,7 +7,7 @@ docker run \
     -it \
     --rm \
     --name 'kubevious-backend' \
-    -p 4001:4000 \
+    -p 4001:4001 \
     --network kubevious \
     -e NODE_ENV=development \
     -e MYSQL_HOST=kubevious-mysql \
