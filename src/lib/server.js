@@ -37,7 +37,7 @@ class Server
         this._loadRouter('rule');
         this._loadRouter('marker');
 
-        const port = 4000;
+        const port = 4001;
         this._httpServer = this._app.listen(port, () => {
             this.logger.info("listening on port %s", port);
         });
