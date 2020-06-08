@@ -48,7 +48,7 @@ module.exports = function(logger, driver) {
         "`dn` varchar(1024) NOT NULL," + 
         "`has_error` TINYINT NOT NULL," +
         "`has_warning` TINYINT NOT NULL," +
-        "`markers` json NOT NULL," +
+        "`markers` json NULL," +
         "PRIMARY KEY (`id`)," + 
         "KEY `rule_id` (`rule_id`)" +
     ") ENGINE=InnoDB DEFAULT CHARSET=latin1;"

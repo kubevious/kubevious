@@ -15,7 +15,7 @@ services:
     MYSQL_DATABASE: kubevious
     MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
   ports:
-    - '3306:3306'
+    - '4033:3306'
 
 networks:
   kubevious:
