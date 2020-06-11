@@ -3,5 +3,7 @@ MY_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE
 MY_DIR="$(dirname $MY_PATH)"
 cd $MY_DIR
 
-./mysql-delete.sh
-./mysql-start.sh
+docker-compose kill
+docker-compose rm -f
+
+rm -rf runtime-data
