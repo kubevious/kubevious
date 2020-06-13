@@ -1,10 +1,8 @@
 const crypto = require('crypto');
 const Promise = require('the-promise');
 const _ = require('the-lodash');
-const moment = require('moment');
 const HistoryAccessor = require("./db-accessor");
 const Snapshot = require("kubevious-helpers").History.Snapshot;
-const DateUtils = require("kubevious-helpers").DateUtils;
 const BufferUtils = require("kubevious-helpers").BufferUtils;
 
 class HistoryProcessor
@@ -14,9 +12,6 @@ class HistoryProcessor
         this._context = context;
         this._logger = context.logger.sublogger('HistoryProcessor');
         this._dbAccessor = new HistoryAccessor(context, context.database.driver);
-        this._snapshotQueue = [];
-        this._isProcessing = false;
-        this._isScheduled = false;
         this._latestSnapshot = null;
         this._currentState = null;
         this._interation = 0;
@@ -46,43 +41,8 @@ class HistoryProcessor
         this._logger.info("[accept] begin");
         var snapshot = this._produceSnapshot(state);
         this._logger.info("[accept] snapshot %s, item count: %s", snapshot.date.toISOString(), snapshot.getItems().length);
-        this._snapshotQueue.push(snapshot);
-        this._logger.info("[accept] snapshots in queue: %s", this._snapshotQueue.length);
 
-        this._filterSnapshots();
-
-        this._snapshotQueue = _.orderBy(this._snapshotQueue, ['date']);
-        this._logger.info("[accept] queue dates: ", this._snapshotQueue.map(x => x.date));
-
-        this._tryProcessSnapshot();
-    }
-
-    _filterSnapshots()
-    {
-        var timeDeltas = [];
-        for(var i = 0; i < this._snapshotQueue.length - 1; i++)
-        {
-            var snapshot = this._snapshotQueue[i];
-            var nextSnapshot = this._snapshotQueue[i + 1];
-            var seconds = DateUtils.diffSeconds(nextSnapshot.date, snapshot.date);
-            timeDeltas.push({
-                index: i,
-                diff: seconds
-            })
-        }
-
-        var targetCount = 3;
-        var toRemoveCount = Math.max(this._snapshotQueue.length - targetCount, 0);
-
-        if (toRemoveCount > 0)
-        {
-            var toRemove = _(timeDeltas).orderBy(['diff']).take(toRemoveCount).value();
-            toRemove = _.orderBy(toRemove, ['index'], ['desc']);
-            for(var x of toRemove)
-            {
-                this._snapshotQueue.splice(x.index, 1);
-            }
-        }
+        return this._processSnapshot(snapshot);
     }
 
     _processSnapshot(snapshot)
@@ -469,124 +429,10 @@ class HistoryProcessor
             .then(() => {
                 this._isDbReady = true;
                 this._logger.info("[_onDbConnected] IS READY");
-                return this._tryProcessSnapshot();
             })
     }
 
-    _tryProcessSnapshot()
-    {
-        if (this._scheduledTimer) {
-            clearTimeout(this._scheduledTimer);
-            this._scheduledTimer = null;
-        }
-        
-        if (!this._isDbReady) {
-            return;
-        }
 
-        if (this._isProcessing) {
-            return;
-        }
-
-        if (!this._currentState) {
-            this._logger.warn("[_tryProcessSnapshot] state not fetched");
-            return;
-        }
-
-        if (!this._latestSnapshot) {
-            this._logger.warn("[_tryProcessSnapshot] snapshot not yet fetched");
-            return;
-        }
-
-        if (this._snapshotQueue.length == 0) {
-            this._logger.info("[_tryProcessSnapshot] empty");
-            return;
-        } else {
-            this._logger.info("[_tryProcessSnapshot] begin");
-        }
-
-        if (!this._context.database.isConnected)
-        {
-            this._logger.warn("[_tryProcessSnapshot] not connected to db");
-            return;
-        }
-
-        this._logger.info("[_tryProcessSnapshot] queue size: %s", this._snapshotQueue.length);
-        if (!this._canProcessSnapshotNow())
-        {
-            this._rescheduleProcess();
-            return;
-        }
-
-        if (this._snapshotQueue.length == 0) {
-            this._logger.info("[_tryProcessSnapshot] now empty");
-            return;
-        }
-
-        var snapshot = _.head(this._snapshotQueue);
-        this._isProcessing = true;
-        return this._processSnapshot(snapshot)
-            .then(() => {
-                this._logger.info("[_tryProcessSnapshot] END");
-
-                this._snapshotQueue.shift();
-                this._isProcessing = false;
-                return this._tryProcessSnapshot();
-            })
-            .catch(reason => {
-                this._isProcessing = false;
-                this._logger.error("[_tryProcessSnapshot] ", reason);
-            });
-    }
-
-    _canProcessSnapshotNow()
-    {
-        if (!this._currentState.diff_date) {
-            return true;
-        }
-        this.logger.silly("[_canProcessSnapshotNow] last date: %s", this._currentState.diff_date);
-
-        var targetDate = moment(this._currentState.diff_date).add(1, 'm').toDate();
-        this.logger.silly("[_canProcessSnapshotNow] target date: %s", targetDate.toISOString());
-
-        var snapshotsPastTargetDate = this._snapshotQueue.filter(x => x.date >= targetDate);
-        if (snapshotsPastTargetDate.length > 0) {
-            this.logger.silly("[_canProcessSnapshotNow] some are past target date: ", snapshotsPastTargetDate.map(x => x.date.toISOString() ));
-            this._snapshotQueue = snapshotsPastTargetDate;
-            return true;
-        }
-
-        var latestSnapshot = _.maxBy(this._snapshotQueue, x => x.date);
-        this._snapshotQueue = [latestSnapshot];
-
-        var now = new Date();
-        this.logger.silly("[_canProcessSnapshotNow] now: %s", now.toISOString());
-
-        if (now >= moment(targetDate).add(1, 'm').toDate()) {
-            this.logger.silly("[_canProcessSnapshotNow] now >= targetDate + 1min");
-            return true;
-        }
-
-        if (this._snapshotQueue.length > 0)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    _rescheduleProcess()
-    {
-        this._logger.info("[_rescheduleProcess]");
-        if (this._scheduledTimer) {
-            return;
-        }
-
-        this._scheduledTimer = setTimeout(() => {
-            this._scheduledTimer = null;
-            this._tryProcessSnapshot();
-        }, 10*1000);
-    }
 }
 
 module.exports = HistoryProcessor;
