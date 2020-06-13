@@ -144,7 +144,7 @@ class Context
         }
         else
         {
-            this.tracker.enablePeriodicDebugOutput(30);
+            this.tracker.enablePeriodicDebugOutput(10);
         }
 
         return Promise.resolve()

@@ -14,6 +14,7 @@ class FacadeRegistry
         this._logger = context.logger.sublogger("FacadeRegistry");
 
         this._configMap = {};
+        this._latestSnapshot = null;
     }
 
     get logger() {
@@ -22,7 +23,48 @@ class FacadeRegistry
 
     acceptCurrentSnapshot(snapshotInfo)
     {
-        return this._context.tracker.scope("FacadeRegistry::accept", (tracker) => {
+        this._latestSnapshot = snapshotInfo;
+        this._triggerProcess();
+    }
+
+    _triggerProcess()
+    {
+        this._logger.verbose('[_triggerProcess] Begin');
+
+        if (this._processTimer) {
+            this._logger.verbose('[_triggerProcess] Timer scheduled...');
+            return;
+        }
+        if (this._isProcessing) {
+            this._logger.verbose('[_triggerProcess] Is Processing...');
+            return;
+        }
+
+        this._processTimer = setTimeout(() => {
+            this._logger.verbose('[_triggerProcess] Timer Triggered...');
+
+            this._processTimer = null;
+            if (!this._latestSnapshot) {
+                this._logger.verbose('[_triggerProcess] No Latest snapshot...');
+                return;
+            }
+            var snapshot = this._latestSnapshot;
+            this._latestSnapshot = null;
+            this._isProcessing = true;
+            return this._processCurrentSnapshot(snapshot)
+                .catch(reason => {
+                    this._logger.error('[_triggerProcess] failed: ', reason);
+                })
+                .finally(() => {
+                    this._isProcessing = false;
+                });
+
+        }, 5000);
+    }
+
+    _processCurrentSnapshot(snapshotInfo)
+    {
+        return this._context.tracker.scope("FacadeRegistry::process", (tracker) => {
 
             var registryState = null;
             var bundle = null;
