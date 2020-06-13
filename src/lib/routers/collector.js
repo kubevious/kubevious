@@ -34,8 +34,10 @@ module.exports = ({router, app, logger, collector}) => {
                 message: 'Missing snapshot_id.'
              });
         }
-        var result = collector.activateSnapshot(req.body.snapshot_id);
-        res.send(result);
+        return collector.activateSnapshot(req.body.snapshot_id)
+            .then(result => {
+                res.send(result);
+            });
     })
 
     router.post('/diff', function (req, res) {
@@ -75,8 +77,10 @@ module.exports = ({router, app, logger, collector}) => {
                 message: 'Missing diff_id.'
              });
         }
-        var result = collector.activateDiff(req.body.diff_id);
-        res.send(result);
+        return collector.activateDiff(req.body.diff_id)
+            .then(result => {
+                res.send(result);
+            })
     })
 
     app.use('/api/v1/collect', router);

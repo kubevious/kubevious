@@ -1,4 +1,5 @@
 const Promise = require('the-promise');
+const ProcessingTracker = require("kubevious-helpers").ProcessingTracker;
 const FacadeRegistry = require('./facade/registry');
 const SearchEngine = require('./search/engine');
 const Database = require('./db');
@@ -21,6 +22,7 @@ class Context
     constructor(logger)
     {
         this._logger = logger.sublogger("Context");
+        this._tracker = new ProcessingTracker(logger.sublogger("Tracker"));
         this._database = new Database(logger);
         this._searchEngine = new SearchEngine(this);
         this._historyProcessor = new HistoryProcessor(this);
@@ -49,6 +51,10 @@ class Context
 
     get logger() {
         return this._logger;
+    }
+
+    get tracker() {
+        return this._tracker;
     }
 
     get mysqlDriver() {
@@ -132,6 +138,15 @@ class Context
 
     run()
     {
+        if (process.env.NODE_ENV == 'development')
+        {
+            this.tracker.enablePeriodicDebugOutput(5);
+        }
+        else
+        {
+            this.tracker.enablePeriodicDebugOutput(30);
+        }
+
         return Promise.resolve()
             .then(() => this._database.init())
             .then(() => this._dataStore.init())

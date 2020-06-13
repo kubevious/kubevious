@@ -52,14 +52,16 @@ class Collector
 
     activateSnapshot(snapshotId)
     {
-        var snapshotInfo = this._snapshots[snapshotId];
-        if (!snapshotInfo) {
-            return RESPONSE_NEED_NEW_SNAPSHOT;
-        }
+        return this._context.tracker.scope("collector::activateDiff", (tracker) => {
+            var snapshotInfo = this._snapshots[snapshotId];
+            if (!snapshotInfo) {
+                return RESPONSE_NEED_NEW_SNAPSHOT;
+            }
 
-        this._acceptSnapshot(snapshotInfo);
+            this._acceptSnapshot(snapshotInfo);
 
-        return {};
+            return {};
+        });
     }
 
     newDiff(snapshotId, date)
@@ -98,42 +100,44 @@ class Collector
 
     activateDiff(diffId)
     {
-        var diffInfo = this._diffs[diffId];
-        if (!diffInfo) {
-            return RESPONSE_NEED_NEW_SNAPSHOT;
-        }
-
-        var snapshotInfo = this._snapshots[diffInfo.snapshotId];
-        if (!snapshotInfo) {
-            return RESPONSE_NEED_NEW_SNAPSHOT;
-        }
-
-        var newSnapshotId = uuidv4();
-        var newSnapshotInfo = {
-            date: new Date(diffInfo.date),
-            items: _.clone(snapshotInfo.items)
-        };
-        this._snapshots[newSnapshotId] = newSnapshotInfo;
-
-        for(var diffItem of diffInfo.items)
-        {
-            if (diffItem.present)
-            {
-                newSnapshotInfo.items[diffItem.hash] = diffItem.data;
+        return this._context.tracker.scope("collector::activateDiff", (tracker) => {
+            var diffInfo = this._diffs[diffId];
+            if (!diffInfo) {
+                return RESPONSE_NEED_NEW_SNAPSHOT;
             }
-            else
-            {
-                delete newSnapshotInfo.items[diffItem.hash];
+    
+            var snapshotInfo = this._snapshots[diffInfo.snapshotId];
+            if (!snapshotInfo) {
+                return RESPONSE_NEED_NEW_SNAPSHOT;
             }
-        }
-
-        delete this._snapshots[diffInfo.snapshotId];
-
-        this._acceptSnapshot(newSnapshotInfo);
-
-        return {
-            id: newSnapshotId
-        };
+    
+            var newSnapshotId = uuidv4();
+            var newSnapshotInfo = {
+                date: new Date(diffInfo.date),
+                items: _.clone(snapshotInfo.items)
+            };
+            this._snapshots[newSnapshotId] = newSnapshotInfo;
+    
+            for(var diffItem of diffInfo.items)
+            {
+                if (diffItem.present)
+                {
+                    newSnapshotInfo.items[diffItem.hash] = diffItem.data;
+                }
+                else
+                {
+                    delete newSnapshotInfo.items[diffItem.hash];
+                }
+            }
+    
+            delete this._snapshots[diffInfo.snapshotId];
+    
+            this._acceptSnapshot(newSnapshotInfo);
+    
+            return {
+                id: newSnapshotId
+            };
+        });
     }
 
     _acceptSnapshot(snapshotInfo)
@@ -147,13 +151,8 @@ class Collector
         // this._iteration++;
         // this._context.debugObjectLogger.dump('collector-snapshot-info-', this._iteration, snapshotInfo);
 
-        var safeSnapshot = this._safeClone(snapshotInfo);
+        var safeSnapshot = _.cloneDeep(snapshotInfo);
         this._context.facadeRegistry.acceptCurrentSnapshot(safeSnapshot);
-    }
-
-    _safeClone(snapshotInfo)
-    {
-        return _.cloneDeep(snapshotInfo);
     }
 
 }

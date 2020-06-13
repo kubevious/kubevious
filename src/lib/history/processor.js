@@ -71,7 +71,7 @@ class HistoryProcessor
             })
         }
 
-        var targetCount = 10;
+        var targetCount = 3;
         var toRemoveCount = Math.max(this._snapshotQueue.length - targetCount, 0);
 
         if (toRemoveCount > 0)

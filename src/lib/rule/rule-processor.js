@@ -57,7 +57,7 @@ class RuleProcessor
         return Promise.resolve()
     }
 
-    execute(state)
+    execute(state, tracker)
     {
         this._logger.info("[execute] date: %s, count: %s", 
             state.date.toISOString(),
@@ -71,7 +71,11 @@ class RuleProcessor
         }
 
         return this._fetchRules()
-            .then(rules => this._processRules(state, rules, executionContext))
+            .then(rules => {
+                return tracker.scope("execute", (childTracker) => {
+                    return this._processRules(state, rules, executionContext, childTracker);
+                });
+            })
             .then(() => this._saveRuleData(executionContext))
             .then(() => this._context.ruleCache.acceptExecutionContext(executionContext))
             .then(() => this._context.markerCache.acceptExecutionContext(executionContext))
@@ -89,9 +93,15 @@ class RuleProcessor
             });
     }
 
-    _processRules(state, rules, executionContext)
+    _processRules(state, rules, executionContext, tracker)
     {
-        return Promise.serial(rules, x => this._processRule(state, x, executionContext));
+        return Promise.serial(rules, x => {
+
+            return tracker.scope(x.name, (childTracker) => {
+                return this._processRule(state, x, executionContext)
+            });
+
+        });
     }
     
     _processRule(state, rule, executionContext)
