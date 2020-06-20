@@ -11,7 +11,7 @@ class HistoryProcessor
     {
         this._context = context;
         this._logger = context.logger.sublogger('HistoryProcessor');
-        this._dbAccessor = new HistoryAccessor(context, context.database.driver);
+        this._dbAccessor = new HistoryAccessor(context, context.database);
         this._latestSnapshot = null;
         this._currentState = null;
         this._interation = 0;

@@ -8,7 +8,6 @@ class RuleAccessor
     {
         this._logger = context.logger.sublogger("RuleAccessor");
         this._database = context.database;
-        this._driver = context.database.driver;
 
         this._registerStatements();
     }
@@ -19,22 +18,22 @@ class RuleAccessor
 
     _registerStatements()
     {
-        this._driver.registerStatement('RULES_QUERY', 'SELECT `id`, `name`, `target`, `script`, `enabled`, `hash`, `date` FROM `rules`;');
-        this._driver.registerStatement('RULES_STATUES_QUERY', 'SELECT `rule_id`, `hash`, `date`, `error_count`, `item_count` FROM `rule_statuses`;');
-        this._driver.registerStatement('RULES_ITEMS_QUERY', 'SELECT `rule_id`, `dn`, `has_error`, `has_warning`, `markers` FROM `rule_items`;');
-        this._driver.registerStatement('RULES_LOGS_QUERY', 'SELECT `rule_id`, `kind`, `msg` FROM `rule_logs`;');
+        this._database.registerStatement('RULES_QUERY', 'SELECT `id`, `name`, `target`, `script`, `enabled`, `hash`, `date` FROM `rules`;');
+        this._database.registerStatement('RULES_STATUES_QUERY', 'SELECT `rule_id`, `hash`, `date`, `error_count`, `item_count` FROM `rule_statuses`;');
+        this._database.registerStatement('RULES_ITEMS_QUERY', 'SELECT `rule_id`, `dn`, `has_error`, `has_warning`, `markers` FROM `rule_items`;');
+        this._database.registerStatement('RULES_LOGS_QUERY', 'SELECT `rule_id`, `kind`, `msg` FROM `rule_logs`;');
 
-        this._driver.registerStatement('RULES_QUERY_COMBINED', 'SELECT  `rules`.`id`, `rules`.`name`, `rules`.`enabled`, `rules`.`hash`, `rule_statuses`.`error_count` as error_count, `rule_statuses`.`item_count` as item_count, `rule_statuses`.`hash` as status_hash FROM `rules` LEFT OUTER JOIN `rule_statuses` ON `rules`.`id` = `rule_statuses`.`rule_id`;');
-        this._driver.registerStatement('RULE_QUERY', 'SELECT  `rules`.`id`, `rules`.`name`, `rules`.`enabled`, `rules`.`target`, `rules`.`script`, `rules`.`hash`, `rule_statuses`.`error_count` as error_count, `rule_statuses`.`item_count` as item_count, `rule_statuses`.`hash` as status_hash FROM `rules` LEFT OUTER JOIN `rule_statuses` ON `rules`.`id` = `rule_statuses`.`rule_id` WHERE `rules`.`id` = ?;');
-        this._driver.registerStatement('RULE_QUERY_EXPORT', 'SELECT `name`, `target`, `script`, `enabled` FROM `rules`;');
-        this._driver.registerStatement('RULE_QUERY_ENABLED', 'SELECT `id`, `name`, `hash`, `target`, `script` FROM `rules` WHERE `enabled` = 1;');
-        this._driver.registerStatement('RULE_CREATE', 'INSERT INTO `rules`(`name`, `enabled`, `target`, `script`, `date`, `hash`) VALUES (?, ?, ?, ?, ?, ?)');
-        this._driver.registerStatement('RULE_DELETE', 'DELETE FROM `rules` WHERE `id` = ?;');
-        this._driver.registerStatement('RULE_UPDATE', 'UPDATE `rules` SET `name` = ?, `enabled` = ?, `target` = ?, `script` = ?, `date` = ?, `hash` = ?  WHERE `id` = ?;');
+        this._database.registerStatement('RULES_QUERY_COMBINED', 'SELECT  `rules`.`id`, `rules`.`name`, `rules`.`enabled`, `rules`.`hash`, `rule_statuses`.`error_count` as error_count, `rule_statuses`.`item_count` as item_count, `rule_statuses`.`hash` as status_hash FROM `rules` LEFT OUTER JOIN `rule_statuses` ON `rules`.`id` = `rule_statuses`.`rule_id`;');
+        this._database.registerStatement('RULE_QUERY', 'SELECT  `rules`.`id`, `rules`.`name`, `rules`.`enabled`, `rules`.`target`, `rules`.`script`, `rules`.`hash`, `rule_statuses`.`error_count` as error_count, `rule_statuses`.`item_count` as item_count, `rule_statuses`.`hash` as status_hash FROM `rules` LEFT OUTER JOIN `rule_statuses` ON `rules`.`id` = `rule_statuses`.`rule_id` WHERE `rules`.`id` = ?;');
+        this._database.registerStatement('RULE_QUERY_EXPORT', 'SELECT `name`, `target`, `script`, `enabled` FROM `rules`;');
+        this._database.registerStatement('RULE_QUERY_ENABLED', 'SELECT `id`, `name`, `hash`, `target`, `script` FROM `rules` WHERE `enabled` = 1;');
+        this._database.registerStatement('RULE_CREATE', 'INSERT INTO `rules`(`name`, `enabled`, `target`, `script`, `date`, `hash`) VALUES (?, ?, ?, ?, ?, ?)');
+        this._database.registerStatement('RULE_DELETE', 'DELETE FROM `rules` WHERE `id` = ?;');
+        this._database.registerStatement('RULE_UPDATE', 'UPDATE `rules` SET `name` = ?, `enabled` = ?, `target` = ?, `script` = ?, `date` = ?, `hash` = ?  WHERE `id` = ?;');
 
-        this._driver.registerStatement('RULE_ITEMS_QUERY', 'SELECT `dn`, `has_error`, `has_warning`, `markers` FROM `rule_items` WHERE `rule_id` = ?;');
+        this._database.registerStatement('RULE_ITEMS_QUERY', 'SELECT `dn`, `has_error`, `has_warning`, `markers` FROM `rule_items` WHERE `rule_id` = ?;');
 
-        this._driver.registerStatement('RULE_LOGS_QUERY', 'SELECT `kind`, `msg` FROM `rule_logs` WHERE `rule_id` = ?;');
+        this._database.registerStatement('RULE_LOGS_QUERY', 'SELECT `kind`, `msg` FROM `rule_logs` WHERE `rule_id` = ?;');
     }
 
     queryAllCombined()
@@ -230,7 +229,7 @@ class RuleAccessor
 
     _execute(statementId, params)
     {
-        return this._driver.executeStatement(statementId, params);
+        return this._database.executeStatement(statementId, params);
     }
 
     _massageDbRule(rule)

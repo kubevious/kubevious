@@ -1,7 +1,6 @@
 const Promise = require('the-promise');
 const _ = require('the-lodash');
 const KubikRuleProcessor = require('kubevious-kubik').RuleProcessor;
-const MySqlTableSynchronizer = require('kubevious-helpers').MySqlTableSynchronizer;
 
 
 class RuleProcessor
@@ -12,33 +11,29 @@ class RuleProcessor
         this._logger = context.logger.sublogger("RuleProcessor");
         context.database.onConnect(this._onDbConnected.bind(this));
 
-        this._ruleStatusesSynchronizer = new MySqlTableSynchronizer(
+        this._ruleStatusesSynchronizer = context.database.driver.synchronizer(
             this._logger, 
-            context.database.driver, 
             'rule_statuses', 
             [], 
             ['rule_id', 'hash', 'date', 'error_count', 'item_count']
         );
 
-        this._ruleItemsSynchronizer = new MySqlTableSynchronizer(
+        this._ruleItemsSynchronizer = context.database.driver.synchronizer(
             this._logger, 
-            context.database.driver, 
             'rule_items', 
             [], 
             ['rule_id', 'dn', 'has_error', 'has_warning', 'markers']
         );
 
-        this._ruleLogsSynchronizer = new MySqlTableSynchronizer(
+        this._ruleLogsSynchronizer = context.database.driver.synchronizer(
             this._logger, 
-            context.database.driver, 
             'rule_logs', 
             [], 
             ['rule_id', 'kind', 'msg']
         );
 
-        this._markerItemsSynchronizer = new MySqlTableSynchronizer(
+        this._markerItemsSynchronizer = context.database.driver.synchronizer(
             this._logger, 
-            context.database.driver, 
             'marker_items', 
             [], 
             ['marker_id', 'dn']

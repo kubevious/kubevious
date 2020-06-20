@@ -7,12 +7,12 @@ const SnapshotReader = require("kubevious-helpers").History.SnapshotReader;
 
 class HistoryDbAccessor
 {
-    constructor(context, driver)
+    constructor(context, database)
     {
         this._context = context;
         this._logger = context.logger.sublogger('HistoryDbAccessor');
-        this._driver = driver;
-        this._snapshotReader = new SnapshotReader(this.logger, driver);
+        this._database = database;
+        this._snapshotReader = new SnapshotReader(this.logger, database.driver);
 
         this._registerStatements();
     }
@@ -389,24 +389,24 @@ class HistoryDbAccessor
         return itemsDelta;
     }
 
-    _registerStatement()
+    _registerStatement(name, sql)
     {
-        return this._driver.registerStatement.apply(this._driver, arguments);
+        return this._database.registerStatement(name, sql);
     }
 
-    _execute(statementId, params)
+    _execute(name, params)
     {
-        return this._driver.executeStatement(statementId, params);
+        return this._database.executeStatement(name, params);
     }
 
     _executeMany(statements)
     {
-        return this._driver.executeStatements(statements);
+        return this._database.executeStatements(statements);
     }
 
     executeInTransaction(cb)
     {
-        return this._driver.executeInTransaction(cb);
+        return this._database.executeInTransaction(cb);
     }
 
 }

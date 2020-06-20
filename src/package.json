@@ -25,6 +25,7 @@
     "flexsearch": "^0.6.32",
     "js-yaml": "^3.13.1",
     "k8s-super-client": "^1.1.3",
+    "kubevious-helper-mysql": "git+https://github.com/kubevious/helper-mysql.git",
     "kubevious-helpers": "git+https://github.com/kubevious/helpers.git",
     "kubevious-kubik": "git+https://github.com/kubevious/kubik.git",
     "kubik.git": "git+https://github.com/kubevious/kubik.git",

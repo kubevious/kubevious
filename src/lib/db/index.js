@@ -1,6 +1,6 @@
 const Promise = require('the-promise');
 const _ = require('the-lodash');
-const MySqlDriver = require("kubevious-helpers").MySqlDriver;
+const MySqlDriver = require("kubevious-helper-mysql");
 
 const TARGET_DB_VERSION = 3;
 
@@ -10,6 +10,8 @@ class Database
     {
         this._logger = logger.sublogger("DB");
         this._driver = new MySqlDriver(logger);
+
+        this._statements = {};
 
         this._driver.onMigrate(this._onDbMigrate.bind(this));
     }
@@ -33,7 +35,27 @@ class Database
 
     registerStatement(id, sql)
     {
-        return this._driver.registerStatement(id, sql);
+        this._statements[id] = this._driver.statement(sql);
+    }
+
+    executeStatement(id, params)
+    {
+        var statement = this._statements[id];
+        return statement.execute(params);
+    }
+
+    executeStatements(statements)
+    {
+        var myStatements = statements.map(x => ({
+            statement: this._statements[x.id],
+            params: x.params
+        }))
+        return this._driver.executeStatements(myStatements);
+    }
+
+    executeInTransaction(cb)
+    {
+        return this._driver.executeInTransaction(cb);
     }
 
     init()

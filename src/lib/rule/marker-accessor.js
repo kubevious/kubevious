@@ -1,6 +1,5 @@
 const Promise = require('the-promise');
 const _ = require('the-lodash');
-const MySqlTableSynchronizer = require('kubevious-helpers').MySqlTableSynchronizer;
 
 class MarkerAccessor
 {
@@ -8,7 +7,6 @@ class MarkerAccessor
     {
         this._logger = context.logger.sublogger("MarkerAccessor");
         this._database = context.database;
-        this._driver = context.database.driver;
 
         this._registerStatements();
     }
@@ -19,17 +17,17 @@ class MarkerAccessor
 
     _registerStatements()
     {
-        this._driver.registerStatement('MARKERS_QUERY', 'SELECT `id`, `name`, `shape`, `color`, `propagate` FROM `markers`;');
-        this._driver.registerStatement('MARKERS_EXPORT', 'SELECT `name`, `shape`, `color`, `propagate` FROM `markers`;');
+        this._database.registerStatement('MARKERS_QUERY', 'SELECT `id`, `name`, `shape`, `color`, `propagate` FROM `markers`;');
+        this._database.registerStatement('MARKERS_EXPORT', 'SELECT `name`, `shape`, `color`, `propagate` FROM `markers`;');
 
-        this._driver.registerStatement('MARKER_QUERY', 'SELECT `id`, `name`, `shape`, `color`, `propagate` FROM `markers` WHERE `id` = ?;');
+        this._database.registerStatement('MARKER_QUERY', 'SELECT `id`, `name`, `shape`, `color`, `propagate` FROM `markers` WHERE `id` = ?;');
 
-        this._driver.registerStatement('MARKER_CREATE', 'INSERT INTO `markers`(`name`, `shape`, `color`, `propagate`) VALUES (?, ?, ?, ?)');
-        this._driver.registerStatement('MARKER_DELETE', 'DELETE FROM `markers` WHERE `id` = ?;');
-        this._driver.registerStatement('MARKER_UPDATE', 'UPDATE `markers` SET `name` = ?, `shape` = ?, `color` = ?, `propagate` = ? WHERE `id` = ?;');
+        this._database.registerStatement('MARKER_CREATE', 'INSERT INTO `markers`(`name`, `shape`, `color`, `propagate`) VALUES (?, ?, ?, ?)');
+        this._database.registerStatement('MARKER_DELETE', 'DELETE FROM `markers` WHERE `id` = ?;');
+        this._database.registerStatement('MARKER_UPDATE', 'UPDATE `markers` SET `name` = ?, `shape` = ?, `color` = ?, `propagate` = ? WHERE `id` = ?;');
 
-        this._driver.registerStatement('MARKERS_ITEMS_QUERY', 'SELECT `marker_id`, `dn` FROM `marker_items`;');
-        this._driver.registerStatement('MARKER_ITEMS_QUERY', 'SELECT `dn` FROM `marker_items` WHERE `marker_id` = ?;');
+        this._database.registerStatement('MARKERS_ITEMS_QUERY', 'SELECT `marker_id`, `dn` FROM `marker_items`;');
+        this._database.registerStatement('MARKER_ITEMS_QUERY', 'SELECT `dn` FROM `marker_items` WHERE `marker_id` = ?;');
     }
 
     queryAll()
@@ -102,9 +100,8 @@ class MarkerAccessor
 
     importMarkers(markers, deleteExtra)
     {
-        var synchronizer = new MySqlTableSynchronizer(
+        var synchronizer = this._database.driver.synchronizer(
             this._logger, 
-            this._driver, 
             'markers', 
             [], 
             ['name', 'shape', 'color', 'propagate' ]
@@ -143,7 +140,7 @@ class MarkerAccessor
 
     _execute(statementId, params)
     {
-        return this._driver.executeStatement(statementId, params);
+        return this._database.executeStatement(statementId, params);
     }
 
     _massageDbMarker(marker)
