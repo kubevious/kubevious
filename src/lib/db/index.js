@@ -1,6 +1,6 @@
 const Promise = require('the-promise');
 const _ = require('the-lodash');
-const MySqlDriver = require("kubevious-helper-mysql");
+const DataStore = require("kubevious-helpers").DataStore;
 
 const TARGET_DB_VERSION = 3;
 
@@ -9,7 +9,9 @@ class Database
     constructor(logger)
     {
         this._logger = logger.sublogger("DB");
-        this._driver = new MySqlDriver(logger);
+
+        this._dataStore = new DataStore(logger.sublogger("DataStore"));
+        this._driver = this._dataStore.mysql;
 
         this._statements = {};
 
@@ -62,7 +64,7 @@ class Database
     {
         this._logger.info("[init]")
         return Promise.resolve()
-            .then(() => this._driver.connect())
+            .then(() => this._dataStore.connect())
             .then(() => {
                 this._logger.info("[init] post connect.")
             })

@@ -37,32 +37,32 @@ module.exports = ({router, app, logger, context, websocket}) => {
             });
     })
 
-    router.get('/:id', function (req, res) {
-        var result = context.markerCache.queryMarker(req.params.id);
+    router.get('/:name', function (req, res) {
+        var result = context.markerCache.queryMarker(req.params.name);
         res.json(result);
     })
 
-    router.get('/:id/items', function (req, res) {
+    router.get('/:name/items', function (req, res) {
         return context.markerAccessor
-            .getMarkerItems(req.params.id)
+            .getMarkerItems(req.params.name)
             .then(result => {
                 res.json(result);
             });
     })
 
-    router.put('/:id', function (req, res) {
+    router.put('/:name', function (req, res) {
         return context.markerAccessor
-            .updateMarker(req.params.id, req.body)
+            .updateMarker(req.params.name, req.body)
             .finally(() => context.markerCache.triggerUpdate())
             .then(() => {
-                var result = context.markerCache.queryMarker(req.params.id);
+                var result = context.markerCache.queryMarker(req.params.name);
                 res.json(result);
             })
     })
 
-    router.delete('/:id', function (req, res) {
+    router.delete('/:name', function (req, res) {
         return context.markerAccessor
-            .deleteMarker(req.params.id)
+            .deleteMarker(req.params.name)
             .finally(() => context.markerCache.triggerUpdate())
             .then(() => {
                 res.json({});

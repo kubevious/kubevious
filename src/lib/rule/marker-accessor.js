@@ -17,11 +17,11 @@ class MarkerAccessor
 
     _registerStatements()
     {
-        this._database.registerStatement('MARKERS_QUERY', 'SELECT `id`, `name`, `shape`, `color`, `propagate` FROM `markers`;');
-        this._database.registerStatement('MARKERS_EXPORT', 'SELECT `name`, `shape`, `color`, `propagate` FROM `markers`;');
+        this._database.registerStatement('MARKERS_QUERY', 'SELECT `name`, `shape`, `color`, `propagate` FROM `markers`;');
 
-        this._database.registerStatement('MARKER_QUERY', 'SELECT `id`, `name`, `shape`, `color`, `propagate` FROM `markers` WHERE `id` = ?;');
+        this._database.registerStatement('MARKER_QUERY', 'SELECT `name`, `shape`, `color`, `propagate` FROM `markers` WHERE `name` = ?;');
 
+        // INSERT INTO `markers`(`name`, `shape`, `color`, `propagate`) VALUES(?, ?, ?, ?) ON DUPLICATE KEY UPDATE `shape` = ?, `color` = ?, `propagate` = ?
         this._database.registerStatement('MARKER_CREATE', 'INSERT INTO `markers`(`name`, `shape`, `color`, `propagate`) VALUES (?, ?, ?, ?)');
         this._database.registerStatement('MARKER_DELETE', 'DELETE FROM `markers` WHERE `id` = ?;');
         this._database.registerStatement('MARKER_UPDATE', 'UPDATE `markers` SET `name` = ?, `shape` = ?, `color` = ?, `propagate` = ? WHERE `id` = ?;');
@@ -40,15 +40,12 @@ class MarkerAccessor
 
     exportMarkers()
     {
-        return this._execute('MARKERS_EXPORT')
-            .then(result => {
-                return result.map(x => this._massageDbMarker(x));
-            })
+        return this.queryAll();
     }
 
-    getMarker(id)
+    getMarker(name)
     {
-        var params = [ id ];
+        var params = [ name ];
         return this._execute('MARKER_QUERY', params)
             .then(result => {
                 return this._massageDbMarker(_.head(result));
