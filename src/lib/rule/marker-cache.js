@@ -7,13 +7,10 @@ class MarkerCache
     {
         this._context = context;
         this._logger = context.logger.sublogger("MarkerCache");
-        this._database = context.database;
-        this._driver = context.database.driver;
 
         context.database.onConnect(this._onDbConnected.bind(this));
 
         this._markerDict = {};
-        this._markerNameToIdDict = {};
         this._markerList = [];
 
         this._markerItems = {};
@@ -40,11 +37,7 @@ class MarkerCache
 
     getMarkerId(name)
     {
-        var id = this._markerNameToIdDict[name];
-        if (!id) {
-            return null;
-        }
-        return id;
+        return this.queryMarker(name);
     }
 
     acceptExecutionContext(executionContext)
@@ -54,7 +47,6 @@ class MarkerCache
 
     _acceptMarkerItems(items)
     {
-        // this._logger.info("**** ", items)
         this._markerItems = {};
         for(var x of items)
         {
@@ -74,7 +66,7 @@ class MarkerCache
 
     _refreshMarkerItems()
     {
-        return this._context.markerAccessor.getMarkersItems()
+        return this._context.markerAccessor.getAllMarkersItems()
             .then(result => {
                 this._acceptMarkerItems(result);
             })
@@ -84,9 +76,8 @@ class MarkerCache
     {
         return this._context.markerAccessor.queryAll()
             .then(result => {
-                this._markerDict = _.makeDict(result, x => x.id);
+                this._markerDict = _.makeDict(result, x => x.name);
                 this._markerList = result;
-                this._markerNameToIdDict = _.makeDict(result, x => x.name, x => x.id);
                 this._context.websocket.update({ kind: 'markers' }, this._markerList);
             })
             ;
@@ -102,9 +93,9 @@ class MarkerCache
         return this._markerList;
     }
 
-    queryMarker(id)
+    queryMarker(name)
     {
-        var marker = this._markerDict[id];
+        var marker = this._markerDict[name];
         if (!marker) {
             return null;
         }

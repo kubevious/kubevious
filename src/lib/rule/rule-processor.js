@@ -5,51 +5,31 @@ const KubikRuleProcessor = require('kubevious-kubik').RuleProcessor;
 
 class RuleProcessor
 {
-    constructor(context)
+    constructor(context, dataStore)
     {
         this._context = context;
         this._logger = context.logger.sublogger("RuleProcessor");
-        context.database.onConnect(this._onDbConnected.bind(this));
+        this._dataStore = dataStore;
 
-        this._ruleStatusesSynchronizer = context.database.driver.synchronizer(
-            this._logger, 
-            'rule_statuses', 
-            [], 
-            ['rule_id', 'hash', 'date', 'error_count', 'item_count']
-        );
+        this._ruleStatusesSynchronizer = 
+            this._dataStore.table('rule_statuses')
+                .synchronizer();
 
-        this._ruleItemsSynchronizer = context.database.driver.synchronizer(
-            this._logger, 
-            'rule_items', 
-            [], 
-            ['rule_id', 'dn', 'has_error', 'has_warning', 'markers']
-        );
+        this._ruleItemsSynchronizer = 
+            this._dataStore.table('rule_items')
+                .synchronizer();
 
-        this._ruleLogsSynchronizer = context.database.driver.synchronizer(
-            this._logger, 
-            'rule_logs', 
-            [], 
-            ['rule_id', 'kind', 'msg']
-        );
+        this._ruleLogsSynchronizer = 
+            this._dataStore.table('rule_logs')
+                .synchronizer();
 
-        this._markerItemsSynchronizer = context.database.driver.synchronizer(
-            this._logger, 
-            'marker_items', 
-            [], 
-            ['marker_id', 'dn']
-        );
-
-
+        this._markerItemsSynchronizer = 
+            this._dataStore.table('marker_items')
+                .synchronizer();
     }
 
     get logger() {
         return this._logger;
-    }
-
-    _onDbConnected()
-    {
-        this._logger.info("[_onDbConnected] ...");
-        return Promise.resolve()
     }
 
     execute(state, tracker)
@@ -222,28 +202,28 @@ class RuleProcessor
     {
         this.logger.info('[_syncRuleStatuses] Begin');
         this.logger.debug('[_syncRuleStatuses] Begin', executionContext.ruleStatuses);
-        return this._ruleStatusesSynchronizer.execute({}, _.values(executionContext.ruleStatuses));
+        return this._ruleStatusesSynchronizer.execute(_.values(executionContext.ruleStatuses));
     }
 
     _syncRuleItems(executionContext)
     {
         this.logger.info('[_syncRuleItems] Begin');
         this.logger.debug('[_syncRuleItems] Begin', executionContext.ruleItems);
-        return this._ruleItemsSynchronizer.execute({}, executionContext.ruleItems);
+        return this._ruleItemsSynchronizer.execute(executionContext.ruleItems);
     }
 
     _syncRuleLogs(executionContext)
     {
         this.logger.info('[_syncRuleLogs] Begin');
         this.logger.debug('[_syncRuleLogs] Begin', executionContext.ruleLogs);
-        return this._ruleLogsSynchronizer.execute({}, executionContext.ruleLogs);
+        return this._ruleLogsSynchronizer.execute(executionContext.ruleLogs);
     }
 
     _syncMarkerItems(executionContext)
     {
         this.logger.info('[_syncRuleItems] Begin');
         this.logger.debug('[_syncRuleItems] Begin', executionContext.markerItems);
-        return this._markerItemsSynchronizer.execute({}, executionContext.markerItems);
+        return this._markerItemsSynchronizer.execute(executionContext.markerItems);
     }
     
 }

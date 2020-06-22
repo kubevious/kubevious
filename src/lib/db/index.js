@@ -16,10 +16,16 @@ class Database
         this._statements = {};
 
         this._driver.onMigrate(this._onDbMigrate.bind(this));
+
+        this._setupMeta();
     }
 
     get logger() {
         return this._logger;
+    }
+
+    get dataStore() {
+        return this._dataStore;
     }
 
     get driver() {
@@ -28,6 +34,12 @@ class Database
 
     get isConnected() {
         return this._driver.isConnected;
+    }
+
+    _setupMeta()
+    {
+        require('./rules')(this._dataStore.meta());
+        require('./markers')(this._dataStore.meta());
     }
 
     onConnect(cb)
