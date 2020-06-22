@@ -30,15 +30,29 @@ class MarkerAccessor
             .query({ name: name });
     }
 
-    createMarker(config)
+    createMarker(config, target)
     {
-        return this._dataStore.table('markers')
-            .create({ 
-                name: config.name,
-                shape: config.shape,
-                color: config.color,
-                propagate: config.propagate
-             });
+        this.logger.info("config: ", config)
+        this.logger.info("target: ", target)
+        return Promise.resolve()
+            .then((() => {
+                if (target) {
+                    if (config.name != target.name) {
+                        return this._dataStore.table('markers')
+                            .delete(target);
+                    }
+                }
+            }))
+            .then(() => {
+                return this._dataStore.table('markers')
+                    .createOrUpdate({ 
+                        name: config.name,
+                        shape: config.shape,
+                        color: config.color,
+                        propagate: config.propagate
+                    })
+    
+            });
     }
 
     deleteMarker(name)
@@ -51,26 +65,9 @@ class MarkerAccessor
 
     importMarkers(markers, deleteExtra)
     {
-        // TODO:
-        // var synchronizer = this._database.driver.synchronizer(
-        //     this._logger, 
-        //     'markers', 
-        //     [], 
-        //     ['name', 'shape', 'color', 'propagate' ]
-        // );
-
-        // if (!deleteExtra) {
-        //     synchronizer.markSkipDelete();
-        // }
-
-        // for(var x of markers)
-        // {
-        //     if (!x.propagate) {
-        //         x.propagate = false;
-        //     }
-        // }
-
-        // return synchronizer.execute({}, markers);
+        return this._dataStore.table('markers')
+            .synchronizer(null, !deleteExtra)
+            .execute(markers)
     }
 
     getAllMarkersItems()
