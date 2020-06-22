@@ -50,108 +50,63 @@ class RuleAccessor
             .query({ name: name });
     }
 
-    createRule(config)
+    createRule(config, target)
     {
-        var ruleObj = {
-            name: config.name,
-            enabled: config.enabled,
-            target: config.target,
-            script: config.script,
-            date: new Date()
-        }
-        var hash = HashUtils.calculateObjectHash(ruleObj);
-        ruleObj.hash = hash;
-
-        return this._dataStore.table('rules')
-            .create(ruleObj);
+        return Promise.resolve()
+            .then((() => {
+                if (target) {
+                    if (config.name != target.name) {
+                        return this._dataStore.table('rules')
+                            .delete(target);
+                    }
+                }
+            }))
+            .then(() => {
+                var ruleObj = this._makeDbRule(config);
+                return this._dataStore.table('rules')
+                    .createOrUpdate(ruleObj);
+            });
     }
 
     deleteRule(name)
     {
         return this._dataStore.table('rules')
-            .create({ name: name });
+            .delete({ name: name });
     }
 
     exportRules()
     {
-        return this.queryAll();
-        // this._execute('RULE_QUERY_EXPORT')
-        //     .then(result => {
-        //         return result.map(x => this._massageDbRule(x));
-        //     })
+        return this.queryAll()
+            .then(result => {
+                return result.map(x => ({
+                    name: x.name,
+                    script: x.script,
+                    target: x.target,
+                    enabled: x.enabled
+                }));
+            });
     }
 
     importRules(rules, deleteExtra)
     {
-        // TODO
-        // return this.queryAll().then(res => {
-        //     const dbRules = _.makeDict(res, x => x.name, x => { 
-        //         var item = {
-        //             id: x.id
-        //         };
-        //         delete x.id;
-        //         item.config = x;
-        //         return item;
-        //     });
+        var rules = rules.map(x => this._makeDbRule(x));
+        return this._dataStore.table('rules')
+            .synchronizer(null, !deleteExtra)
+            .execute(rules);
+    }
 
-        //     const targetRules = _.makeDict(rules, x => x.name)
-
-        //     const itemsDelta = [];
-
-        //     for (let key in targetRules)
-        //     {
-        //         let targetRuleConfig = targetRules[key]
-        //         let dbRule = dbRules[key]
-        //         if (dbRule)
-        //         {
-        //             if (!_.fastDeepEqual(targetRuleConfig, dbRule.config))
-        //             {
-        //                 itemsDelta.push({ 
-        //                     action: 'U',
-        //                     id: dbRule.id,
-        //                     config: targetRuleConfig
-        //                 });
-        //             }
-        //         } else {
-        //             itemsDelta.push({ 
-        //                 action: 'C',
-        //                 config: targetRuleConfig
-        //             });
-        //         }
-        //     }
-
-        //     if (deleteExtra)
-        //     {
-        //         for (let key in dbRules)
-        //         {
-        //             let dbRule = dbRules[key]
-        //             let targetRuleConfig = targetRules[key]
-    
-        //             if (!targetRuleConfig)
-        //             {
-        //                 itemsDelta.push({ 
-        //                     action: 'D',
-        //                     id: dbRule.id
-        //                 });
-        //             }
-        //         }
-        //     }
-            
-        //     return Promise.serial(itemsDelta, delta => {
-        //             if (delta.action == 'C')
-        //             {
-        //                 return this.createRule(delta.config);
-        //             }
-        //             if (delta.action == 'U')
-        //             {
-        //                 return this.updateRule(delta.id, delta.config);
-        //             }
-        //             if (delta.action == 'D')
-        //             {
-        //                 return this.deleteRule(delta.id);
-        //             }
-        //         });
-        // })
+    _makeDbRule(rule)
+    {
+        var ruleObj = {
+            name: rule.name,
+            enabled: rule.enabled,
+            target: rule.target,
+            script: rule.script,
+            date: new Date()
+        }
+        var hash = HashUtils.calculateObjectHash(ruleObj);
+        ruleObj.hash = hash;
+        return ruleObj;
     }
 
     getRuleItems(rule_id)

@@ -32,8 +32,6 @@ class MarkerAccessor
 
     createMarker(config, target)
     {
-        this.logger.info("config: ", config)
-        this.logger.info("target: ", target)
         return Promise.resolve()
             .then((() => {
                 if (target) {
@@ -51,7 +49,6 @@ class MarkerAccessor
                         color: config.color,
                         propagate: config.propagate
                     })
-    
             });
     }
 

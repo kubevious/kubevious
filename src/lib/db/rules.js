@@ -5,10 +5,11 @@ module.exports = function(meta) {
             .settable()
         .field('target')
         .field('script')
+        .field('date')
         .field('enabled')
             .from(value => value ? true : false)
         .field('hash')
-            .from(value => value.toString('hex'))
+            .from(value => value ? value.toString('hex') : null)
 
     .table('rule_statuses')
             .key('id')
