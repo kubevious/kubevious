@@ -3,7 +3,7 @@ const _ = require('the-lodash');
 module.exports = {
     url: '/api',
 
-    setup: ({ router, logger }) => {
+    setup: ({ router, logger, context }) => {
 
         router.get('/tree', function (req, res) {
             var state = context.registry.getCurrentState();
