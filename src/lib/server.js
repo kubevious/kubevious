@@ -1,5 +1,4 @@
 const express = require('express');
-const PromiseRouter = require('express-promise-router');
 const Promise = require("the-promise");
 const morgan = require('morgan')
 
@@ -46,21 +45,63 @@ class Server
     _loadRouter(name)
     {
         this.logger.info("Loading router %s...", name);
+        const routerModule = require('./routers/' + name)
 
-        const router = PromiseRouter();
+        const router = express.Router();
+
+        const wrappedRouter = {
+            get: (url, handler) => {
+                router.get(url, (req, res) => {
+                    this._handleRoute(req, res, handler)
+                })
+            },
+
+            post: (url, handler) => {
+                router.post(url, (req, res) => {
+                    this._handleRoute(req, res, handler)
+                })
+            },
+
+            put: (url, handler) => {
+                router.put(url, (req, res) => {
+                    this._handleRoute(req, res, handler)
+                })
+            },
+
+            delete: (url, handler) => {
+                router.delete(url, (req, res) => {
+                    this._handleRoute(req, res, handler)
+                })
+            },
+        }
 
         var routerContext = {
             logger: this.logger.sublogger(name),
-            router,
+            router: wrappedRouter,
             app: this._app,
             websocket: this._context.websocket,
             context: this._context,
             collector: this._context.collector,
             history: this._context.historySnapshotReader
         }
+
+        routerModule.setup(routerContext);
         
-        const module = require('./routers/' + name)
-        module(routerContext);
+        this._app.use(routerModule.url, router);
+    }
+
+    _handleRoute(req, res, handler) {
+        Promise.resolve(handler(req, res))
+            .then(result => {
+                res.json(result)
+            })
+            .catch(error => {
+                if (process.env.NODE_ENV === 'development') {
+                    res.status(500).json({ message: error.message, stack: error.stack })
+                } else {
+                    res.status(500).json({ message: error.message })
+                }
+            })
     }
 }
 

@@ -1,77 +1,77 @@
 const _ = require('the-lodash');
 
-module.exports = ({router, app, logger, context, websocket}) => {
+module.exports = {
+    url: '/api/v1',
 
-    /**** Rule Configuration ***/
+    setup: ({ router, logger, context }) => {
 
-    // List Rules
-    router.get('/rules/', function (req, res) {
-        var result = context.ruleCache.queryRuleList();
-        res.json(result);
-    })
+        /**** Rule Configuration ***/
 
-    // Get Rule
-    router.get('/rule/:name', function (req, res) {
-        var result = context.ruleCache.queryRule(req.params.name);
-        res.json(result);
-    })
+        // List Rules
+        router.get('/rules/', function (req, res) {
+            var result = context.ruleCache.queryRuleList();
+            return result;
+        })
 
-    // Create Rule
-    router.post('/rule/:name', function (req, res) {
-        var newRule = null;
-        return context.ruleAccessor
-            .createRule(req.body, { name: req.params.name })
-            .then(result => {
-                newRule = result;
-            })
-            .finally(() => context.ruleCache.triggerListUpdate())
-            .then(() => {
-                res.json(newRule);
-            })
-    })
+        // Get Rule
+        router.get('/rule/:name', function (req, res) {
+            var result = context.ruleCache.queryRule(req.params.name);
+            return result;
+        })
 
-    // Delete Rule
-    router.delete('/rule/:name', function (req, res) {
-        return context.ruleAccessor
-            .deleteRule(req.params.name)
-            .finally(() => context.ruleCache.triggerListUpdate())
-            .then(() => {
-                res.json({});
-            });
-    })
+        // Create Rule
+        router.post('/rule/:name', function (req, res) {
+            var newRule = null;
+            return context.ruleAccessor
+                .createRule(req.body, { name: req.params.name })
+                .then(result => {
+                    newRule = result;
+                })
+                .finally(() => context.ruleCache.triggerListUpdate())
+                .then(() => {
+                    return newRule;
+                })
+        })
 
-    // Export Rules
-    router.get('/rules/export', function (req, res) {
-        return context.ruleAccessor
-            .exportRules()
-            .then(result => {
-                res.json(result)
-            });
-    })
+        // Delete Rule
+        router.delete('/rule/:name', function (req, res) {
+            return context.ruleAccessor
+                .deleteRule(req.params.name)
+                .finally(() => context.ruleCache.triggerListUpdate())
+                .then(() => {
+                    return {};
+                });
+        })
 
-    // Import Rules
-    router.post('/rules/import', function (req, res) {
-        return context.ruleAccessor
-            .importRules(req.body.data, req.body.deleteExtra)
-            .finally(() => context.ruleCache.triggerListUpdate())
-            .then(() => {
-                res.json({});
-            });
-    })
+        // Export Rules
+        router.get('/rules/export', function (req, res) {
+            return context.ruleAccessor
+                .exportRules();
+        })
 
-    /**** Rule Operational ***/
+        // Import Rules
+        router.post('/rules/import', function (req, res) {
+            return context.ruleAccessor
+                .importRules(req.body.data, req.body.deleteExtra)
+                .finally(() => context.ruleCache.triggerListUpdate())
+                .then(() => {
+                    return {};
+                });
+        })
 
-    // List Rules Statuses
-    router.get('/rules-statuses/', function (req, res) {
-        var result = context.ruleCache.queryRuleStatusList();
-        res.json(result);
-    })
+        /**** Rule Operational ***/
 
-    router.get('/rule-result/:name', function (req, res) {
-        var result = context.ruleCache.getRuleResult(req.params.name);
-        res.json(result);
-    })
+        // List Rules Statuses
+        router.get('/rules-statuses/', function (req, res) {
+            var result = context.ruleCache.queryRuleStatusList();
+            return result;
+        })
 
+        router.get('/rule-result/:name', function (req, res) {
+            var result = context.ruleCache.getRuleResult(req.params.name);
+            return result;
+        })
+        
+    }
 
-    app.use('/api/v1', router);
-};
+}
