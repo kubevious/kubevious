@@ -13,7 +13,7 @@ class MarkerCache
         this._markerDict = {};
         this._markerList = [];
 
-        this._markerItems = {};
+        this._markerResultsDict = {};
     }
 
     get logger() {
@@ -34,12 +34,7 @@ class MarkerCache
         return Promise.resolve()
             .then(() => this._refreshMarkerConfigs())
     }
-
-    getMarkerId(name)
-    {
-        return this.queryMarker(name);
-    }
-
+    
     acceptExecutionContext(executionContext)
     {
         this._acceptMarkerItems(executionContext.markerItems);
@@ -47,17 +42,18 @@ class MarkerCache
 
     _acceptMarkerItems(items)
     {
-        this._markerItems = {};
+        this._markerResultsDict = {};
         for(var x of items)
         {
-            if(!this._markerItems[x.marker_id])
+            if(!this._markerResultsDict[x.marker_name])
             {
-                this._markerItems[x.marker_id] = {
-                    target: { id: x.marker_id },
-                    value: []
+                this._markerResultsDict[x.marker_name] = {
+                    name: x.marker_name,
+                    items: []
                 }
-            }
-            this._markerItems[x.marker_id].value.push({
+            } 
+
+            this._markerResultsDict[x.marker_name].items.push({
                 dn: x.dn
             })
         }
@@ -78,14 +74,26 @@ class MarkerCache
             .then(result => {
                 this._markerDict = _.makeDict(result, x => x.name);
                 this._markerList = result;
-                this._context.websocket.update({ kind: 'markers' }, this._markerList);
+                this._context.websocket.update({ kind: 'markers' }, this.queryMarkerList());
             })
             ;
     }
 
     _notifyMarkerItems()
     {
-        this._context.websocket.updateScope({ kind: 'marker-items' }, _.values(this._markerItems));
+        var items = _.values(this._markerResultsDict).map(x => ({
+            target: { name: x.name },
+            value: x
+        }));
+        this._context.websocket.updateScope({ kind: 'marker-result' }, items);
+    }
+
+    getMarkerResult(name)
+    {
+        if (this._markerResultsDict[name]) {
+            return this._markerResultsDict[name];
+        }
+        return null;
     }
 
     queryMarkerList()

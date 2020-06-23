@@ -40,6 +40,7 @@ module.exports = ({router, app, logger, context, websocket}) => {
             });
     })
 
+    // Export Rules
     router.get('/rules/export', function (req, res) {
         return context.ruleAccessor
             .exportRules()
@@ -48,6 +49,7 @@ module.exports = ({router, app, logger, context, websocket}) => {
             });
     })
 
+    // Import Rules
     router.post('/rules/import', function (req, res) {
         return context.ruleAccessor
             .importRules(req.body.data, req.body.deleteExtra)
@@ -59,16 +61,14 @@ module.exports = ({router, app, logger, context, websocket}) => {
 
     /**** Rule Operational ***/
 
-
-
     // List Rules Statuses
-    router.get('/rules/', function (req, res) {
-        var result = context.ruleCache.queryRuleList();
+    router.get('/rules-statuses/', function (req, res) {
+        var result = context.ruleCache.queryRuleStatusList();
         res.json(result);
     })
 
-    router.get('/rules/:id/results', function (req, res) {
-        var result = context.ruleCache.getRuleStatus(req.params.id);
+    router.get('/rule-result/:name', function (req, res) {
+        var result = context.ruleCache.getRuleResult(req.params.name);
         res.json(result);
     })
 

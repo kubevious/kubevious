@@ -1,3 +1,5 @@
+const _ = require('the-lodash');
+
 module.exports = function(meta) {
     meta
     .table('rules')
@@ -9,13 +11,15 @@ module.exports = function(meta) {
         .field('enabled')
             .from(value => value ? true : false)
         .field('hash')
+            .to(value => _.isString(value) ? Buffer.from(value, 'hex') : value)
             .from(value => value ? value.toString('hex') : null)
 
     .table('rule_statuses')
             .key('id')
             .field('rule_name')
             .field('hash')
-                .from(value => value.toString('hex'))
+                .to(value => _.isString(value) ? Buffer.from(value, 'hex') : value)
+                .from(value => value ? value.toString('hex') : null)
             .field('date')
             .field('error_count')
             .field('item_count')

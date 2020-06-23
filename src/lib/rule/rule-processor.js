@@ -84,8 +84,8 @@ class RuleProcessor
         this.logger.info('[_processRule] Begin: %s', rule.name);
         this.logger.verbose('[_processRule] Begin: ', rule);
 
-        executionContext.ruleStatuses[rule.id] = {
-            rule_id: rule.id,
+        executionContext.ruleStatuses[rule.name] = {
+            rule_name: rule.name,
             hash: rule.hash,
             date: new Date(),
             error_count: 0,
@@ -147,23 +147,18 @@ class RuleProcessor
                                 }
                                 ruleItem.markers.push(marker);
 
-
-                                var markerId = this._context.markerCache.getMarkerId(marker);
-                                if (markerId)
-                                {
-                                    executionContext.markerItems.push({
-                                        marker_id: markerId,
-                                        dn: dn
-                                    });
-                                }
+                                executionContext.markerItems.push({
+                                    marker_name: marker,
+                                    dn: dn
+                                });
                             }
                         }
 
                         if (shouldUseRuleItem)
                         {
-                            executionContext.ruleStatuses[rule.id].item_count++;
+                            executionContext.ruleStatuses[rule.name].item_count++;
 
-                            ruleItem.rule_id = rule.id;
+                            ruleItem.rule_name = rule.name;
                             ruleItem.dn = dn;
                             executionContext.ruleItems.push(ruleItem);
                         }
@@ -176,12 +171,12 @@ class RuleProcessor
                     for(var msg of result.messages)
                     {
                         executionContext.ruleLogs.push({
-                            rule_id: rule.id,
+                            rule_name: rule.name,
                             kind: 'error',
                             msg: msg
                         });
 
-                        executionContext.ruleStatuses[rule.id].error_count++;
+                        executionContext.ruleStatuses[rule.name].error_count++;
                     }
                 }
             });

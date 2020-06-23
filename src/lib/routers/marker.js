@@ -67,12 +67,9 @@ module.exports = ({router, app, logger, context, websocket}) => {
     /**** Marker Operational ***/
 
     // Get Marker Result
-    router.get('/marker/:name/items', function (req, res) {
-        return context.markerAccessor
-            .getMarkerItems(req.params.name)
-            .then(result => {
-                res.json(result);
-            });
+    router.get('/marker-result/:name', function (req, res) {
+        var result = context.markerCache.getMarkerResult(req.params.name)
+        res.json(result);
     })
 
     app.use('/api/v1', router);
