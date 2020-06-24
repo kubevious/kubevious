@@ -22,7 +22,7 @@ class Server
 
     run()
     {
-        if (process.env.NODE_ENV == 'development')
+        if (process.env.NODE_ENV === 'development')
         {
             this._app.use(morgan('tiny'))
         }
@@ -95,11 +95,11 @@ class Server
             .then(result => {
                 res.json(result)
             })
-            .catch(error => {
+            .catch(({ error, status }) => {
                 if (process.env.NODE_ENV === 'development') {
-                    res.status(500).json({ message: error.message, stack: error.stack })
+                    res.status(status).json({ message: error.message, stack: error.stack })
                 } else {
-                    res.status(500).json({ message: error.message })
+                    res.status(status).json({ message: error.message })
                 }
             })
     }
