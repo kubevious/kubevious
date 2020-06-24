@@ -1,54 +1,57 @@
 const _ = require('the-lodash');
 
-module.exports = ({router, app, logger, context}) => {
+module.exports = {
+    url: '/api',
 
-    router.get('/tree', function (req, res) {
-        var state = context.registry.getCurrentState();
-        res.send(state.getTree());
-    })
+    setup: ({ router, logger, context }) => {
 
-    router.get('/node', function (req, res) {
-        if (!req.query.dn) {
-            return res.status(400).send({
-                message: 'Missing dn.'
-             });
-        }
-        var state = context.registry.getCurrentState();
-        res.send(state.getNode(req.query.dn, req.query['inc-children']));
-    })
+        router.get('/tree', function (req, res) {
+            var state = context.registry.getCurrentState();
+            return state.getTree();
+        })
 
-    router.get('/children', function (req, res) {
-        if (!req.query.dn) {
-            return res.status(400).send({
-                message: 'Missing dn.'
-             });
-        }
-        var state = context.registry.getCurrentState();
-        res.send(state.getChildren(req.query.dn, req.query['inc-children']));
-    })
+        router.get('/node', function (req, res) {
+            if (!req.query.dn) {
+                return res.status(400).send({
+                    message: 'Missing dn.'
+                });
+            }
+            var state = context.registry.getCurrentState();
+            return state.getNode(req.query.dn, req.query['inc-children']);
+        })
 
-    router.get('/assets', function (req, res) {
-        if (!req.query.dn) {
-            return res.status(400).send({
-                message: 'Missing dn.'
-             });
-        }
-        var state = context.registry.getCurrentState();
-        var assets = state.getAssets(req.query.dn);
-        assets.props = _.values(assets.props);
-        res.send(assets);
-    })
+        router.get('/children', function (req, res) {
+            if (!req.query.dn) {
+                return res.status(400).send({
+                    message: 'Missing dn.'
+                });
+            }
+            var state = context.registry.getCurrentState();
+            return state.getChildren(req.query.dn, req.query['inc-children'])
+        })
 
-    /*************************/
-    
-    router.get('/search', function (req, res) {
-        if (!req.query.criteria) {
-            return res.status(400).send({
-                message: 'Missing criteria.'
-             });
-        }
-        res.send(context.searchEngine.search(req.query.criteria));
-    })
+        router.get('/assets', function (req, res) {
+            if (!req.query.dn) {
+                return res.status(400).send({
+                    message: 'Missing dn.'
+                });
+            }
+            var state = context.registry.getCurrentState();
+            var assets = state.getAssets(req.query.dn);
+            assets.props = _.values(assets.props);
+            return assets;
+        })
 
-    app.use('/api', router);
-};
+        /*************************/
+        
+        router.get('/search', function (req, res) {
+            if (!req.query.criteria) {
+                return res.status(400).send({
+                    message: 'Missing criteria.'
+                });
+            }
+            return context.searchEngine.search(req.query.criteria);
+        })
+    }
+
+}

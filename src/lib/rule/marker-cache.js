@@ -7,16 +7,13 @@ class MarkerCache
     {
         this._context = context;
         this._logger = context.logger.sublogger("MarkerCache");
-        this._database = context.database;
-        this._driver = context.database.driver;
 
         context.database.onConnect(this._onDbConnected.bind(this));
 
         this._markerDict = {};
-        this._markerNameToIdDict = {};
         this._markerList = [];
 
-        this._markerItems = {};
+        this._markerResultsDict = {};
     }
 
     get logger() {
@@ -37,16 +34,7 @@ class MarkerCache
         return Promise.resolve()
             .then(() => this._refreshMarkerConfigs())
     }
-
-    getMarkerId(name)
-    {
-        var id = this._markerNameToIdDict[name];
-        if (!id) {
-            return null;
-        }
-        return id;
-    }
-
+    
     acceptExecutionContext(executionContext)
     {
         this._acceptMarkerItems(executionContext.markerItems);
@@ -54,18 +42,18 @@ class MarkerCache
 
     _acceptMarkerItems(items)
     {
-        // this._logger.info("**** ", items)
-        this._markerItems = {};
+        this._markerResultsDict = {};
         for(var x of items)
         {
-            if(!this._markerItems[x.marker_id])
+            if(!this._markerResultsDict[x.marker_name])
             {
-                this._markerItems[x.marker_id] = {
-                    target: { id: x.marker_id },
-                    value: []
+                this._markerResultsDict[x.marker_name] = {
+                    name: x.marker_name,
+                    items: []
                 }
-            }
-            this._markerItems[x.marker_id].value.push({
+            } 
+
+            this._markerResultsDict[x.marker_name].items.push({
                 dn: x.dn
             })
         }
@@ -74,7 +62,7 @@ class MarkerCache
 
     _refreshMarkerItems()
     {
-        return this._context.markerAccessor.getMarkersItems()
+        return this._context.markerAccessor.getAllMarkersItems()
             .then(result => {
                 this._acceptMarkerItems(result);
             })
@@ -84,17 +72,28 @@ class MarkerCache
     {
         return this._context.markerAccessor.queryAll()
             .then(result => {
-                this._markerDict = _.makeDict(result, x => x.id);
+                this._markerDict = _.makeDict(result, x => x.name);
                 this._markerList = result;
-                this._markerNameToIdDict = _.makeDict(result, x => x.name, x => x.id);
-                this._context.websocket.update({ kind: 'markers' }, this._markerList);
+                this._context.websocket.update({ kind: 'markers' }, this.queryMarkerList());
             })
             ;
     }
 
     _notifyMarkerItems()
     {
-        this._context.websocket.updateScope({ kind: 'marker-items' }, _.values(this._markerItems));
+        var items = _.values(this._markerResultsDict).map(x => ({
+            target: { name: x.name },
+            value: x
+        }));
+        this._context.websocket.updateScope({ kind: 'marker-result' }, items);
+    }
+
+    getMarkerResult(name)
+    {
+        if (this._markerResultsDict[name]) {
+            return this._markerResultsDict[name];
+        }
+        return null;
     }
 
     queryMarkerList()
@@ -102,9 +101,9 @@ class MarkerCache
         return this._markerList;
     }
 
-    queryMarker(id)
+    queryMarker(name)
     {
-        var marker = this._markerDict[id];
+        var marker = this._markerDict[name];
         if (!marker) {
             return null;
         }

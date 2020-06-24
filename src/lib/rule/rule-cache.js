@@ -15,8 +15,10 @@ class RuleCache
 
         this._userRules = [];
         this._ruleConfigDict = {};
+
+        this._listRuleStatuses = [];
         this._ruleExecResultDict = {};
-        this._ruleStatusDict = {};
+        this._ruleResultsDict = {};
     }
 
     get logger() {
@@ -31,7 +33,7 @@ class RuleCache
             .then(() => this._refreshRuleConfigs())
             .then(() => this._refreshExecutionStatuses())
             .then(() => this._recalculateRuleList())
-            .then(() => this._notifyRulesDetails())
+            .then(() => this._notifyRuleResults())
     }
 
     triggerListUpdate()
@@ -39,14 +41,14 @@ class RuleCache
         return Promise.resolve()
             .then(() => this._refreshRuleConfigs())
             .then(() => this._recalculateRuleList())
-            .then(() => this._notifyRulesDetails())
+            .then(() => this._notifyRuleResults())
     }
 
     _refreshRuleConfigs()
     {
         return this._context.ruleAccessor.queryAll()
             .then(result => {
-                this._ruleConfigDict = _.makeDict(result, x => x.id);
+                this._ruleConfigDict = _.makeDict(result, x => x.name);
             })
             ;
     }
@@ -54,7 +56,9 @@ class RuleCache
     _recalculateRuleList()
     {
         this._userRules = this._buildRuleList();
-        this._context.websocket.update({ kind: 'rules' }, this._userRules);
+        this._listRuleStatuses = this._buildRuleStatusList();
+
+        this._context.websocket.update({ kind: 'rules-statuses' }, this.queryRuleStatusList());
     }
 
     queryRuleList()
@@ -62,13 +66,18 @@ class RuleCache
         return this._userRules;
     }
 
-    queryRule(id)
+    queryRuleStatusList()
     {
-        var rule = this._ruleConfigDict[id];
+        return this._listRuleStatuses;
+    }
+
+    queryRule(name)
+    {
+        var rule = this._ruleConfigDict[name];
         if (!rule) {
             return null;
         }
-        var userRule = this._buildUserRuleItem(rule);
+        var userRule = this._buildRuleConfig(rule);
         return userRule;
     }
 
@@ -77,36 +86,27 @@ class RuleCache
         var userRules = [];
         for(var rule of _.values(this._ruleConfigDict))
         {
-            var userRule = this._buildUserRuleListItem(rule);
+            var userRule = {
+                name: rule.name
+            }
+            userRules.push(userRule);
+        }
+        userRules = _.orderBy(userRules, x => x.name);
+        return userRules;
+    }
+
+    _buildRuleStatusList()
+    {
+        var userRules = [];
+        for(var rule of _.values(this._ruleConfigDict))
+        {
+            var userRule = this._buildRuleStatus(rule.name);
             userRules.push(userRule);
         }
 
         userRules = _.orderBy(userRules, x => x.name);
 
         return userRules;
-    }
-
-    _buildUserRuleListItem(rule)
-    {
-        var userRule = {
-            id: rule.id,
-            name: rule.name,
-            enabled: rule.enabled
-        }
-
-        var info = this._calcRuleInfo(rule.id);
-        _.defaults(userRule, info);
-
-        return userRule;
-    }
-
-
-    _buildUserRuleItem(rule)
-    {
-        var userRule = this._buildUserRuleListItem(rule);
-        userRule.target = rule.target;
-        userRule.script = rule.script;
-        return userRule;
     }
 
     _refreshExecutionStatuses()
@@ -138,7 +138,7 @@ class RuleCache
     {
         this._acceptExecutionContext(executionContext);
         this._recalculateRuleList();
-        this._notifyRulesDetails();
+        this._notifyRuleResults();
     }
 
     _acceptExecutionContext(executionContext)
@@ -147,100 +147,130 @@ class RuleCache
 
         for(var status of _.values(executionContext.ruleStatuses))
         {
-            this._fetchRuleExecResult(status.rule_id).status = status;
+            this._fetchRuleExecResult(status.rule_name).status = status;
             status.hash = status.hash.toString('hex');
-            delete status.rule_id;
+            delete status.rule_name;
         }
         for(var item of executionContext.ruleItems)
         {
-            this._fetchRuleExecResult(item.rule_id).items.push(item);
-            delete item.rule_id;
+            this._fetchRuleExecResult(item.rule_name).items.push(item);
+            delete item.rule_name;
         }
         for(var log of executionContext.ruleLogs)
         {
-            this._fetchRuleExecResult(log.rule_id).logs.push(log);
-            delete log.rule_id;
+            this._fetchRuleExecResult(log.rule_name).logs.push(log);
+            delete log.rule_name;
         }
     }
 
-    _notifyRulesDetails()
+    _notifyRuleResults()
     {
-        this._ruleStatusDict = {};
+        this._ruleResultsDict = {};
         for(var ruleResult of _.values(this._ruleExecResultDict))
         {
-            this._ruleStatusDict[ruleResult.id] = {
-                    id: ruleResult.id,
-                    status: this._calcRuleInfo(ruleResult.id),
-                    items: ruleResult.items,
-                    logs: ruleResult.logs
-                }
+            this._ruleResultsDict[ruleResult.name] = this._buildRuleResult(ruleResult.name);
         }
 
-        var data = _.values(this._ruleStatusDict).map(x => ({
-            target: { id: x.id },
+        var data = _.values(this._ruleResultsDict).map(x => ({
+            target: { name: x.name },
             value: x
         }));
 
-        return this._context.websocket.updateScope({ kind: 'rule-status' }, data);
+        return this._context.websocket.updateScope({ kind: 'rule-result' }, data);
     }
 
-    getRuleStatus(id)
+    getRuleResult(name)
     {
-        if (this._ruleStatusDict[id]) {
-            return this._ruleStatusDict[id];
+        if (this._ruleResultsDict[name]) {
+            return this._ruleResultsDict[name];
         }
         return null;
     }
 
-    _fetchRuleExecResult(id)
+    _fetchRuleExecResult(name)
     {
-        if (!this._ruleExecResultDict[id]) {
-            this._ruleExecResultDict[id] = {
-                id: id,
+        if (!this._ruleExecResultDict[name]) {
+            this._ruleExecResultDict[name] = {
+                name: name,
                 status: null,
                 items: [],
                 logs: []
             }
         }
-        return this._ruleExecResultDict[id];
+        return this._ruleExecResultDict[name];
     }
 
-    _calcRuleInfo(id)
+
+    _buildRuleConfig(rule)
+    {
+        var userRule = {
+            name: rule.name,
+            target: rule.target,
+            script: rule.script,
+            enabled: rule.enabled
+        }
+        return userRule;
+    }
+
+    _buildRuleStatus(name)
+    {
+        var info = this._buildRuleInfo(name);
+        delete info.items;
+        delete info.logs;
+        return info;
+    }
+
+    _buildRuleResult(name)
+    {
+        var info = this._buildRuleInfo(name);
+        delete info.item_count;
+        return info;
+    }
+
+    _buildRuleInfo(name)
     {
         var info = {
-            isCurrent: false,
+            name: name,
+            enabled: false,
+            is_current: false,
             error_count: 0,
-            item_count: 0
+            item_count: 0,
+            items: [],
+            logs: []
         };
 
-        var ruleConfig = this._ruleConfigDict[id];
+        var ruleConfig = this._ruleConfigDict[name];
         if (ruleConfig)
         {
+            info.enabled = ruleConfig.enabled;
             if (ruleConfig.enabled)
             {
-                var ruleResult = this._ruleExecResultDict[id];
-                if (ruleResult)
+                var ruleExecResult = this._ruleExecResultDict[name];
+                if (ruleExecResult)
                 {
-                    var status = ruleResult.status;
+                    var status = ruleExecResult.status;
                     if (status)
                     {
                         if (ruleConfig.hash == status.hash) {
-                            info.isCurrent = true;
+                            info.is_current = true;
                         }
                         info.error_count = status.error_count;
                         info.item_count = status.item_count;
                     }
+    
+                    info.items = ruleExecResult.items;
+                    info.logs = ruleExecResult.logs;
                 }
             }
             else
             {
-                info.isCurrent = true;
+                info.is_current = true;
             }
-            
         }
-        
+
         return info;
     }
+
 }
 
 module.exports = RuleCache;

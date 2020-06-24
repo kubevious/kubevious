@@ -4,7 +4,6 @@ const FacadeRegistry = require('./facade/registry');
 const SearchEngine = require('./search/engine');
 const Database = require('./db');
 const HistoryProcessor = require('./history/processor');
-const DataStore = require('./store/data-store');
 const Registry = require('./registry/registry');
 const Collector = require('./collector/collector');
 const ClusterLeaderElector = require('./cluster/leader-elector')
@@ -26,7 +25,6 @@ class Context
         this._database = new Database(logger);
         this._searchEngine = new SearchEngine(this);
         this._historyProcessor = new HistoryProcessor(this);
-        this._dataStore = new DataStore(this);
         this._collector = new Collector(this);
         this._registry = new Registry(this);
 
@@ -34,11 +32,11 @@ class Context
 
         this._debugObjectLogger = new DebugObjectLogger(this);
 
-        this._markerAccessor = new MarkerAccessor(this);
+        this._markerAccessor = new MarkerAccessor(this, this.database.dataStore);
         this._markerCache = new MarkerCache(this);
-        this._ruleAccessor = new RuleAccessor(this);
+        this._ruleAccessor = new RuleAccessor(this, this.database.dataStore);
         this._ruleCache = new RuleCache(this);
-        this._ruleProcessor = new RuleProcessor(this);
+        this._ruleProcessor = new RuleProcessor(this, this.database.dataStore);
 
         this._historySnapshotReader = new HistorySnapshotReader(logger, this._database.driver);
 
@@ -75,10 +73,6 @@ class Context
 
     get historyProcessor() {
         return this._historyProcessor;
-    }
-
-    get dataStore() {
-        return this._dataStore;
     }
 
     get collector() {
@@ -149,7 +143,6 @@ class Context
 
         return Promise.resolve()
             .then(() => this._database.init())
-            .then(() => this._dataStore.init())
             .then(() => this._runServer())
             .then(() => this._setupWebSocket())
             .catch(reason => {

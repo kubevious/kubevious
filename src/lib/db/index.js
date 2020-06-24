@@ -1,6 +1,6 @@
 const Promise = require('the-promise');
 const _ = require('the-lodash');
-const MySqlDriver = require("kubevious-helpers").MySqlDriver;
+const DataStore = require("kubevious-helpers").DataStore;
 
 const TARGET_DB_VERSION = 3;
 
@@ -9,13 +9,23 @@ class Database
     constructor(logger)
     {
         this._logger = logger.sublogger("DB");
-        this._driver = new MySqlDriver(logger);
+
+        this._dataStore = new DataStore(logger.sublogger("DataStore"));
+        this._driver = this._dataStore.mysql;
+
+        this._statements = {};
 
         this._driver.onMigrate(this._onDbMigrate.bind(this));
+
+        this._setupMeta();
     }
 
     get logger() {
         return this._logger;
+    }
+
+    get dataStore() {
+        return this._dataStore;
     }
 
     get driver() {
@@ -26,6 +36,12 @@ class Database
         return this._driver.isConnected;
     }
 
+    _setupMeta()
+    {
+        require('./rules')(this._dataStore.meta());
+        require('./markers')(this._dataStore.meta());
+    }
+
     onConnect(cb)
     {
         return this._driver.onConnect(cb);
@@ -33,14 +49,34 @@ class Database
 
     registerStatement(id, sql)
     {
-        return this._driver.registerStatement(id, sql);
+        this._statements[id] = this._driver.statement(sql);
+    }
+
+    executeStatement(id, params)
+    {
+        var statement = this._statements[id];
+        return statement.execute(params);
+    }
+
+    executeStatements(statements)
+    {
+        var myStatements = statements.map(x => ({
+            statement: this._statements[x.id],
+            params: x.params
+        }))
+        return this._driver.executeStatements(myStatements);
+    }
+
+    executeInTransaction(cb)
+    {
+        return this._driver.executeInTransaction(cb);
     }
 
     init()
     {
         this._logger.info("[init]")
         return Promise.resolve()
-            .then(() => this._driver.connect())
+            .then(() => this._dataStore.connect())
             .then(() => {
                 this._logger.info("[init] post connect.")
             })

@@ -1,60 +1,35 @@
 const Promise = require('the-promise');
 const _ = require('the-lodash');
 const KubikRuleProcessor = require('kubevious-kubik').RuleProcessor;
-const MySqlTableSynchronizer = require('kubevious-helpers').MySqlTableSynchronizer;
 
 
 class RuleProcessor
 {
-    constructor(context)
+    constructor(context, dataStore)
     {
         this._context = context;
         this._logger = context.logger.sublogger("RuleProcessor");
-        context.database.onConnect(this._onDbConnected.bind(this));
+        this._dataStore = dataStore;
 
-        this._ruleStatusesSynchronizer = new MySqlTableSynchronizer(
-            this._logger, 
-            context.database.driver, 
-            'rule_statuses', 
-            [], 
-            ['rule_id', 'hash', 'date', 'error_count', 'item_count']
-        );
+        this._ruleStatusesSynchronizer = 
+            this._dataStore.table('rule_statuses')
+                .synchronizer();
 
-        this._ruleItemsSynchronizer = new MySqlTableSynchronizer(
-            this._logger, 
-            context.database.driver, 
-            'rule_items', 
-            [], 
-            ['rule_id', 'dn', 'has_error', 'has_warning', 'markers']
-        );
+        this._ruleItemsSynchronizer = 
+            this._dataStore.table('rule_items')
+                .synchronizer();
 
-        this._ruleLogsSynchronizer = new MySqlTableSynchronizer(
-            this._logger, 
-            context.database.driver, 
-            'rule_logs', 
-            [], 
-            ['rule_id', 'kind', 'msg']
-        );
+        this._ruleLogsSynchronizer = 
+            this._dataStore.table('rule_logs')
+                .synchronizer();
 
-        this._markerItemsSynchronizer = new MySqlTableSynchronizer(
-            this._logger, 
-            context.database.driver, 
-            'marker_items', 
-            [], 
-            ['marker_id', 'dn']
-        );
-
-
+        this._markerItemsSynchronizer = 
+            this._dataStore.table('marker_items')
+                .synchronizer();
     }
 
     get logger() {
         return this._logger;
-    }
-
-    _onDbConnected()
-    {
-        this._logger.info("[_onDbConnected] ...");
-        return Promise.resolve()
     }
 
     execute(state, tracker)
@@ -109,8 +84,8 @@ class RuleProcessor
         this.logger.info('[_processRule] Begin: %s', rule.name);
         this.logger.verbose('[_processRule] Begin: ', rule);
 
-        executionContext.ruleStatuses[rule.id] = {
-            rule_id: rule.id,
+        executionContext.ruleStatuses[rule.name] = {
+            rule_name: rule.name,
             hash: rule.hash,
             date: new Date(),
             error_count: 0,
@@ -129,31 +104,70 @@ class RuleProcessor
                     {
                         this.logger.debug('[_processRule] RuleItem: %s', dn);
 
-                        var severity = null;
                         var ruleItemInfo = result.ruleItems[dn];
 
                         var ruleItem = {
-                            has_error: 0,
-                            has_warning: 0
+                            errors: 0,
+                            warnings: 0
                         };
-                        var shouldUseRuleItem = false;
 
-                        if (ruleItemInfo.hasError) {
-                            severity = 'error';
-                            ruleItem.has_error = 1;
-                            shouldUseRuleItem = true;
-                        } else if (ruleItemInfo.hasWarning) {
-                            severity = 'warn';
-                            ruleItem.has_warning = 1;
-                            shouldUseRuleItem = true;
+                        var alertsToRaise = [];
+
+                        if (ruleItemInfo.errors) {
+
+                            if (ruleItemInfo.errors.messages)
+                            {
+                                ruleItem.errors = ruleItemInfo.errors.messages.length;
+                                for(var msg of ruleItemInfo.errors.messages)
+                                {
+                                    alertsToRaise.push({ 
+                                        severity: 'error',
+                                        message:  'Rule ' + rule.name + ' failed. ' + msg
+                                    });
+                                }
+                            }
+                            else
+                            {
+                                ruleItem.errors = 1;
+                                alertsToRaise.push({ 
+                                    severity: 'error',
+                                    message:  'Rule ' + rule.name + ' failed.'
+                                });
+                            }
+                        }
+                        else if (ruleItemInfo.warnings)
+                        {
+                            if (ruleItemInfo.warnings.messages)
+                            {
+                                ruleItem.warnings = ruleItemInfo.warnings.messages.length;
+                                for(var msg of ruleItemInfo.warnings.messages)
+                                {
+                                    alertsToRaise.push({ 
+                                        severity: 'warn',
+                                        message:  'Rule ' + rule.name + ' failed. ' + msg
+                                    });
+                                }
+                            }
+                            else
+                            {
+                                ruleItem.warnings = 1;
+                                alertsToRaise.push({ 
+                                    severity: 'warn',
+                                    message:  'Rule ' + rule.name + ' failed.'
+                                });
+                            }
                         }
 
-                        if (severity) 
+                        var shouldUseRuleItem = false;
+
+                        for(var alertInfo of alertsToRaise)
                         {
+                            shouldUseRuleItem = true;
+
                             state.raiseAlert(dn, {
                                 id: 'rule-' + rule.name,
-                                severity: severity,
-                                msg: 'Rule ' + rule.name + ' failed.',
+                                severity: alertInfo.severity,
+                                msg: alertInfo.message,
                                 source: {
                                     kind: 'rule',
                                     id: rule.name
@@ -172,23 +186,18 @@ class RuleProcessor
                                 }
                                 ruleItem.markers.push(marker);
 
-
-                                var markerId = this._context.markerCache.getMarkerId(marker);
-                                if (markerId)
-                                {
-                                    executionContext.markerItems.push({
-                                        marker_id: markerId,
-                                        dn: dn
-                                    });
-                                }
+                                executionContext.markerItems.push({
+                                    marker_name: marker,
+                                    dn: dn
+                                });
                             }
                         }
 
                         if (shouldUseRuleItem)
                         {
-                            executionContext.ruleStatuses[rule.id].item_count++;
+                            executionContext.ruleStatuses[rule.name].item_count++;
 
-                            ruleItem.rule_id = rule.id;
+                            ruleItem.rule_name = rule.name;
                             ruleItem.dn = dn;
                             executionContext.ruleItems.push(ruleItem);
                         }
@@ -201,12 +210,12 @@ class RuleProcessor
                     for(var msg of result.messages)
                     {
                         executionContext.ruleLogs.push({
-                            rule_id: rule.id,
+                            rule_name: rule.name,
                             kind: 'error',
                             msg: msg
                         });
 
-                        executionContext.ruleStatuses[rule.id].error_count++;
+                        executionContext.ruleStatuses[rule.name].error_count++;
                     }
                 }
             });
@@ -227,28 +236,28 @@ class RuleProcessor
     {
         this.logger.info('[_syncRuleStatuses] Begin');
         this.logger.debug('[_syncRuleStatuses] Begin', executionContext.ruleStatuses);
-        return this._ruleStatusesSynchronizer.execute({}, _.values(executionContext.ruleStatuses));
+        return this._ruleStatusesSynchronizer.execute(_.values(executionContext.ruleStatuses));
     }
 
     _syncRuleItems(executionContext)
     {
         this.logger.info('[_syncRuleItems] Begin');
         this.logger.debug('[_syncRuleItems] Begin', executionContext.ruleItems);
-        return this._ruleItemsSynchronizer.execute({}, executionContext.ruleItems);
+        return this._ruleItemsSynchronizer.execute(executionContext.ruleItems);
     }
 
     _syncRuleLogs(executionContext)
     {
         this.logger.info('[_syncRuleLogs] Begin');
         this.logger.debug('[_syncRuleLogs] Begin', executionContext.ruleLogs);
-        return this._ruleLogsSynchronizer.execute({}, executionContext.ruleLogs);
+        return this._ruleLogsSynchronizer.execute(executionContext.ruleLogs);
     }
 
     _syncMarkerItems(executionContext)
     {
         this.logger.info('[_syncRuleItems] Begin');
         this.logger.debug('[_syncRuleItems] Begin', executionContext.markerItems);
-        return this._markerItemsSynchronizer.execute({}, executionContext.markerItems);
+        return this._markerItemsSynchronizer.execute(executionContext.markerItems);
     }
     
 }

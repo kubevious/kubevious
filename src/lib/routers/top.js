@@ -1,14 +1,18 @@
-module.exports = ({router, app, logger, context}) => {
+module.exports = {
+    url: '/',
 
-    router.get('/', function (req, res) {
-        res.send({});
-    });
+    setup: ({ router, logger }) => {
 
-    router.get('/version', function (req, res) {
-        res.send({
-            version: require('../../version')
+        router.get('/', function (req, res) {
+            return {};
         });
-    });
+    
+        router.get('/version', function (req, res) {
+            return {
+                version: require('../../version')
+            };
+        });
+    
+    }
 
-    app.use('/', router);
-};
+}
