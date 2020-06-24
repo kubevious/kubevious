@@ -105,8 +105,8 @@ CREATE TABLE IF NOT EXISTS `rule_items` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `rule_name` varchar(128) NOT NULL,
   `dn` varchar(1024) NOT NULL,
-  `has_error` TINYINT NOT NULL,
-  `has_warning` TINYINT NOT NULL,
+  `errors` int unsigned NOT NULL,
+  `warnings` int unsigned NOT NULL,
   `markers` json NULL,
   PRIMARY KEY (`id`),
   KEY `rule_name` (`rule_name`)

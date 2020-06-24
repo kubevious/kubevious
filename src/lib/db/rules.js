@@ -28,8 +28,8 @@ module.exports = function(meta) {
         .key('id')
         .field('rule_name')
         .field('dn')
-        .field('has_error')
-        .field('has_warning')
+        .field('errors')
+        .field('warnings')
         .field('markers')
 
     .table('rule_logs')

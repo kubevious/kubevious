@@ -104,31 +104,70 @@ class RuleProcessor
                     {
                         this.logger.debug('[_processRule] RuleItem: %s', dn);
 
-                        var severity = null;
                         var ruleItemInfo = result.ruleItems[dn];
 
                         var ruleItem = {
-                            has_error: 0,
-                            has_warning: 0
+                            errors: 0,
+                            warnings: 0
                         };
-                        var shouldUseRuleItem = false;
 
-                        if (ruleItemInfo.hasError) {
-                            severity = 'error';
-                            ruleItem.has_error = 1;
-                            shouldUseRuleItem = true;
-                        } else if (ruleItemInfo.hasWarning) {
-                            severity = 'warn';
-                            ruleItem.has_warning = 1;
-                            shouldUseRuleItem = true;
+                        var alertsToRaise = [];
+
+                        if (ruleItemInfo.errors) {
+
+                            if (ruleItemInfo.errors.messages)
+                            {
+                                ruleItem.errors = ruleItemInfo.errors.messages.length;
+                                for(var msg of ruleItemInfo.errors.messages)
+                                {
+                                    alertsToRaise.push({ 
+                                        severity: 'error',
+                                        message:  'Rule ' + rule.name + ' failed. ' + msg
+                                    });
+                                }
+                            }
+                            else
+                            {
+                                ruleItem.errors = 1;
+                                alertsToRaise.push({ 
+                                    severity: 'error',
+                                    message:  'Rule ' + rule.name + ' failed.'
+                                });
+                            }
+                        }
+                        else if (ruleItemInfo.warnings)
+                        {
+                            if (ruleItemInfo.warnings.messages)
+                            {
+                                ruleItem.warnings = ruleItemInfo.warnings.messages.length;
+                                for(var msg of ruleItemInfo.warnings.messages)
+                                {
+                                    alertsToRaise.push({ 
+                                        severity: 'warn',
+                                        message:  'Rule ' + rule.name + ' failed. ' + msg
+                                    });
+                                }
+                            }
+                            else
+                            {
+                                ruleItem.warnings = 1;
+                                alertsToRaise.push({ 
+                                    severity: 'warn',
+                                    message:  'Rule ' + rule.name + ' failed.'
+                                });
+                            }
                         }
 
-                        if (severity) 
+                        var shouldUseRuleItem = false;
+
+                        for(var alertInfo of alertsToRaise)
                         {
+                            shouldUseRuleItem = true;
+
                             state.raiseAlert(dn, {
                                 id: 'rule-' + rule.name,
-                                severity: severity,
-                                msg: 'Rule ' + rule.name + ' failed.',
+                                severity: alertInfo.severity,
+                                msg: alertInfo.message,
                                 source: {
                                     kind: 'rule',
                                     id: rule.name
