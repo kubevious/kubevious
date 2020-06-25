@@ -21,7 +21,10 @@ class MarkerAccessor
 
     exportMarkers()
     {
-        return this.queryAll();
+        return {
+            kind: 'markers',
+            items: this.queryAll()
+        }
     }
 
     getMarker(name)
