@@ -56,6 +56,10 @@ module.exports = {
 
         // Import Makers
         router.post('/markers/import', function (req, res) {
+            if (req.body.data.kind != 'markers') {
+                return Promise.reject({ error: new Error('Invalid data provided for import.'), status: 400 })
+            }
+
             return context.markerAccessor
                 .importMarkers(req.body.data, req.body.deleteExtra)
                 .finally(() => context.markerCache.triggerUpdate())

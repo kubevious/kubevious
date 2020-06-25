@@ -51,6 +51,11 @@ module.exports = {
 
         // Import Rules
         router.post('/rules/import', function (req, res) {
+
+            if (req.body.data.kind != 'rules') {
+                return Promise.reject({ error: new Error('Invalid data provided for import.'), status: 400 })
+            }
+
             return context.ruleAccessor
                 .importRules(req.body.data, req.body.deleteExtra)
                 .finally(() => context.ruleCache.triggerListUpdate())

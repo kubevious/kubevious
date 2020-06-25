@@ -21,10 +21,13 @@ class MarkerAccessor
 
     exportMarkers()
     {
-        return {
-            kind: 'markers',
-            items: this.queryAll()
-        }
+        return this.queryAll()
+            .then(result => {
+                return {
+                    kind: 'markers',
+                    items: result
+                };
+            });
     }
 
     getMarker(name)
@@ -67,7 +70,7 @@ class MarkerAccessor
     {
         return this._dataStore.table('markers')
             .synchronizer(null, !deleteExtra)
-            .execute(markers)
+            .execute(markers.items)
     }
 
     getAllMarkersItems()
