@@ -54,9 +54,7 @@ module.exports = {
     
         router.get('/snapshot', function(req, res) {
             if (!req.query.date) {
-                return res.status(400).send({
-                    message: 'Missing date.'
-                 });
+                return Promise.reject({ error: new Error('Missing date.'), status: 400 })
             }
     
             var date = DateUtils.makeDate(req.query.date); 
@@ -73,15 +71,11 @@ module.exports = {
         router.get('/assets', function(req, res) {
     
             if (!req.query.dn) {
-                return res.status(400).send({
-                    message: 'Missing dn.'
-                 });
+                return Promise.reject({ error: new Error('Missing dn.'), status: 400 })
             }
     
             if (!req.query.date) {
-                return res.status(400).send({
-                    message: 'Missing date.'
-                 });
+                return Promise.reject({ error: new Error('Missing date.'), status: 400 })
             }
     
             var date = DateUtils.makeDate(req.query.date); 

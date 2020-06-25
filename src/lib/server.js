@@ -22,7 +22,7 @@ class Server
 
     run()
     {
-        if (process.env.NODE_ENV == 'development')
+        if (process.env.NODE_ENV === 'development')
         {
             this._app.use(morgan('tiny'))
         }
@@ -35,6 +35,26 @@ class Server
         this._loadRouter('history');
         this._loadRouter('rule');
         this._loadRouter('marker');
+
+        this._app.use((req, res, next) => {
+            const error = new Error('Not found')
+            const reason = {
+                message: error.message,
+                stack: error.stack,
+                status: 404,
+            }
+
+            next(reason);
+        });
+
+        this._app.use((error, req, res, next) => {
+            res.status(error.status || 400).json({
+                status: error.status || 500,
+                message: error.message || 'Internal Server Error',
+                stack: process.env.NODE_ENV === 'development' ? error.stack : ''
+            });
+
+        });
 
         const port = 4001;
         this._httpServer = this._app.listen(port, () => {
@@ -95,11 +115,11 @@ class Server
             .then(result => {
                 res.json(result)
             })
-            .catch(error => {
+            .catch(({ error, status }) => {
                 if (process.env.NODE_ENV === 'development') {
-                    res.status(500).json({ message: error.message, stack: error.stack })
+                    res.status(status).json({ message: error.message, stack: error.stack })
                 } else {
-                    res.status(500).json({ message: error.message })
+                    res.status(status).json({ message: error.message })
                 }
             })
     }

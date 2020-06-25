@@ -78,12 +78,15 @@ class RuleAccessor
     {
         return this.queryAll()
             .then(result => {
-                return result.map(x => ({
-                    name: x.name,
-                    script: x.script,
-                    target: x.target,
-                    enabled: x.enabled
-                }));
+                return {
+                    kind: 'rules',
+                    items: result.map(x => ({
+                        name: x.name,
+                        script: x.script,
+                        target: x.target,
+                        enabled: x.enabled,
+                    })),
+                };
             });
     }
 
