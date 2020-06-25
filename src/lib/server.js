@@ -36,6 +36,24 @@ class Server
         this._loadRouter('rule');
         this._loadRouter('marker');
 
+        this._app.use((req, res, next) => {
+            const reason = {
+                reason: new Error('Not found'),
+                status: 400,
+            }
+
+            next(reason);
+        });
+
+        this._app.use((error, req, res, next) => {
+            res.status(error.status || 400).json({
+                status: error.status || 500,
+                message: error.reason.message || 'Internal Server Error',
+                stack: process.env.NODE_ENV === 'development' ? error.reason.stack : ''
+            });
+
+        });
+
         const port = 4001;
         this._httpServer = this._app.listen(port, () => {
             this.logger.info("listening on port %s", port);
