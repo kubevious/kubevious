@@ -3,7 +3,7 @@ const _ = require('the-lodash');
 module.exports = {
     url: '/api',
 
-    setup: ({ router, logger, context }) => {
+    setup: ({ router, logger, context, reportUserError }) => {
 
         router.get('/tree', function (req, res) {
             var state = context.registry.getCurrentState();
@@ -12,7 +12,7 @@ module.exports = {
 
         router.get('/node', function (req, res) {
             if (!req.query.dn) {
-                return Promise.reject({ error: new Error('Missing dn.'), status: 400 })
+                reportUserError('Missing dn.');
             }
             var state = context.registry.getCurrentState();
             return state.getNode(req.query.dn, req.query['inc-children']);
@@ -20,7 +20,7 @@ module.exports = {
 
         router.get('/children', function (req, res) {
             if (!req.query.dn) {
-                return Promise.reject({ error: new Error('Missing dn.'), status: 400 })
+                reportUserError('Missing dn.');
             }
             var state = context.registry.getCurrentState();
             return state.getChildren(req.query.dn, req.query['inc-children'])
@@ -28,7 +28,7 @@ module.exports = {
 
         router.get('/assets', function (req, res) {
             if (!req.query.dn) {
-                return Promise.reject({ error: new Error('Missing dn.'), status: 400 })
+                reportUserError('Missing dn.');
             }
             var state = context.registry.getCurrentState();
             var assets = state.getAssets(req.query.dn);
@@ -40,7 +40,7 @@ module.exports = {
 
         router.get('/search', function (req, res) {
             if (!req.query.criteria) {
-                return Promise.reject({ error: new Error('Missing criteria.'), status: 400 })
+                reportUserError('Missing criteria.');
             }
             return context.searchEngine.search(req.query.criteria);
         })

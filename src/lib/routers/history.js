@@ -4,7 +4,7 @@ const DateUtils = require("kubevious-helpers").DateUtils;
 module.exports = {
     url: '/api/v1/history',
 
-    setup: ({ router, logger, history }) => {
+    setup: ({ router, logger, history, reportUserError }) => {
 
         router.get('/range', function(req, res) {
             return history.queryTimelineRange()
@@ -54,7 +54,7 @@ module.exports = {
     
         router.get('/snapshot', function(req, res) {
             if (!req.query.date) {
-                return Promise.reject({ error: new Error('Missing date.'), status: 400 })
+                reportUserError('Missing date');
             }
     
             var date = DateUtils.makeDate(req.query.date); 
@@ -62,7 +62,7 @@ module.exports = {
             return history.querySnapshotForDate(date, 'node')
                 .then(snapshot => {
                     if (!snapshot) {
-                        snapshot = {};
+                        return {};
                     }
                     return snapshot.generateTree();
                 })
@@ -71,11 +71,11 @@ module.exports = {
         router.get('/assets', function(req, res) {
     
             if (!req.query.dn) {
-                return Promise.reject({ error: new Error('Missing dn.'), status: 400 })
+                reportUserError('Missing dn');
             }
     
             if (!req.query.date) {
-                return Promise.reject({ error: new Error('Missing date.'), status: 400 })
+                reportUserError('Missing date');
             }
     
             var date = DateUtils.makeDate(req.query.date); 

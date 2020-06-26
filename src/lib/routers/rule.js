@@ -3,7 +3,7 @@ const _ = require('the-lodash');
 module.exports = {
     url: '/api/v1',
 
-    setup: ({ router, logger, context }) => {
+    setup: ({ router, logger, context, reportUserError }) => {
 
         /**** Rule Configuration ***/
 
@@ -53,7 +53,7 @@ module.exports = {
         router.post('/rules/import', function (req, res) {
 
             if (req.body.data.kind != 'rules') {
-                return Promise.reject({ error: new Error('Invalid data provided for import.'), status: 400 })
+                reportUserError('Invalid data provided for import');
             }
 
             return context.ruleAccessor

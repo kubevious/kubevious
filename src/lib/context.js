@@ -16,6 +16,8 @@ const RuleProcessor = require('./rule/rule-processor')
 const HistorySnapshotReader = require("kubevious-helpers").History.SnapshotReader;
 const WebSocketServer = require('./websocket/server');
 
+const SERVER_PORT = 4001;
+
 class Context
 {
     constructor(logger)
@@ -118,7 +120,7 @@ class Context
     setupServer()
     {
         const Server = require("./server");
-        this._server = new Server(this);
+        this._server = new Server(this, SERVER_PORT);
     }
 
     setupK8sClient(client)
