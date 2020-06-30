@@ -43,7 +43,7 @@ Just like in case of rule editor window, list of items that match the condition 
 ![Kubevious Marker Editor Affected Objects](https://github.com/kubevious/media/raw/master/screens/rules-engine/rule-editor-affected-markers.png)
 
 ## Concepts
-Validation in rules engine are applied on items of the diagram. Every item in the diagram is defined using its **kind** and **name**. Items have sets of property groups associated that are visible on the *Properties* window of selected items. Such property groups can hold raw YAML configuration, or synthetic key-value pairs of additional properies, labels, annotation, etc. Those property groups can be used in the diagram to filter item and use in conditions to associate errors, warning, and custom markers.
+Validations in rules engine are applied on items of the diagram. Every item in the diagram is defined using its **kind** and **name**. Items have sets of property groups associated. They are visible in the *Properties* window of selected item. Such property groups can hold raw YAML configuration, or synthetic key-value pairs of additional properies, labels, annotation, etc. Property groups can be used in the diagram to filter items and use in conditions to associate errors, warning, and custom markers.
 
 Diagram has a graph like structure, so rules have a capability of graph traversal.
 
@@ -51,10 +51,48 @@ Diagram has a graph like structure, so rules have a capability of graph traversa
 
 
 ### Target Script Syntax
-Target scripts start with
+The purpose of the target script is to select a items from the diagram that matches required criteria. The selected items are be passed along to the rule script for validation.
+
+The target script starts with **select** statement that takes the  **kind** as an input. That statement selects all nodes of the given kind. The best place to discover is all item *kind*'s is the diagram viewer, but the most commonly used ones are:
+
+| Kind                    | Description                                                  |
+| ----------------------- | ------------------------------------------------------------ |
+| Namespace               | Kubernetes namespace                                         |
+| Application             | An abstraction that represents a workload and associated configurations like Services, Ingresses, ConfigMaps, Volumes, Pods, etc. |
+| Launcher                | A controller that launches the application. It represents either a Deployment, StatefulSet or a DaemonSet |
+| Container               | An individual container spec from Deployment, StatefulSet or a DaemonSet |
+| Init Container          | An individual init container spec from Deployment, StatefulSet or a DaemonSet |
+| Volume                  | A volume spec from Container or Init Container               |
+| ConfigMap               | A ConfigMap which is associated to Container. Can be directly under the Container if used as environment variables, or under Volume if mounted. |
+| Port                    | A container port definition                                  |
+| Service                 | A Kubernetes Service. Can be present directly under the Application or under the Port |
+| Ingress                 | A Kubernetes Ingress. Can be present directly under the Application or under the Service |
+| Service Account         | A Kubernetes ServiceAccount. Present under the Application   |
+| Cluster Role Binding    | A Kubernetes ClusterRoleBinding. Present under the Service Account |
+| Role Binding            | A Kubernetes RoleBinding. Present under the Service Account  |
+| Cluster Role            | A Kubernetes ClusterRole. Present under the Cluster Role Binding or Role Binding |
+| Pod Security Policy     | A Kubernetes PodSecurityPolicy. Present under Cluster Role.  |
+| Role                    | A Kubernetes Role. Present under the Role Binding            |
+| Replicaset              | A Kubernetes ReplicaSet. Present under Launcher.             |
+| Pod                     | A Kubernetes Pod. Present under ReplicaSet for Deployment and DaemonSet. Directly under Launcher for StatefulSet. |
+| Persistent Volume Claim | A Kubernetes PVC. Present under Pod.                         |
+| Persistent Volume       | A Kubernetes Persistent Volume. Present under Persistent Volume Claim. |
+| Infra                   | A placeholder item for infrastructure related items.         |
+| Nodes                   | A group for Kubernetes nodes. Present under Infra item.      |
+| Node                    | A Kubernetes Node. Present under Nodes.                      |
+
+#### Selecting all items of a given kind
+
+Using the example below all Pods would be passed to rule script for validation.
+
+```js
+select('Pod')
+```
+
 
 
 ### Rule Script Syntax
+
 tbd
 
 ### Applying Markers
