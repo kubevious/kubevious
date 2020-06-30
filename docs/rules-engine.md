@@ -19,17 +19,27 @@ Rules consist of two parts: target and rule scripts. The **target script** decla
 
 
 ## Getting Started
-asdf
+Rules are defined in *Rule Editor* window of Kubevious. In the screenshot below the rule *latest-tag-check* targets all docker images and checks if latest image tag is used. For such images an error is triggered.  
 
 ![Kubevious Rule Editor Target Script](https://github.com/kubevious/media/raw/master/screens/rules-engine/rule-editor-target-script.png)
 
+An optional message can be passed to **error** to provide more detailed description of the error and sometimes remediation instructions.
+
 ![Kubevious Rule Editor Rule Script](https://github.com/kubevious/media/raw/master/screens/rules-engine/rule-editor-rule-script.png)
+
+The *Affected Objects* shows Images that are using latest tag. Items in the list are shortcust and clicking on them would navigate to the diagram.
 
 ![Kubevious Rule Editor Affected Objects](https://github.com/kubevious/media/raw/master/screens/rules-engine/rule-editor-affected-errors.png)
 
-Markers
+The Image object in the diagram, along with properties and alerts triggered. In Universe view operators can easily check for other relevant configurations. 
+
+![Kubevious UI Diagram for Rules Engine](https://github.com/kubevious/media/raw/master/screens/rules-engine/rules-engine-diagram-view.png)
+
+Sometimes classifying objects by errors or warnings is not sufficient. **Marker Editor** allows assigning arbitrary icons to objects using rules engine. They can be used for quick access or for purposes of better categorization.
 
 ![Kubevious Marker Editor](https://github.com/kubevious/media/raw/master/screens/rules-engine/marker-editor.png)
+
+Just like in case of rule editor window, list of items that match the condition is listed in *Affected Objects* tab.
 
 ![Kubevious Marker Editor Affected Objects](https://github.com/kubevious/media/raw/master/screens/rules-engine/rule-editor-affected-markers.png)
 
@@ -41,4 +51,7 @@ sdf
 tbd
 
 ### Rule Script Syntax
+tbd
+
+### Applying Markers
 tbd
