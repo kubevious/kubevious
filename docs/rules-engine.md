@@ -62,6 +62,7 @@ The target script starts with **select** statement that takes the  **kind** as a
 | Launcher                | A controller that launches the application. It represents either a Deployment, StatefulSet or a DaemonSet |
 | Container               | An individual container spec from Deployment, StatefulSet or a DaemonSet |
 | Init Container          | An individual init container spec from Deployment, StatefulSet or a DaemonSet |
+| Image                   | A synthetic item representing a container image used inside the Container or Init Container |
 | Volume                  | A volume spec from Container or Init Container               |
 | ConfigMap               | A ConfigMap which is associated to Container. Can be directly under the Container if used as environment variables, or under Volume if mounted. |
 | Port                    | A container port definition                                  |
@@ -82,13 +83,58 @@ The target script starts with **select** statement that takes the  **kind** as a
 | Node                    | A Kubernetes Node. Present under Nodes.                      |
 
 ### Selecting all items of a given kind
-
-Using the example below all Pods would be passed to rule script for validation.
+Every target script should start with a **select** statement. Using the example below all Pods would be passed to rule script for validation.
 
 ```js
 select('Pod')
 ```
 
+Other examples could be selecting container images:
+```js
+select('Image')
+```
+
+or PodSecurityPolicies:
+
+```js
+select('Pod Security Policy')
+```
+
+### Filtering items by name
+Items can be filtered by name:
+```js
+select('Image')
+    .name('mongo')
+```
+
+or by multiple names:
+
+```js
+select('Container')
+    .name('sidecar')
+    .name('logger')
+```
+
+### Filtering items by labels
+Items can be filtered by one label:
+```js
+select('Application')
+    .label('stage', 'prod')
+```
+
+by multiple labels to be matched:
+```js
+select('Application')
+    .labels({ 'stage': 'pre-prod', region: 'east' })
+```
+
+or by combining multiple label query results. Example below will select all production apps, and preproduction apps from us-east region:
+
+```js
+select('Application')
+    .label('stage', 'prod')
+    .labels({ 'stage': 'pre-prod', region: 'us-east' })
+```
 
 
 ## Rule Script Syntax
