@@ -125,7 +125,10 @@ select('Application')
 by multiple labels to be matched:
 ```js
 select('Application')
-    .labels({ 'stage': 'pre-prod', region: 'east' })
+    .labels({ 
+        stage: 'pre-prod',
+        region: 'east'
+    })
 ```
 
 or by combining multiple label query results. Example below will select all production apps, and preproduction apps from us-east region:
@@ -133,10 +136,36 @@ or by combining multiple label query results. Example below will select all prod
 ```js
 select('Application')
     .label('stage', 'prod')
-    .labels({ 'stage': 'pre-prod', region: 'us-east' })
+    .labels({
+        stage: 'pre-prod',
+        region: 'us-east'
+    })
 ```
 
+### Filtering items by annotations
+Just like in case of labels, items can be filtered by annotations:
+```js
+select('Ingress')
+    .annotation('kubernetes.io/ingress.class', 'nginx')
+```
 
+by multiple annotations to be matched:
+```js
+select('Ingress')
+    .annotation('kubernetes.io/ingress.class', 'nginx')
+    .annotation('kubernetes.io/ingress.class', 'traefik')
+```
+
+or by combining multiple annotation query results:
+```js
+select('Ingress')
+    .annotation({ 'kubernetes.io/ingress.class', 'traefik' })
+    .annotations({
+        'kubernetes.io/ingress.class': 'nginx',
+        'nginx.ingress.kubernetes.io/enable-cors': false
+    })
+
+```
 ## Rule Script Syntax
 
 tbd
