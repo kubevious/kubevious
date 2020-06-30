@@ -132,7 +132,6 @@ select('Application')
 ```
 
 or by combining multiple label query results. Example below will select all production apps, and preproduction apps from us-east region:
-
 ```js
 select('Application')
     .label('stage', 'prod')
@@ -159,13 +158,46 @@ select('Ingress')
 or by combining multiple annotation query results:
 ```js
 select('Ingress')
-    .annotation({ 'kubernetes.io/ingress.class', 'traefik' })
+    .annotation('kubernetes.io/ingress.class', 'traefik')
     .annotations({
         'kubernetes.io/ingress.class': 'nginx',
         'nginx.ingress.kubernetes.io/enable-cors': false
     })
-
 ```
+
+### Executing custom code filters
+Items can be also be filtered by arbitrary code using JavaScript syntax. The example below selects Deployments that have *dnsPolicy* set to *ClusterFirst*. The **filter** should return **true** or **false** to indicate whether the item should be included. Multiple filters can be used, and for the item to be passed along to rule script, all the filter functions should return **true**. The **item.config** would represent the actual YAML file provided by Kubernetes.
+```js
+select('Launcher')
+    .name('Deployment')
+    .filter({item} => {
+        if (item.config.spec.template.dnsPolicy == 'ClusterFirst') {
+            return true;
+        }
+        return false;
+    })
+```
+
+Filters can also access synthetic properties. The target script below selects applications that are exposed to public internet and are running less than 3 pod repicas.
+```js
+select('Application')
+    .filter({item} => {
+        return
+            (item.props['Replicas'] < 3) &&
+            (item.props['Exposed'] == 'With Ingress');
+    })
+```
+
+The same result can be achieved by fetching replicas from the config object, and checking whether there is an Ingress item underneath.
+```js
+select('Application')
+    .filter({item} => {
+        return
+            (item.config.spec.replicas < 3) &&
+            item.hasDescendants('Ingress');
+    })
+```
+
 ## Rule Script Syntax
 
 tbd
