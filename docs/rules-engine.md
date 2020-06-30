@@ -50,7 +50,7 @@ Diagram has a graph like structure, so rules have a capability of graph traversa
 ![Kubevious Diagram Node](https://github.com/kubevious/media/raw/master/screens/rules-engine/diagram-node.png)
 
 
-### Target Script Syntax
+## Target Script Syntax
 The purpose of the target script is to select a items from the diagram that matches required criteria. The selected items are be passed along to the rule script for validation.
 
 The target script starts with **select** statement that takes the  **kind** as an input. That statement selects all nodes of the given kind. The best place to discover is all item *kind*'s is the diagram viewer, but the most commonly used ones are:
@@ -81,7 +81,7 @@ The target script starts with **select** statement that takes the  **kind** as a
 | Nodes                   | A group for Kubernetes nodes. Present under Infra item.      |
 | Node                    | A Kubernetes Node. Present under Nodes.                      |
 
-#### Selecting all items of a given kind
+### Selecting all items of a given kind
 
 Using the example below all Pods would be passed to rule script for validation.
 
@@ -91,9 +91,9 @@ select('Pod')
 
 
 
-### Rule Script Syntax
+## Rule Script Syntax
 
 tbd
 
-### Applying Markers
+## Applying Markers
 tbd
