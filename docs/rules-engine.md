@@ -8,15 +8,14 @@ With rules engine organizations can enforce DevOps best practices without changi
 
 Rules are defined using a domain-specific language called [Kubik](https://github.com/kubevious/kubik). Kubik follows JavaScript syntax and comes with extensions to allow custom rules to be easily be written and understood.
 
-The easiest way to get started is to make use of a public library of community built rules from [Kubevious Rules Library](https://github.com/kubevious/rules-library).
+The easiest way to get started is to make use of a public library of community built rules from [Kubevious Rules Library](https://github.com/kubevious/rules-library). While this page conaints comprehensive documentation on writing custom rules, consider joining [Kubevious Slack Channel](https://kubevious.io/slack/) for any additional assistance.
 
-## Concepts
+## Introduction
 Rules can be defined towards any object and configuration present in Kubevious UI, for example, Deployments, Pods, ConfigMaps, PersistentVolumes, Ingresses, and any other Kubernetes or synthetic configurations. 
 
 ![Kubevious UI Diagram for Rules Engine](https://github.com/kubevious/media/raw/master/screens/rules-engine/rules-engine-diagram-view.png)
 
 Rules consist of two parts: target and rule scripts. The **target script** declares on which nodes of the diagram should the validation rule be evaluated. Rules engine would then pass along the selected nodes to the **rule script**, where nodes would be checked, and rule engine would trigger errors and warnings, or label them with custom markers on such selected nodes.
-
 
 ## Getting Started
 Rules are defined in *Rule Editor* window of Kubevious. In the screenshot below the rule *latest-tag-check* targets all docker images and checks if latest image tag is used. For such images an error is triggered.  
@@ -43,12 +42,17 @@ Just like in case of rule editor window, list of items that match the condition 
 
 ![Kubevious Marker Editor Affected Objects](https://github.com/kubevious/media/raw/master/screens/rules-engine/rule-editor-affected-markers.png)
 
+## Concepts
+Validation in rules engine are applied on items of the diagram. Every item in the diagram is defined using its **kind** and **name**. Items have sets of property groups associated that are visible on the *Properties* window of selected items. Such property groups can hold raw YAML configuration, or synthetic key-value pairs of additional properies, labels, annotation, etc. Those property groups can be used in the diagram to filter item and use in conditions to associate errors, warning, and custom markers.
 
-## Writing Rules
-sdf
+Diagram has a graph like structure, so rules have a capability of graph traversal.
+
+![Kubevious Diagram Node](https://github.com/kubevious/media/raw/master/screens/rules-engine/diagram-node.png)
+
 
 ### Target Script Syntax
-tbd
+Target scripts start with
+
 
 ### Rule Script Syntax
 tbd
