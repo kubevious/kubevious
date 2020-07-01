@@ -214,7 +214,7 @@ select('Application')
     })
 ```
 
-### Filterin based on synthetic property groups
+### Filtering based on synthetic property groups
 Kubevious produces synthetic property grougs by joining multiple configurations from Kubernetes to improve overall Kubernetes usability. Such synthetic properties can be accessed inside target and rule scripts. One good example is Resource Role Matrix on Service Account item, which combines permissions across relevant (Cluster) Role Bindings and (Cluster) Roles.
 
 ![Kubevious Diagram Resource Role Matrix Secret](https://github.com/kubevious/media/raw/master/screens/rules-engine/diagram-resource-role-matrix-secret.png)
@@ -238,7 +238,7 @@ select('Application')
     })
 ```
 
-The targets of the script above are Application items, meaning that errors, warnings or markers would be applied on Application items. We could rewrite the script to target Service Accounts instead:
+The targets of the script above are Application items, meaning that errors, warnings or markers would be applied on Application items. We could rewrite the script to target Service Accounts instead. The script can be as complex as it needs to be in order to validate criteria as verbs used (get, update, delete, etc), namespace and name.
 ```js
 select('Service Account')
     .filter(({item}) => {
@@ -253,6 +253,26 @@ select('Service Account')
         return false;
     })
 ```
+
+### Traversing Hierarchy
+Rules engine allows breadth-first tree traversal by specifying layers of interest. Followed by the **select** statement, the **child** and **descendant** indicate which items to visit during the subsequent pass. 
+
+Lets consider following example below:
+```js
+select('Namespace')
+    .filter(({item}) => item.name != 'kube-system')
+    .filter(({item}) => {
+      const cpu = item.getProperties('cluster-consumption').cpu;
+      const memory = item.getProperties('cluster-consumption').memory;
+      return (unit.percentage(cpu) >= 40) ||
+             (unit.percentage(memory) >= 35);
+    })
+.child('Application')
+    .filter(({item}) => item.props['Replicas'] >= 10)
+    .filter(({item}) => !item.hasDescendants('Persistent Volume Claim'))
+```
+The script would select stateful Applications (no Persistent Volume Claims), that are running more than 10 pods, and those Applications are within the non "kube-system" Namespace, and the Namespaces consumes more than 40% of overall cluster CPU and more than 35% of overall cluster memory. 
+
 ## Rule Script Syntax
 
 tbd
