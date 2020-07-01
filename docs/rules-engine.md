@@ -255,23 +255,36 @@ select('Service Account')
 ```
 
 ### Traversing Hierarchy
-Rules engine allows breadth-first tree traversal by specifying layers of interest. Followed by the **select** statement, the **child** and **descendant** indicate which items to visit during the subsequent pass. 
+Rules engine allows breadth-first tree traversal by specifying layers of interest. Followed by the **select** statement, the **child** and **descendant** indicate which items to visit during the subsequent pass.
 
 Lets consider following example below:
 ```js
 select('Namespace')
     .filter(({item}) => item.name != 'kube-system')
     .filter(({item}) => {
-      const cpu = item.getProperties('cluster-consumption').cpu;
-      const memory = item.getProperties('cluster-consumption').memory;
-      return (unit.percentage(cpu) >= 40) ||
-             (unit.percentage(memory) >= 35);
+        const cpu = item.getProperties('cluster-consumption').cpu;
+        const memory = item.getProperties('cluster-consumption').memory;
+        return (unit.percentage(cpu) >= 40) ||
+               (unit.percentage(memory) >= 35);
     })
 .child('Application')
     .filter(({item}) => item.props['Replicas'] >= 10)
     .filter(({item}) => !item.hasDescendants('Persistent Volume Claim'))
 ```
-The script would select stateful Applications (no Persistent Volume Claims), that are running more than 10 pods, and those Applications are within the non "kube-system" Namespace, and the Namespaces consumes more than 40% of overall cluster CPU and more than 35% of overall cluster memory. 
+The script selects stateful Applications (no Persistent Volume Claims), that are running more than 10 pods,  those Applications are within the non "kube-system" Namespace, the Namespace consumes more than 40% of overall cluster CPU and more than 35% of overall cluster memory. 
+
+
+The **child** and **descendant** selectors can be chained together. While **child** selects direct children, the **descendant** selects items within entire sub-tree.
+```js
+select('Namespace')
+    .label('region', 'west')
+.child('Application')
+    .label('stage', 'prod')
+    .filter(({item}) => item.hasDescendants('Persistent Volume Claim'))
+.descendant('Image')
+    .filter(({item}) => item.props.tag == 'latest')
+```
+The script above selects container Images that are using **latest** tag, in stateful applications that are running in **production** deployed to region **west** .
 
 ## Rule Script Syntax
 
