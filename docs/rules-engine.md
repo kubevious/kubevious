@@ -166,7 +166,7 @@ select('Ingress')
 ```
 
 ### Executing custom code filters
-Items can be also be filtered by arbitrary code using JavaScript syntax. The example below selects Deployments that have *dnsPolicy* set to *ClusterFirst*. The **filter** should return **true** or **false** to indicate whether the item should be included. Multiple filters can be used, and for the item to be passed along to rule script, all the filter functions should return **true**. The **item.config** would represent the actual YAML file provided by Kubernetes.
+Items can be filtered by arbitrary code using JavaScript syntax. The example below selects Deployments that have *dnsPolicy* set to *ClusterFirst*. The **filter** should return **true** or **false** to indicate whether the item should be included or not. Multiple filters can be used, and for the item to be passed along to rule script, all the filter functions should return **true**. The **item.config** would represent the actual YAML file provided by Kubernetes.
 ```js
 select('Launcher')
     .name('Deployment')
@@ -178,7 +178,7 @@ select('Launcher')
     })
 ```
 
-Filters can also access synthetic properties. The target script below selects applications that are exposed to public internet and are running less than 3 pod repicas.
+Filters can also access synthetic properties. The target script below selects applications that are exposed to public internet and are running less than 3 pod replicas.
 ```js
 select('Application')
     .filter({item} => {
@@ -198,6 +198,45 @@ select('Application')
     })
 ```
 
+### Filterin based on synthetic property groups
+Kubevious produces synthetic property grougs by joining multiple configurations from Kubernetes to improve overall Kubernetes usability. Such synthetic properties can be accessed inside target and rule scripts. One good example is Resource Role Matrix on Service Account item, which combines permissions across relevant (Cluster) Role Bindings and (Cluster) Roles.
+
+![Kubevious Diagram Resource Role Matrix Secret](https://github.com/kubevious/media/raw/master/screens/rules-engine/diagram-resource-role-matrix-secret.png)
+
+The targe script below selects applications that requests permission to access Kubernetes secrets. Because Service Accounts are directly underneath Appications, the **children** function can be used instead of **descendants**.
+```js
+select('Application')
+    .filter(({item}) => {
+  	      for(var svcAccount of item.children('Service Account'))
+          {
+               var roleMatrix = svcAccount.getProperties('resource-role-matrix');
+               for(var row of roleMatrix.rows)
+               {
+                     if (row.resource == 'secrets')
+                     {
+                         return true;
+                     }
+               }
+          }
+         return false;
+    })
+```
+
+The targets of the script above are Application items, meaning that errors, warnings or markers would be applied on Application items. We could rewrite the script to target Service Accounts instead:
+```js
+select('Service Account')
+    .filter(({item}) => {
+        var roleMatrix = item.getProperties('resource-role-matrix');
+        for(var row of roleMatrix.rows)
+        {
+            if (row.resource == 'secrets')
+            {
+                return true;
+            }
+        }
+        return false;
+    })
+```
 ## Rule Script Syntax
 
 tbd
