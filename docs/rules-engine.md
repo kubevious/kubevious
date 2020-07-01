@@ -267,7 +267,6 @@ select('Namespace')
 ```
 The script selects stateful Applications (no Persistent Volume Claims), that are running more than 10 pods,  those Applications are within the non "kube-system" Namespace, the Namespace consumes more than 40% of overall cluster CPU and more than 35% of overall cluster memory. 
 
-
 The **child** and **descendant** selectors can be chained together. While **child** selects direct children, the **descendant** selects items of a specified **kind** within the entire sub-tree.
 ```js
 select('Namespace')
@@ -278,7 +277,7 @@ select('Namespace')
 .descendant('Image')
     .filter(({item}) => item.props.tag == 'latest')
 ```
-The script above selects container Images that are using **latest** tag, in stateful applications that are running in **production** deployed to region **west** .
+The script above selects container Images that are using **latest** tag, in stateful applications that are running in **production** deployed to region **west**.
 
 ## Rule Script Syntax
 
