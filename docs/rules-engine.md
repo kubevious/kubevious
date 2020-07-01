@@ -293,23 +293,23 @@ Within the body of the rule script an **item** variable (identical to the one us
 
 Lets consider the simple case of triggering errors on latest image tags.
 
-##### Target Script
+#### Target Script
 ```js
 select('Image')
     .filter(({item}) => (item.props.tag == 'latest'))
 ```
-##### Rule Script
+#### Rule Script
 ```js
 error("You are using latest image. Please dont do that.");
 ```
 
 Another way of achieving the same outcome is targeting all Images, but filtering out  latest tags within the rule script:
 
-###### Target Script
+#### Target Script
 ```js
 select('Image')
 ```
-###### Rule Script
+#### Rule Script
 ```js
 if (item.props.tag == 'latest') {
     error("You are using latest image. Please dont do that.");
