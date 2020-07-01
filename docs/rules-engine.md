@@ -280,8 +280,46 @@ select('Namespace')
 The script above selects container Images that are using **latest** tag, in stateful applications that are running in **production** deployed to region **west**.
 
 ## Rule Script Syntax
+The purpose of rule script is to act upon items that passed target script filters. Rule scripts can perform further checks but eventually should call **error**, **warning** or **mark**  to label items as such.
 
-tbd
+
+| Action           | Description                                                  |
+| ---------------- | ------------------------------------------------------------ |
+| **error**(msg)   | Triggers an error on the item. An optional message can be provided. |
+| **warning**(msg) | Triggers a warning on the item. An optional message can be provided. |
+| **mark**(name)   | Marks the item with the specified marker.                    |
+
+Within the body of the rule script an **item** variable (identical to the one used in *filter* function of target script) can be used to determine what kind of severity, message and mark to attach.
+
+Lets consider the simple case of triggering errors on latest image tags.
+
+<u>Target Script</u>
+
+```js
+select('Image')
+    .filter(({item}) => (item.props.tag == 'latest'))
+```
+<u>Rule Script</u>
+
+```js
+error("You are using latest image. Please dont do that.");
+```
+
+Another way of achieving the same outcome is targeting all Images, but filtering out  latest tags within the rule script:
+<u>Target Script</u>
+
+```js
+select('Image')
+```
+<u>Rule Script</u>
+
+```js
+if (item.props.tag == 'latest') {
+    error("You are using latest image. Please dont do that.");
+}
+```
+
 
 ## Applying Markers
 tbd
+
