@@ -1,18 +1,12 @@
 # Rules Engine
 
-\* [What is Rules Engine?](#what-is-rules-engine)
-
-\* [Introduction](#introduction)
-
-\* [Getting Started](#getting-started)
-
-\* [Concepts](#concepts)
-
-\* [Target Script Syntax](#target-script-syntax)
-
-\* [Rule Script Syntax](#rule-script-syntax)
-
-\* [Applying Markers](#applying-markers)
+- [What is Rules Engine?](#what-is-rules-engine)
+- [Introduction](#introduction)
+- [Getting Started](#getting-started)
+- [Concepts](#concepts)
+- [Target Script Syntax](#target-script-syntax)
+- [Rule Script Syntax](#rule-script-syntax)
+- [Applying Markers](#applying-markers)
 
 
 ## What is Rules Engine?
@@ -274,7 +268,7 @@ select('Namespace')
 The script selects stateful Applications (no Persistent Volume Claims), that are running more than 10 pods,  those Applications are within the non "kube-system" Namespace, the Namespace consumes more than 40% of overall cluster CPU and more than 35% of overall cluster memory. 
 
 
-The **child** and **descendant** selectors can be chained together. While **child** selects direct children, the **descendant** selects items within entire sub-tree.
+The **child** and **descendant** selectors can be chained together. While **child** selects direct children, the **descendant** selects items of a specified **kind** within the entire sub-tree.
 ```js
 select('Namespace')
     .label('region', 'west')
