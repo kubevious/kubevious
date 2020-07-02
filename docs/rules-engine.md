@@ -12,56 +12,56 @@
 ## What is Rules Engine?
 The **rules engine** is an extension for [Kubevious](https://github.com/kubevious/kubevious) to allow programmable validation and best practices enforcement for configuration and state objects in Kubernetes. Rules engine lets Kubernetes operators define validation custom rules to raise errors and warnings, beyond the built-in checks that come with Kubevious by default (like label mismatch, missing port, misused or overused objects, etc.). 
 
-In addition to raising errors and warnings, the rules engine allows assigning custom markers to identify objects of particular interest. Examples are be publicly accessible applications, namespaces, apps, containers that use excessive resources, overprivileged containers, and many more.
+In addition to raising errors and warnings, the rules engine allows assigning custom markers to identify items of particular interest. Examples are publicly accessible applications, containers that use excessive resources, overprivileged containers, and many more.
 
-With rules engine organizations can enforce DevOps best practices without changing their existing release processes. Such rules can also help Kubernetes operators to be efficient day in and day out. Since the rules engine was built to allow any custom rule to be defined, applications can be continuously assured to be compliant to company policies and security postulate to enforced.
+The rules engine enables organizations to enforce DevOps best practices without changing their existing release processes. Such rules can also help Kubernetes operators to be efficient day in and day out. Since the rules engine was built with customization in mind, applications can be continuously assured to be compliant to company policies and security postulate to enforced.
 
 Rules are defined using a domain-specific language called [Kubik](https://github.com/kubevious/kubik). Kubik follows JavaScript syntax and comes with extensions to allow custom rules to be easily be written and understood.
 
-The easiest way to get started is to make use of a public library of community built rules from [Kubevious Rules Library](https://github.com/kubevious/rules-library). While this page containts comprehensive documentation on writing custom rules, consider joining [Kubevious Slack Channel](https://kubevious.io/slack/) for any additional assistance.
+The easiest way to get started is to use a public library of community built rules from [Kubevious Rules Library](https://github.com/kubevious/rules-library). While this page contains comprehensive documentation on writing custom rules, consider joining [Kubevious Slack Channel](https://kubevious.io/slack/) for any additional assistance.
 
 ## Introduction
-Rules can be defined towards any object and configuration present in Kubevious UI, for example, Deployments, Pods, ConfigMaps, PersistentVolumes, Ingresses, and any other Kubernetes or synthetic configurations. 
+Rules are defined towards any object and configuration present in Kubevious UI, for example, Deployments, Pods, ConfigMaps, PersistentVolumes, Ingresses, and any other Kubernetes or synthetic configurations. 
 
 ![Kubevious UI Diagram for Rules Engine](https://github.com/kubevious/media/raw/master/screens/rules-engine/rules-engine-diagram-view.png)
 
-Rules consist of two parts: target and rule scripts. The **target script** declares on which nodes of the diagram should the validation rule be evaluated. Rules engine would then pass along the selected nodes to the **rule script**, where nodes would be checked, and rule engine would trigger errors and warnings, or label them with custom markers on such selected nodes.
+Rules consist of two parts: target and rule scripts. The **target script** declares on which nodes of the diagram should the validation rule are evaluated. Rules engine then passes along the selected nodes to the **rule script**, where nodes are validated, and rules engine triggers errors and warnings, or labels them with custom markers on such selected nodes.
 
 ## Getting Started
-Rules are defined in *Rule Editor* window of Kubevious. In the screenshot below the rule *latest-tag-check* targets all docker images and checks if latest image tag is used. For such images an error is triggered.  
+Rules are defined in *Rule Editor* window of Kubevious. In the screenshot below, the rule *latest-tag-check* targets all docker images and checks if the latest image tag is used. For such images, an error is triggered.  
 
 ![Kubevious Rule Editor Target Script](https://github.com/kubevious/media/raw/master/screens/rules-engine/rule-editor-target-script.png)
 
-An optional message can be passed to **error** to provide more detailed description of the error and sometimes remediation instructions.
+An optional message can be passed to **error** to provide a more detailed description of the failure condition and sometimes remediation instructions.
 
 ![Kubevious Rule Editor Rule Script](https://github.com/kubevious/media/raw/master/screens/rules-engine/rule-editor-rule-script.png)
 
-The *Affected Objects* shows Images that are using latest tag. Items in the list are shortcust and clicking on them would navigate to the diagram.
+The *Affected Objects* shows Images that are using the latest tag. Items on the list are shortcuts, and clicking on them would navigate to the diagram.
 
 ![Kubevious Rule Editor Affected Objects](https://github.com/kubevious/media/raw/master/screens/rules-engine/rule-editor-affected-errors.png)
 
-The Image object in the diagram, along with properties and alerts triggered. In Universe view operators can easily check for other relevant configurations. 
+The Image object in the diagram, along with properties and alerts triggered. In Universe view, operators can check for other relevant configurations.
 
 ![Kubevious UI Diagram for Rules Engine](https://github.com/kubevious/media/raw/master/screens/rules-engine/rules-engine-diagram-view.png)
 
-Sometimes classifying objects by errors or warnings is not sufficient. **Marker Editor** allows assigning arbitrary icons to objects using rules engine. They can be used for quick access or for purposes of better categorization.
+Sometimes classifying objects by errors or warnings is not sufficient. **Marker Editor** allows assigning arbitrary icons to objects using the rules engine. They can be used for quick access or purposes of better categorization.
 
 ![Kubevious Marker Editor](https://github.com/kubevious/media/raw/master/screens/rules-engine/marker-editor.png)
 
-Just like in case of rule editor window, list of items that match the condition is listed in *Affected Objects* tab.
+Just like in the case of the rule editor window, a list of items that match the condition is listed in the *Affected Objects* tab.
 
 ![Kubevious Marker Editor Affected Objects](https://github.com/kubevious/media/raw/master/screens/rules-engine/rule-editor-affected-markers.png)
 
 ## Concepts
-Validations in rules engine are applied on items of the diagram. Every item in the diagram is defined using its **kind** and **name**. Items have sets of property groups associated. They are visible in the *Properties* window of selected item. Such property groups can hold raw YAML configuration, or synthetic key-value pairs of additional properies, labels, annotation, etc. Property groups can be used in the diagram to filter items and use in conditions to associate errors, warning, and custom markers.
+Validations in rules engine are applied to items of the diagram. Every item in the diagram is defined using its **kind** and **name**. Items have sets of property groups associated. They are visible in the *Properties* window of the selected item. Such property groups can hold raw YAML configuration, or synthetic key-value pairs of additional properties, labels, annotation, etc. Property groups can be used in the diagram to filter items and use in conditions to associate errors, warnings, and custom markers.
 
-Diagram has a graph like structure, so rules have a capability of graph traversal.
+Diagram has a graph-like structure, so rules have the capability of graph traversal.
 
 ![Kubevious Diagram Node](https://github.com/kubevious/media/raw/master/screens/rules-engine/diagram-node.png)
 
 
 ## Target Script Syntax
-The purpose of the target script is to select a items from the diagram that matches required criteria. The selected items are be passed along to the rule script for validation.
+The purpose of the target script is to select items from the diagram that matches the required criteria. The selected items are passed along to the rule script for validation.
 
 The target script starts with **select** statement that takes the  **kind** as an input. That statement selects all nodes of the given kind. The best place to discover is all item *kind*'s is the diagram viewer, but the most commonly used ones are:
 
@@ -93,7 +93,7 @@ The target script starts with **select** statement that takes the  **kind** as a
 | Node                    | A Kubernetes Node. Present under Nodes.                      |
 
 ### Selecting all items of a given kind
-Every target script should start with a **select** statement. Using the example below all Pods would be passed to rule script for validation.
+Every target script should start with a **select** statement. In the example below, all Pods are passed to rule script for validation.
 
 ```js
 select('Pod')
@@ -141,7 +141,7 @@ select('Application')
     })
 ```
 
-or by combining multiple label query results. Example below will select all production apps, and preproduction apps from us-east region:
+or by combining multiple label query results. The example below will select all *production* apps and *preproduction* apps from *us-east* region:
 ```js
 select('Application')
     .label('stage', 'prod')
@@ -176,7 +176,8 @@ select('Ingress')
 ```
 
 ### Executing custom code filters
-Items can be filtered by arbitrary code using JavaScript syntax. The example below selects Deployments that have *dnsPolicy* set to *ClusterFirst*. The **filter** should return **true** or **false** to indicate whether the item should be included or not. Multiple filters can be used, and for the item to be passed along to rule script, all the filter functions should return **true**. The **item.config** would represent the actual YAML file provided by Kubernetes.
+Items can be filtered using arbitrary code following JavaScript syntax. The example below selects Deployments that have *dnsPolicy* set to *ClusterFirst*. The **filter** should return **true** or **false** to indicate whether the item should be included. Multiple filters can be used, and for the item to be passed along to rule script, all the filter functions should return **true**. The **item.config** would represent the actual YAML file provided by Kubernetes.
+
 ```js
 select('Launcher')
     .name('Deployment')
@@ -188,7 +189,7 @@ select('Launcher')
     })
 ```
 
-Filters can also access synthetic properties. The target script below selects applications that are exposed to public internet and are running less than 3 pod replicas.
+Filters can also access synthetic properties. The target script below selects applications exposed to the public internet and are running less than three pod replicas.
 ```js
 select('Application')
     .filter({item} => {
@@ -209,11 +210,11 @@ select('Application')
 ```
 
 ### Filtering based on synthetic property groups
-Kubevious produces synthetic property grougs by joining multiple configurations from Kubernetes to improve overall Kubernetes usability. Such synthetic properties can be accessed inside target and rule scripts. One good example is Resource Role Matrix on Service Account item, which combines permissions across relevant (Cluster) Role Bindings and (Cluster) Roles.
+Kubevious produces synthetic property groups by joining multiple configurations from Kubernetes to improve overall Kubernetes usability. Such synthetic properties can be accessed inside target and rule scripts. One good example is Resource Role Matrix on Service Account item, which combines permissions across relevant (Cluster) Role Bindings and (Cluster) Roles.
 
 ![Kubevious Diagram Resource Role Matrix Secret](https://github.com/kubevious/media/raw/master/screens/rules-engine/diagram-resource-role-matrix-secret.png)
 
-The targe script below selects applications that requests permission to access Kubernetes secrets. Because Service Accounts are directly underneath Appications, the **children** function can be used instead of **descendants**.
+The targe script below selects applications that request permission to access Kubernetes secrets. Because Service Accounts are directly underneath Appications, the **children** function can be used instead of **descendants**.
 ```js
 select('Application')
     .filter(({item}) => {
@@ -232,7 +233,7 @@ select('Application')
     })
 ```
 
-The targets of the script above are Application items, meaning that errors, warnings or markers would be applied on Application items. We could rewrite the script to target Service Accounts instead. The script can be as complex as it needs to be in order to validate criteria as verbs used (get, update, delete, etc), namespace and name.
+The targets of the script above are Application items, meaning that errors, warnings, or markers would be applied on Application items. We could rewrite the script to target Service Accounts instead. The script can be as complex as it needs to be to validate criteria as verbs used (get, update, delete, etc.), namespace, and name.
 ```js
 select('Service Account')
     .filter(({item}) => {
@@ -249,7 +250,7 @@ select('Service Account')
 ```
 
 ### Traversing Hierarchy
-Rules engine allows breadth-first tree traversal by specifying layers of interest. Followed by the **select** statement, the **child** and **descendant** indicate which items to visit during the subsequent pass.
+The rules engine allows breadth-first tree traversal by specifying layers of interest. Followed by the **select** statement, the **child** and **descendant** indicate which items to visit during the subsequent pass.
 
 Lets consider following example below:
 ```js
@@ -265,7 +266,7 @@ select('Namespace')
     .filter(({item}) => item.props['Replicas'] >= 10)
     .filter(({item}) => !item.hasDescendants('Persistent Volume Claim'))
 ```
-The script selects stateful Applications (no Persistent Volume Claims), that are running more than 10 pods,  those Applications are within the non "kube-system" Namespace, the Namespace consumes more than 40% of overall cluster CPU and more than 35% of overall cluster memory. 
+The script selects stateful Applications (no Persistent Volume Claims) running more than ten pods; those Applications are within the non "kube-system" Namespace, the Namespace consumes more than 40% of overall cluster CPU and more than 35% of total cluster memory. 
 
 The **child** and **descendant** selectors can be chained together. While **child** selects direct children, the **descendant** selects items of a specified **kind** within the entire sub-tree.
 ```js
@@ -277,10 +278,10 @@ select('Namespace')
 .descendant('Image')
     .filter(({item}) => item.props.tag == 'latest')
 ```
-The script above selects container Images that are using **latest** tag, in stateful applications that are running in **production** deployed to region **west**.
+The script above selects container Images using **latest** tag, in stateful applications that are running in **production** deployed to region **west**.
 
 ## Rule Script Syntax
-The purpose of rule script is to act upon items that passed target script filters. Rule scripts can perform further checks but eventually should call **error**, **warning** or **mark**  to label items as such.
+The purpose of the rule script is to act upon items that passed target script filters. Rule scripts can perform further checks but eventually should call **error**, **warning**, or **mark**  to label items as such.
 
 
 | Action           | Description                                                  |
@@ -289,9 +290,9 @@ The purpose of rule script is to act upon items that passed target script filter
 | **warning**(msg) | Triggers a warning on the item. An optional message can be provided. |
 | **mark**(name)   | Marks the item with the specified marker.                    |
 
-Within the body of the rule script an **item** variable (identical to the one used in *filter* function of target script) can be used to determine what kind of severity, message and mark to attach.
+Within the body of the rule script, an **item** variable (identical to the one used in *filter* function of target script) can be used to determine what kind of severity, message, and mark to attach.
 
-Lets consider the simple case of triggering errors on latest image tags.
+Let's consider the simple case of triggering errors on the latest image tags.
 
 <hr />
 
@@ -302,12 +303,12 @@ select('Image')
 ```
 #### Rule Script
 ```js
-error("You are using latest image. Please dont do that.");
+error("You are using the latest image tag. Please dont do that.");
 ```
 
 <hr />
 
-Another way of achieving the same outcome is targeting all Images, but filtering out  latest tags within the rule script:
+Another way of achieving the same outcome is by targeting all Images, but filtering out  latest tags within the rule script:
 
 <hr />
 
@@ -318,13 +319,14 @@ select('Image')
 #### Rule Script
 ```js
 if (item.props.tag == 'latest') {
-    error("You are using latest image. Please dont do that.");
+    error("You are using the latest image tag. Please dont do that.");
 }
 ```
 
 <hr />
 
 Raising warning on objects is achieved using a similar method. The rule below would trigger warnings on PersistentVolumeClaims that are attached to Pods not managed by StatefulSets.
+
 <hr />
 
 #### Target Script
@@ -340,11 +342,13 @@ select('Pod')
 ```js
 warning('Using a PVC on Pods that are not launced by StatefulSet.')
 ```
+
 <hr />
 
-As described above, markers allow more informative labeling for items as compared with errors and warnings when items are configured correctly, but requre some special attention. 
+As described above, markers allow more informative labeling for items than errors and warnings when items are configured correctly but require special attention. 
 
 One example is marking items as per their memory request requirements. The rule below marks containers that request more than 4GB of memory as **high-memory-user** and containers that request more between 600MB to 4GB as **medium-memory-user**. The rule also triggers a warning on containers that have no memory request set. 
+
 <hr />
 
 #### Target Script
@@ -366,9 +370,11 @@ if (value) {
     warning('Memory request is not set. This is not a good practice. Please correct ASAP.')
 }
 ```
+
 <hr />
-For markers to show up in the diagram, they should be create in the **Marker Editor** window for the names specified in the **mark** function.
+
+For markers to show up in the diagram, they should be created in the **Marker Editor** window for the names specified in the **mark** function.
 
 ## Contributing
 
-If you are using the Rule Engine, would like to contribute to the project or need additional capabilities in query capabilities, syntax and overall language ease of use, pleease consider joining our slack channel for a chat: [https://kubevious.io/slack](https://kubevious.io/slack)
+If you are using the Rule Engine, would like to contribute to the project or need additional capabilities in query capabilities, syntax and overall language ease of use, please consider joining our slack channel for a chat: [https://kubevious.io/slack](https://kubevious.io/slack)
