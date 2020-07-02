@@ -115,7 +115,8 @@ class RuleProcessor
 
                         if (ruleItemInfo.errors) {
 
-                            if (ruleItemInfo.errors.messages)
+                            if (ruleItemInfo.errors.messages &&
+                                ruleItemInfo.errors.messages.length > 0)
                             {
                                 ruleItem.errors = ruleItemInfo.errors.messages.length;
                                 for(var msg of ruleItemInfo.errors.messages)
@@ -137,7 +138,8 @@ class RuleProcessor
                         }
                         else if (ruleItemInfo.warnings)
                         {
-                            if (ruleItemInfo.warnings.messages)
+                            if (ruleItemInfo.warnings.messages && 
+                                ruleItemInfo.warnings.messages.length > 0)
                             {
                                 ruleItem.warnings = ruleItemInfo.warnings.messages.length;
                                 for(var msg of ruleItemInfo.warnings.messages)
