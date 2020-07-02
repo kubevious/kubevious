@@ -326,6 +326,7 @@ if (item.props.tag == 'latest') {
 
 Raising warning on objects is achieved using a similar method. The rule below would trigger warnings on PersistentVolumeClaims that are attached to Pods not managed by StatefulSets.
 <hr />
+
 #### Target Script
 ```js
 select('Pod')
@@ -334,6 +335,7 @@ select('Pod')
     })
 .child('Persistent Volume Claim')
 ```
+
 #### Rule Script
 ```js
 warning('Using a PVC on Pods that are not launced by StatefulSet.')
@@ -344,10 +346,12 @@ As described above, markers allow more informative labeling for items as compare
 
 One example is marking items as per their memory request requirements. The rule below marks containers that request more than 4GB of memory as **high-memory-user** and containers that request more between 600MB to 4GB as **medium-memory-user**. The rule also triggers a warning on containers that have no memory request set. 
 <hr />
+
 #### Target Script
 ```js
 select('Container')
 ```
+
 #### Rule Script
 ```js
 var value = item.getProperties('resources')['memory request'];
