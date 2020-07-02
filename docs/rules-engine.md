@@ -1,6 +1,6 @@
 # Rules Engine
 
-- [What is Rules Engine?](#what-is-rules-engine)
+- [What is Rules Engine?](#what-is-the-rules-engine)
 - [Introduction](#introduction)
 - [Getting Started](#getting-started)
 - [Concepts](#concepts)
@@ -9,14 +9,14 @@
 - [Contributing](#contributing)
 
 
-## What is Rules Engine?
+## What is the Rules Engine?
 The **rules engine** is an extension for [Kubevious](https://github.com/kubevious/kubevious) to allow programmable validation and best practices enforcement for configuration and state objects in Kubernetes. Rules engine lets Kubernetes operators define validation custom rules to raise errors and warnings, beyond the built-in checks that come with Kubevious by default (like label mismatch, missing port, misused or overused objects, etc.). 
 
 In addition to raising errors and warnings, the rules engine allows assigning custom markers to identify items of particular interest. Examples are publicly accessible applications, containers that use excessive resources, overprivileged containers, and many more.
 
-The rules engine enables organizations to enforce DevOps best practices without changing their existing release processes. Such rules can also help Kubernetes operators to be efficient day in and day out. Since the rules engine was built with customization in mind, applications can be continuously assured to be compliant to company policies and security postulate to enforced.
+The rules engine enables organizations to enforce DevOps best practices without changing their existing release processes. Such rules can also help Kubernetes operators to be efficient day in and day out. Since the rules engine was built with customization in mind, applications can be continuously assured to be compliant to company policies and security postulates to be enforced.
 
-Rules are defined using a domain-specific language called [Kubik](https://github.com/kubevious/kubik). Kubik follows JavaScript syntax and comes with extensions to allow custom rules to be easily be written and understood.
+Rules are defined using a domain-specific language called [Kubik](https://github.com/kubevious/kubik). Kubik follows JavaScript syntax and comes with extensions to allow custom rules to be easily written and understood.
 
 The easiest way to get started is to use a public library of community built rules from [Kubevious Rules Library](https://github.com/kubevious/rules-library). While this page contains comprehensive documentation on writing custom rules, consider joining [Kubevious Slack Channel](https://kubevious.io/slack/) for any additional assistance.
 
@@ -25,10 +25,10 @@ Rules are defined towards any object and configuration present in Kubevious UI, 
 
 ![Kubevious UI Diagram for Rules Engine](https://github.com/kubevious/media/raw/master/screens/rules-engine/rules-engine-diagram-view.png)
 
-Rules consist of two parts: target and rule scripts. The **target script** declares on which nodes of the diagram should the validation rule are evaluated. Rules engine then passes along the selected nodes to the **rule script**, where nodes are validated, and rules engine triggers errors and warnings, or labels them with custom markers on such selected nodes.
+Rules consist of two parts: target and rule scripts. The **target script** declares on which nodes of the diagram should the validation rule be evaluated. Rules engine then passes along the selected nodes to the **rule script**, where nodes are validated, and rules engine triggers errors and warnings, or labels them with custom markers on such selected nodes.
 
 ## Getting Started
-Rules are defined in *Rule Editor* window of Kubevious. In the screenshot below, the rule *latest-tag-check* targets all docker images and checks if the latest image tag is used. For such images, an error is triggered.  
+Rules are defined in the *Rule Editor* window of Kubevious. In the screenshot below, the rule *latest-tag-check* targets all docker images and checks if the latest image tag is used. For such images, an error is triggered.  
 
 ![Kubevious Rule Editor Target Script](https://github.com/kubevious/media/raw/master/screens/rules-engine/rule-editor-target-script.png)
 
@@ -53,9 +53,9 @@ Just like in the case of the rule editor window, a list of items that match the 
 ![Kubevious Marker Editor Affected Objects](https://github.com/kubevious/media/raw/master/screens/rules-engine/rule-editor-affected-markers.png)
 
 ## Concepts
-Validations in rules engine are applied to items of the diagram. Every item in the diagram is defined using its **kind** and **name**. Items have sets of property groups associated. They are visible in the *Properties* window of the selected item. Such property groups can hold raw YAML configuration, or synthetic key-value pairs of additional properties, labels, annotation, etc. Property groups can be used in the diagram to filter items and use in conditions to associate errors, warnings, and custom markers.
+Validations in the rules engine are applied to items of the diagram. Every item in the diagram is defined using its **kind** and **name**. Items have sets of property groups associated. They are visible in the *Properties* window of the selected item. Such property groups can hold raw YAML configuration, or synthetic key-value pairs of additional properties, labels, annotation, etc. Property groups can be used in the diagram to filter items and use in conditions to associate errors, warnings, and custom markers.
 
-Diagram has a graph-like structure, so rules have the capability of graph traversal.
+Diagrams have a graph-like structure, so rules have the capability of graph traversal.
 
 ![Kubevious Diagram Node](https://github.com/kubevious/media/raw/master/screens/rules-engine/diagram-node.png)
 
@@ -63,7 +63,7 @@ Diagram has a graph-like structure, so rules have the capability of graph traver
 ## Target Script Syntax
 The purpose of the target script is to select items from the diagram that matches the required criteria. The selected items are passed along to the rule script for validation.
 
-The target script starts with **select** statement that takes the  **kind** as an input. That statement selects all nodes of the given kind. The best place to discover is all item *kind*'s is the diagram viewer, but the most commonly used ones are:
+The target script starts with a **select** statement that takes the **kind** as an input. That statement selects all nodes of the given kind. The best place to discover is all item *kind*'s is the diagram viewer, but the most commonly used ones are:
 
 | Kind                    | Description                                                  |
 | ----------------------- | ------------------------------------------------------------ |
@@ -93,7 +93,7 @@ The target script starts with **select** statement that takes the  **kind** as a
 | Node                    | A Kubernetes Node. Present under Nodes.                      |
 
 ### Selecting all items of a given kind
-Every target script should start with a **select** statement. In the example below, all Pods are passed to rule script for validation.
+Every target script should start with a **select** statement. In the example below, all Pods are passed to the rule script for validation.
 
 ```js
 select('Pod')
@@ -214,7 +214,7 @@ Kubevious produces synthetic property groups by joining multiple configurations 
 
 ![Kubevious Diagram Resource Role Matrix Secret](https://github.com/kubevious/media/raw/master/screens/rules-engine/diagram-resource-role-matrix-secret.png)
 
-The targe script below selects applications that request permission to access Kubernetes secrets. Because Service Accounts are directly underneath Appications, the **children** function can be used instead of **descendants**.
+The targe script below selects applications that request permission to access Kubernetes secrets. Because Service Accounts are directly underneath Applications, the **children** function can be used instead of **descendants**.
 ```js
 select('Application')
     .filter(({item}) => {
@@ -278,7 +278,7 @@ select('Namespace')
 .descendant('Image')
     .filter(({item}) => item.props.tag == 'latest')
 ```
-The script above selects container Images using **latest** tag, in stateful applications that are running in **production** deployed to region **west**.
+The script above selects container Images using the **latest** tag, in stateful applications that are running in **production** deployed to region **west**.
 
 ## Rule Script Syntax
 The purpose of the rule script is to act upon items that passed target script filters. Rule scripts can perform further checks but eventually should call **error**, **warning**, or **mark**  to label items as such.
@@ -290,7 +290,7 @@ The purpose of the rule script is to act upon items that passed target script fi
 | **warning**(msg) | Triggers a warning on the item. An optional message can be provided. |
 | **mark**(name)   | Marks the item with the specified marker.                    |
 
-Within the body of the rule script, an **item** variable (identical to the one used in *filter* function of target script) can be used to determine what kind of severity, message, and mark to attach.
+Within the body of the rule script, an **item** variable (identical to the one used in the *filter* function of target script) can be used to determine what kind of severity, message, and mark to attach.
 
 Let's consider the simple case of triggering errors on the latest image tags.
 
@@ -303,7 +303,7 @@ select('Image')
 ```
 #### Rule Script
 ```js
-error("You are using the latest image tag. Please dont do that.");
+error("You are using the latest image tag. Please don't do that.");
 ```
 
 <hr />
@@ -319,7 +319,7 @@ select('Image')
 #### Rule Script
 ```js
 if (item.props.tag == 'latest') {
-    error("You are using the latest image tag. Please dont do that.");
+    error("You are using the latest image tag. Please don't do that.");
 }
 ```
 
@@ -340,7 +340,7 @@ select('Pod')
 
 #### Rule Script
 ```js
-warning('Using a PVC on Pods that are not launced by StatefulSet.')
+warning('Using a PVC on Pods that are not launched by StatefulSet.')
 ```
 
 <hr />
