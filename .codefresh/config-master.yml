@@ -55,6 +55,7 @@ steps:
     type: build
     image_name: "kubevious/${{PRODUCT_NAME}}"
     stage: build
+    disable_push: true
 
   push:
     title: "Pushing image to DockerHub"
