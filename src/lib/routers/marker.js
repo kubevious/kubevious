@@ -70,6 +70,12 @@ module.exports = {
 
         /**** Marker Operational ***/
 
+        // List Marker Statuses
+        router.get('/markers-statuses', function (req, res) {
+            var result = context.markerCache.getMarkersStatuses()
+            return result;
+        })
+        
         // Get Marker Result
         router.get('/marker-result/:name', function (req, res) {
             var result = context.markerCache.getMarkerResult(req.params.name)

@@ -13,6 +13,7 @@ class MarkerCache
         this._markerDict = {};
         this._markerList = [];
 
+        this._markersStatuses = [];
         this._markerResultsDict = {};
     }
 
@@ -57,7 +58,7 @@ class MarkerCache
                 dn: x.dn
             })
         }
-        this._notifyMarkerItems();
+        this._updateMarkerOperationData();
     }
 
     _refreshMarkerItems()
@@ -73,19 +74,51 @@ class MarkerCache
         return this._context.markerAccessor.queryAll()
             .then(result => {
                 this._markerDict = _.makeDict(result, x => x.name);
-                this._markerList = result;
-                this._context.websocket.update({ kind: 'markers' }, this.queryMarkerList());
+                this._markerList = _.orderBy(result, x => x.name);
             })
             ;
     }
 
-    _notifyMarkerItems()
+    _updateMarkerOperationData()
+    {
+        this._updateMarkersStatuses();
+        this._updateMarkerResults();
+    }
+
+    _updateMarkersStatuses()
+    {
+        this._markersStatuses = this._markerList.map(x => this._makeMarkerStatus(x));
+        this._context.websocket.update({ kind: 'markers-statuses' }, this._markersStatuses);
+    }
+
+    _makeMarkerStatus(marker)
+    {
+        var item_count = 0;
+        var result = this._markerResultsDict[marker.name];
+        if (result) {
+            item_count = result.items.length;
+        }
+        
+        return {
+            name: marker.name,
+            shape: marker.shape,
+            color: marker.color,
+            item_count: item_count
+        }
+    }
+
+    _updateMarkerResults()
     {
         var items = _.values(this._markerResultsDict).map(x => ({
             target: { name: x.name },
             value: x
         }));
         this._context.websocket.updateScope({ kind: 'marker-result' }, items);
+    }
+
+    getMarkersStatuses()
+    {
+        return this._markersStatuses;
     }
 
     getMarkerResult(name)
