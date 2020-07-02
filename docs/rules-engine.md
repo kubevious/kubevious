@@ -6,7 +6,7 @@
 - [Concepts](#concepts)
 - [Target Script Syntax](#target-script-syntax)
 - [Rule Script Syntax](#rule-script-syntax)
-- [Applying Markers](#applying-markers)
+- [Contributing](#contributing)
 
 
 ## What is Rules Engine?
@@ -18,7 +18,7 @@ With rules engine organizations can enforce DevOps best practices without changi
 
 Rules are defined using a domain-specific language called [Kubik](https://github.com/kubevious/kubik). Kubik follows JavaScript syntax and comes with extensions to allow custom rules to be easily be written and understood.
 
-The easiest way to get started is to make use of a public library of community built rules from [Kubevious Rules Library](https://github.com/kubevious/rules-library). While this page conaints comprehensive documentation on writing custom rules, consider joining [Kubevious Slack Channel](https://kubevious.io/slack/) for any additional assistance.
+The easiest way to get started is to make use of a public library of community built rules from [Kubevious Rules Library](https://github.com/kubevious/rules-library). While this page containts comprehensive documentation on writing custom rules, consider joining [Kubevious Slack Channel](https://kubevious.io/slack/) for any additional assistance.
 
 ## Introduction
 Rules can be defined towards any object and configuration present in Kubevious UI, for example, Deployments, Pods, ConfigMaps, PersistentVolumes, Ingresses, and any other Kubernetes or synthetic configurations. 
@@ -324,7 +324,47 @@ if (item.props.tag == 'latest') {
 
 <hr />
 
+Raising warning on objects is achieved using a similar method. The rule below would trigger warnings on PersistentVolumeClaims that are attached to Pods not managed by StatefulSets.
+<hr />
+#### Target Script
+```js
+select('Pod')
+    .filter(({item}) => {
+        return (item.parent.name != 'StatefulSet');
+    })
+.child('Persistent Volume Claim')
+```
+#### Rule Script
+```js
+warning('Using a PVC on Pods that are not launced by StatefulSet.')
+```
+<hr />
 
-## Applying Markers
-tbd
+As described above, markers allow more informative labeling for items as compared with errors and warnings when items are configured correctly, but requre some special attention. 
 
+One example is marking items as per their memory request requirements. The rule below marks containers that request more than 4GB of memory as **high-memory-user** and containers that request more between 600MB to 4GB as **medium-memory-user**. The rule also triggers a warning on containers that have no memory request set. 
+<hr />
+#### Target Script
+```js
+select('Container')
+```
+#### Rule Script
+```js
+var value = item.getProperties('resources')['memory request'];
+if (value) {
+    if (unit.memory(value).in('gb') >= 4) {
+        mark('high-memory-user');
+    }
+    else if (unit.memory(value).in('mb') >= 600) {
+        mark('medium-memory-user');
+    }
+} else {
+    warning('Memory request is not set. This is not a good practice. Please correct ASAP.')
+}
+```
+<hr />
+For markers to show up in the diagram, they should be create in the **Marker Editor** window for the names specified in the **mark** function.
+
+## Contributing
+
+If you are using the Rule Engine, would like to contribute to the project or need additional capabilities in query capabilities, syntax and overall language ease of use, pleease consider joining our slack channel for a chat: [https://kubevious.io/slack](https://kubevious.io/slack)
