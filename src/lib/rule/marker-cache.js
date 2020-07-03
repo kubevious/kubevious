@@ -34,6 +34,7 @@ class MarkerCache
     {
         return Promise.resolve()
             .then(() => this._refreshMarkerConfigs())
+            .then(() => this._updateMarkerOperationData())
     }
     
     acceptExecutionContext(executionContext)
