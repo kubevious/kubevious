@@ -44,19 +44,20 @@ For more details on installation options visit [Deployment Repository].
 
 # Capabilities
 
-* [Visualizes Cluster In An Application Centric Way](#visualizes-cluster-in-an-application-centric-way)
-* [Detects Configuration Errors](#detects-configuration-errors)
-* [Identifies Blast Radius](#identifies-blast-radius)
-* [Enables Full Text Search](#enables-full-text-search)
-* [Capacity Planning and Resource Usage Optimization](#capacity-planning-and-resource-usage-optimization)
-* [Radioactive & Overprivileged Workloads](#radioactive--overprivileged-workloads)
+* [Cluster and Configs in an Application Centric View](#cluster-and-configs-in-an-application-centric-view)
+* [Detects Configuration Errors](#detect-configuration-errors)
+* [Write Your Own Validation Rules](#write-your-own-validation-rules)
+* [Identifies Blast Radius](#identify-blast-radius)
+* [Full Text Search](#full-text-search)
+* [Perform Capacity Planning and Optimize Resource Usage](#perform-capacity-planning-and-optimize-resource-usage)
 * [Time Machine](#time-machine)
+* [Radioactive & Overprivileged Workloads](#radioactive--overprivileged-workloads)
 * [Correlated RBAC](#correlated-rbac)
 
 
-## Visualizes Cluster In An Application Centric Way
+## Cluster and Configs in an Application Centric View
 
-![Visualizes Cluster In An Application Centric Way](https://github.com/kubevious/media/raw/master/screens/app-view.png)
+![Cluster and Configs in an Application Centric View](https://github.com/kubevious/media/raw/master/screens/app-view.png)
 
 Even a simple Hello World app in Kubernetes produces dozens of objects. It takes a lot of time to fetch application relevant configurations.
 
@@ -65,25 +66,34 @@ Kubeviuos renders the entire Kubernetes cluster configuration in an application-
 The main screen is rendered using boxes. Every box is expandable (using double-click) and selectable. The right side panel includes properties and configurations associated with each box. 
 
 
-## Detects Configuration Errors
+## Detect Configuration Errors
 
-![Detects Configuration Errors](https://github.com/kubevious/media/raw/master/screens/config-errors.png)
+![Detect Configuration Errors](https://github.com/kubevious/media/raw/master/screens/config-errors.png)
 
 Kubernetes follows a detached notion for configuration. It is super easy to have typos and errors when connecting components.
 
 Kubevious identifies many configuration errors, such as misuse of labels, missing ports, and others. The red circle contains the number of errors within the subtree.
 
+## Write Your Own Validation Rules 
 
-## Identifies Blast Radius
+![Kubevious Rule Editor Rule Script](https://github.com/kubevious/media/raw/master/screens/rules-engine/rule-editor-rule-script.png)
 
-![Identifies Blast Radius](https://github.com/kubevious/media/raw/master/screens/shared-configs.png)
+Kubevious comes with an ability to support organizations needing additional rules beyond the built-in checks (such as label mismatch, missing port, misused or overused objects, etc.). It does that by allowing Kubernetes operators to define their own rules, and allowing organizations to enforce DevOps best practices without changing their existing release processes. The rules in Kubevious are continuously assured to be compliant to company policies and security postulates to be enforced. Rules are defined using a domain-specific JavaScript syntax to allow custom rules to be easily written and understood. 
+
+Learn more about defining your own rules [here].(https://github.com/kubevious/kubevious/blob/master/docs/rules-engine.md)
+
+![Kubevious Rule Editor Affected Objects](https://github.com/kubevious/media/raw/master/screens/rules-engine/rule-editor-affected-errors.png)
+
+## Identify Blast Radius
+
+![Identify Blast Radius](https://github.com/kubevious/media/raw/master/screens/shared-configs.png)
 
 Configuration in Kubernetes is highly reusable. A small change can cause unintended consequences. 
 
 Kubevious identifies shared configurations and also displays other dependent objects. A single glance is enough to identify the cascading effects of a particular change.
 
 
-## Enables Full Text Search
+## Full Text Search
 
 ![Full Text Search](https://github.com/kubevious/media/raw/master/screens/full-text-search.png)
 
@@ -91,19 +101,12 @@ Looking for a particular configuration in Kubernetes haystack takes lots of time
 
 Kubevious supports full text across across entire cluster.
 
-## Capacity Planning and Resource Usage Optimization
-![Capacity Planning and Resource Usage Optimization](https://github.com/kubevious/media/raw/master/screens/capacity-planning.png)
+## Perform Capacity Planning and Optimize Resource Usage
+![Perform Capacity Planning and Optimize Resource Usage](https://github.com/kubevious/media/raw/master/screens/capacity-planning.png)
 
 Clearly identify how much resources are taken by each container, pod, deployment, daemonset, namespace, etc. 
 
 Kubevious renders not only absolute resource request values, but also relative usage per node, namespace and entire cluster. Identify which apps take most resources within the namespace.
-
-## Radioactive & Overprivileged Workloads
-![Radioactive & Overprivileged Workloads](https://github.com/kubevious/media/raw/master/screens/radioactive-1.png)
-
-Granting excessive control to workloads not only increases the risk of being hacked but also affects the stability of nodes and the entire cluster.
-
-Kubevious marks workloads and their corresponding namespaces as radioactive. Specifically, it checks for privileged containers, hostPID, hostNetwork, hostIPC flags, and mounts to sensitive host locations like docker.sock file, etc.  
 
 ## Time Machine
 ![Time Machine](https://github.com/kubevious/media/raw/master/screens/time-machine-1.png)
@@ -111,6 +114,13 @@ Kubevious marks workloads and their corresponding namespaces as radioactive. Spe
 With ever changing configuration it is hard to keep track and identify the source of the problem. 
 
 Kubvious allows you to travel back in time and navigate configuration as well as errors. See time machine in action here: https://youtu.be/Zb5ZIJEHONU
+
+## Radioactive & Overprivileged Workloads
+![Radioactive & Overprivileged Workloads](https://github.com/kubevious/media/raw/master/screens/radioactive-1.png)
+
+Granting excessive control to workloads not only increases the risk of being hacked but also affects the stability of nodes and the entire cluster.
+
+Kubevious marks workloads and their corresponding namespaces as radioactive. Specifically, it checks for privileged containers, hostPID, hostNetwork, hostIPC flags, and mounts to sensitive host locations like docker.sock file, etc.  
 
 ## Correlated RBAC
 ![RBAC Multiple ClusterRoles](https://github.com/kubevious/media/raw/master/screens/rbac-1.png)
@@ -132,3 +142,4 @@ Kubevious is an open source project licensed under the [Apache License].
 [Deployment Repository]: https://github.com/kubevious/helm
 [Apache License]: https://www.apache.org/licenses/LICENSE-2.0
 [CONTRIBUTING]: CONTRIBUTING.md
+
