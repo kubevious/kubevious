@@ -80,7 +80,7 @@ Kubevious identifies many configuration errors, such as misuse of labels, missin
 
 Kubevious comes with an ability to support organizations needing additional rules beyond the built-in checks (such as label mismatch, missing port, misused or overused objects, etc.). It does that by allowing Kubernetes operators to define their own rules, and allowing organizations to enforce DevOps best practices without changing their existing release processes. The rules in Kubevious are continuously assured to be compliant to company policies and security postulates to be enforced. Rules are defined using a domain-specific JavaScript syntax to allow custom rules to be easily written and understood. 
 
-Learn more about defining your own rules [here].(https://github.com/kubevious/kubevious/blob/master/docs/rules-engine.md)
+Learn more about defining your own rules [here](https://github.com/kubevious/kubevious/blob/master/docs/rules-engine.md#rules-engine).
 
 ![Kubevious Rule Editor Affected Objects](https://github.com/kubevious/media/raw/master/screens/rules-engine/rule-editor-affected-errors.png)
 
