@@ -15,7 +15,7 @@ The **rules engine** is a way to extend [Kubevious](https://github.com/kubevious
 The rules engine enables organizations to enforce DevOps best practices without changing their existing release processes. Such rules can also help Kubernetes operators to be efficient day in and day out. Since the rules engine was built with customization in mind, applications can be continuously assured to be compliant to company policies and security postulates to be enforced.
 Rules are defined using a domain-specific language called [Kubik](https://github.com/kubevious/kubik). Kubik follows JavaScript syntax and comes with extensions to allow custom rules to be easily written and understood.
 
-The easiest way to get started is to use a public library of community built rules from [Kubevious Rules Library](https://github.com/kubevious/rules-library). While this page contains comprehensive documentation on writing custom rules, consider joining the [Kubevious Slack Channel](https://kubevious.io/slack/) for any additional assistance.
+The easiest way to get started is to use a public library of community built rules from [Kubevious Rules Library](https://github.com/kubevious/rules-library#kubevious-rules-library). While this page contains comprehensive documentation on writing custom rules, consider joining the [Kubevious Slack Channel](https://kubevious.io/slack/) for any additional assistance.
 
 ## Introduction
 Rules are defined against any object and configuration present in Kubevious UI, for example, Deployments, Pods, ConfigMaps, PersistentVolumes, Ingresses, and any other Kubernetes or synthetic configurations.
