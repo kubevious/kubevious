@@ -15,6 +15,7 @@ const RuleCache = require('./rule/rule-cache')
 const RuleProcessor = require('./rule/rule-processor')
 const HistorySnapshotReader = require("kubevious-helpers").History.SnapshotReader;
 const WebSocketServer = require('./websocket/server');
+const SnapshotProcessor = require('./snapshot-processor');
 
 const SERVER_PORT = 4001;
 
@@ -43,6 +44,8 @@ class Context
         this._historySnapshotReader = new HistorySnapshotReader(logger, this._database.driver);
 
         this._websocket = new WebSocketServer(this);
+
+        this._snapshotProcessor = new SnapshotProcessor(this);
 
         this._server = null;
         this._k8sClient = null;
@@ -115,6 +118,10 @@ class Context
 
     get websocket() {
         return this._websocket;
+    }
+
+    get snapshotProcessor() {
+        return this._snapshotProcessor;
     }
 
     setupServer()
