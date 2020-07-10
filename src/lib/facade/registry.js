@@ -61,7 +61,7 @@ class FacadeRegistry
     {
         return this._context.tracker.scope("FacadeRegistry::_processCurrentSnapshot", (tracker) => {
 
-            return this._context.snapshotProcessor.process(snapshotInfo)
+            return this._context.snapshotProcessor.process(snapshotInfo, tracker)
                 .then(result => {
                     return this._runFinalize(result.registryState, result.bundle, tracker);
                 })

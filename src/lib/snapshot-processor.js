@@ -48,9 +48,13 @@ class SnapshotProcessor
         }
     }
 
-    process(snapshotInfo)
+    process(snapshotInfo, tracker)
     {
-        return this._context.tracker.scope("SnapshotProcessor::process", (tracker) => {
+        if (!tracker) {
+            tracker = this._context.tracker;
+        }
+
+        return tracker.scope("SnapshotProcessor::process", (tracker) => {
 
             var registryState = null;
             var bundle = null;
