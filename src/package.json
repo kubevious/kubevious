@@ -26,13 +26,14 @@
     "k8s-super-client": "^1.1.3",
     "kubevious-helpers": "git+https://github.com/kubevious/helpers.git",
     "kubevious-kubik": "git+https://github.com/kubevious/kubik.git",
+    "kubik.git": "git+https://github.com/kubevious/kubik.git",
     "moment": "^2.24.0",
     "morgan": "^1.10.0",
     "the-lodash": "^1.0.15",
     "the-logger": "^1.1.20",
     "the-promise": "^1.1.4",
     "uuid": "^7.0.2",
-    "websocket-subscription-server": "^1.0.6",
+    "websocket-subscription-server": "^1.0.11",
     "yargs": "^15.0.2"
   },
   "devDependencies": {
