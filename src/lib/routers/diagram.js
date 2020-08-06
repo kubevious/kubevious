@@ -1,7 +1,7 @@
 const _ = require('the-lodash');
 
 module.exports = {
-    url: '/api',
+    url: '/api/v1/diagram',
 
     setup: ({ router, logger, context, reportUserError }) => {
 
