@@ -4,6 +4,7 @@ const FacadeRegistry = require('./facade/registry');
 const SearchEngine = require('./search/engine');
 const Database = require('./db');
 const HistoryProcessor = require('./history/processor');
+const HistoryCleanupProcessor = require('./history/history-cleanup-processor');
 const Registry = require('./registry/registry');
 const Collector = require('./collector/collector');
 const ClusterLeaderElector = require('./cluster/leader-elector')
@@ -16,6 +17,8 @@ const RuleProcessor = require('./rule/rule-processor')
 const HistorySnapshotReader = require("kubevious-helpers").History.SnapshotReader;
 const WebSocketServer = require('./websocket/server');
 const SnapshotProcessor = require('./snapshot-processor');
+
+const CronJob = require('cron').CronJob
 
 const SERVER_PORT = 4001;
 
@@ -47,9 +50,23 @@ class Context
 
         this._snapshotProcessor = new SnapshotProcessor(this);
 
+        this._historyCleanupProcessor = new HistoryCleanupProcessor(this)
+
         this._server = null;
         this._k8sClient = null;
         this._clusterLeaderElector = null;
+
+        const cleanupJob = new CronJob('*/1 * * * *', () => {
+            console.log('CleanupJob has started')
+            this._historyCleanupProcessor.cleanDb()
+        })
+
+        // Run table optimization every Sunday at 01:00 AM
+        // const tableOptimizeJob = new CronJob('0 1 * * SUN', () => {
+        //     console.log('TableOptimizeJob has started')
+        // })
+
+        cleanupJob.start()
     }
 
     get logger() {

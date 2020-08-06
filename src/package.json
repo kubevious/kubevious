@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/kubevious/kubevious#readme",
   "dependencies": {
+    "cron": "^1.8.2",
     "express": "^4.17.1",
     "flexsearch": "^0.6.32",
     "js-yaml": "^3.13.1",
