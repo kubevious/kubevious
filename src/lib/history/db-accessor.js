@@ -52,12 +52,6 @@ class HistoryDbAccessor
         this._registerStatement('SET_CONFIG', 'INSERT INTO `config`(`key`, `value`) VALUES(?, ?) ON DUPLICATE KEY UPDATE `value` = ?;');
 
         this._registerStatement('INSERT_CONFIG_HASH', 'INSERT IGNORE INTO `config_hashes`(`key`, `value`) VALUES(?, ?);');
-
-        this._registerStatement('CLEANED_SNAPSHOTS', 'SELECT * FROM `snapshots` WHERE `date` < ?')
-        this._registerStatement('CLEANED_DIFFS', 'SELECT * FROM `diffs` WHERE `snapshot_id` IN (?)')
-        this._registerStatement('DELETE_CLEANED_DIFFS', 'SELECT * FROM `diffs` WHERE `id` IN (?)')
-        this._registerStatement('DELETE_CLEANED_DIFF_ITEMS', 'SELECT * FROM `diff_items` WHERE `diff_id` IN (?)')
-        this._registerStatement('DELETE_CLEANED_SNAPSHOT_ITEMS', 'SELECT * FROM `snap_items` WHERE `snapshot_id` IN (?)')
     }
 
     updateConfig(key, value)
@@ -76,35 +70,6 @@ class HistoryDbAccessor
                 }
                 return _.head(results);
             });
-    }
-
-    fetchCleanedSnapshots(date)
-    {
-        return this._execute('CLEANED_SNAPSHOTS', date)
-            .then(results => {
-                return results.map(item => item.id)
-            })
-    }
-
-    deleteDiffs(snapshotIds)
-    {
-        return this._execute('CLEANED_DIFFS', snapshotIds)
-            .then(diffs => {
-                const diffIds = diffs.map(item => item.id)
-
-                return this._execute('DELETE_CLEANED_DIFF_ITEMS', [1,2,3,4])
-                    .then(() => {
-
-                        return this._execute('DELETE_CLEANED_DIFFS', [1,2,3,4])
-                            .then(res => Promise.resolve(res))
-                    })
-            })
-    }
-
-    deleteSnapshotItems(snapshotIds)
-    {
-        return this._execute('DELETE_CLEANED_SNAPSHOT_ITEMS', snapshotIds)
-            .then(res => res)
     }
 
     fetchSnapshot(date)

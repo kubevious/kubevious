@@ -50,23 +50,24 @@ class Context
 
         this._snapshotProcessor = new SnapshotProcessor(this);
 
-        this._historyCleanupProcessor = new HistoryCleanupProcessor(this)
+        this._historyCleanupProcessor = new HistoryCleanupProcessor(this);
 
         this._server = null;
         this._k8sClient = null;
         this._clusterLeaderElector = null;
 
-        const cleanupJob = new CronJob('*/1 * * * *', () => {
-            console.log('CleanupJob has started')
-            this._historyCleanupProcessor.cleanDb()
-        })
+        // Run db cleanup every ***
+        // const cleanupJob = new CronJob('*/1 * * * *', () => {
+        //     console.log('CleanupJob has started')
+        //     this._historyCleanupProcessor.cleanDb()
+        // })
 
         // Run table optimization every Sunday at 01:00 AM
         // const tableOptimizeJob = new CronJob('0 1 * * SUN', () => {
         //     console.log('TableOptimizeJob has started')
         // })
 
-        cleanupJob.start()
+        // cleanupJob.start()
     }
 
     get logger() {
@@ -139,6 +140,10 @@ class Context
 
     get snapshotProcessor() {
         return this._snapshotProcessor;
+    }
+
+    get historyCleanupProcessor() {
+        return this._historyCleanupProcessor;
     }
 
     setupServer()
