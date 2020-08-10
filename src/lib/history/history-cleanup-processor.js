@@ -43,6 +43,10 @@ class HistoryCleanupProcessor {
         this._registerStatement('DELETE_SNAPSHOT_BY_ID', 'DELETE FROM `snapshots` WHERE `id` = ?')
 
         this._registerStatement('DELETE_CONFIG_HASHES', 'DELETE FROM `config_hashes` WHERE `key` = ?')
+
+        this._registerStatement('OPTIMIZE_DIFF_ITEMS', 'OPTIMIZE TABLE `diff_items`')
+
+        this._registerStatement('OPTIMIZE_SNAP_ITEMS', 'OPTIMIZE TABLE `snap_items`')
     }
 
     _retryToDelete()
@@ -73,6 +77,7 @@ class HistoryCleanupProcessor {
         return this.deleteDiffs(snapshot.id)
             .then(() => this.deleteSnapshot(snapshot.id))
             .then(() => this.deleteConfigHashes())
+            .then(() => this.optimizeTables())
     }
 
     fetchAllSnapshots(date)
@@ -125,6 +130,21 @@ class HistoryCleanupProcessor {
         const hashes = Object.keys(this._configHashesDict)
         return Promise.serial(hashes, hash =>
             this._execute('DELETE_CONFIG_HASHES', [hash.key]))
+    }
+
+    optimizeTables()
+    {
+        return this._execute('OPTIMIZE_DIFF_ITEMS')
+            .then(logs => Promise.resolve(this._showOptimizeLogs(logs)))
+            .then(() => this._execute('OPTIMIZE_SNAP_ITEMS'))
+            .then(logs => Promise.resolve(this._showOptimizeLogs(logs)))
+    }
+
+    _showOptimizeLogs(logs)
+    {
+        logs.forEach(log => {
+            this._logger.info(`[${log.Table}] ${log.Msg_type}: ${log.Msg_text}`)
+        })
     }
 
     _cleanConfigHashes(hashes)
