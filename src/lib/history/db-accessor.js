@@ -71,7 +71,7 @@ class HistoryDbAccessor
                 return _.head(results);
             });
     }
-   
+
     fetchSnapshot(date)
     {
         date = DateUtils.makeDate(date);
