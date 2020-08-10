@@ -23,7 +23,7 @@ class HistoryCleanupProcessor {
 
     _registerStatements()
     {
-        this._registerStatement('FIND_OLDEST_SNAPSHOT_ID', 'SELECT `id` FROM `snapshots` WHERE `date` < ? ORDER BY `date` LIMIT 1')
+        this._registerStatement('FIND_OLDEST_SNAPSHOTS', 'SELECT `id` FROM `snapshots` WHERE `date` < ? ORDER BY `date`')
 
         this._registerStatement('FIND_DIFFS_FOR_SNAPSHOT', 'SELECT `id` FROM `diffs` WHERE `snapshot_id` = ?')
 
@@ -38,24 +38,25 @@ class HistoryCleanupProcessor {
 
     _retryToDelete()
     {
-        return this.cleanDb()
-    }
-
-    cleanDb()
-    {
         const snapDate = [moment().subtract(this._days, 'days').format()];
 
-        return Promise.resolve()
-            .then(() => this.fetchSnapshot(snapDate))
-            .then(snapshot => {
-                return Promise.serial(snapshot, item => this.deleteDiffs(item.id))
-                    .then(() => this.deleteSnapshot(snapshot[0].id))
+        return this.fetchAllSnapshots(snapDate)
+            .then(snapshots => {
+                return Promise.serial(snapshots, snapshot => this.cleanDb(snapshot))
+            }).catch(() => {
+                this._logger.error('No more snapshots')
             })
     }
 
-    fetchSnapshot(date)
+    cleanDb(snapshot)
     {
-        return this._execute('FIND_OLDEST_SNAPSHOT_ID', date)
+        return this.deleteDiffs(snapshot.id)
+            .then(() => this.deleteSnapshot(snapshot.id))
+    }
+
+    fetchAllSnapshots(date)
+    {
+        return this._execute('FIND_OLDEST_SNAPSHOTS', date)
     }
 
     deleteDiffs(snapshotId)
