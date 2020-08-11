@@ -18,8 +18,6 @@ const HistorySnapshotReader = require("kubevious-helpers").History.SnapshotReade
 const WebSocketServer = require('./websocket/server');
 const SnapshotProcessor = require('./snapshot-processor');
 
-const CronJob = require('cron').CronJob
-
 const SERVER_PORT = 4001;
 
 class Context
@@ -55,19 +53,6 @@ class Context
         this._server = null;
         this._k8sClient = null;
         this._clusterLeaderElector = null;
-
-        // Run db cleanup every ***
-        // const cleanupJob = new CronJob('*/1 * * * *', () => {
-        //     console.log('CleanupJob has started')
-        //     this._historyCleanupProcessor.cleanDb()
-        // })
-
-        // Run table optimization every Sunday at 01:00 AM
-        // const tableOptimizeJob = new CronJob('0 1 * * SUN', () => {
-        //     console.log('TableOptimizeJob has started')
-        // })
-
-        // cleanupJob.start()
     }
 
     get logger() {
@@ -165,17 +150,18 @@ class Context
     {
         if (process.env.NODE_ENV == 'development')
         {
-            this.tracker.enablePeriodicDebugOutput(5);
+            this.tracker.enablePeriodicDebugOutput(10);
         }
         else
         {
-            this.tracker.enablePeriodicDebugOutput(10);
+            this.tracker.enablePeriodicDebugOutput(30);
         }
 
         return Promise.resolve()
             .then(() => this._database.init())
             .then(() => this._runServer())
             .then(() => this._setupWebSocket())
+            .then(() => this.historyCleanupProcessor.init())
             .catch(reason => {
                 console.log("***** ERROR *****");
                 console.log(reason);

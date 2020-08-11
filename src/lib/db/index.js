@@ -72,6 +72,11 @@ class Database
         return this._driver.executeInTransaction(cb);
     }
 
+    executeSql(sql)
+    {
+        return this.driver.executeSql(sql);
+    }
+
     init()
     {
         this._logger.info("[init]")
