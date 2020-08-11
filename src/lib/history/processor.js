@@ -17,9 +17,11 @@ class HistoryProcessor
         this._interation = 0;
         this._isDbReady = false;
         this._usedHashes = {};
+        this._statesQueue = [];
 
-        // TODO: Temporary
-        // this._skipProduceHistory = true;
+        this._isLocked = false;
+        this._isProcessing = false;
+        this._processFinishListeners = [];
 
         context.database.onConnect(this._onDbConnected.bind(this));
     }
@@ -32,17 +34,90 @@ class HistoryProcessor
         return this._context.debugObjectLogger;
     }
 
+    lockForCleanup(cb)
+    {
+        var handler = {
+            finish: () => {
+                this._resumeProcessing();
+            }
+        }
+
+        this._isLocked = true;
+        if (!this._isProcessing) {
+            cb(handler);
+        } else {
+            this._processFinishListeners.push(() => {
+                cb(handler);
+            });
+        }
+    }
+
     accept(state)
     {
-        if (this._skipProduceHistory) {
+        this._addToQueue(state);
+        return this._safeProcessQueue();
+    }
+
+    _resumeProcessing()
+    {
+        this._isLocked = false;
+        this._safeProcessQueue();
+    }
+
+    _safeProcessQueue()
+    {
+        return Promise.resolve()
+            .then(() => this._processQueue())
+            .catch(reason => {
+                this.logger.error(reason);
+            });
+    }
+
+    _processQueue() 
+    {
+        if (this._statesQueue.length == 0) {
             return;
         }
-        
-        this._logger.info("[accept] begin");
-        var snapshot = this._produceSnapshot(state);
-        this._logger.info("[accept] snapshot %s, item count: %s", snapshot.date.toISOString(), snapshot.getItems().length);
+        if (this._isLocked) {
+            return Promise.resolve(30 * 1000);
+        }
 
-        return this._processSnapshot(snapshot);
+        if (this._isProcessing) {
+            return;
+        }
+        this._isProcessing = true;
+
+        var state = this._statesQueue.shift();
+        return this._processQueueItem(state)
+            .finally(() => {
+                this._isProcessing = false;
+            })
+            .then(() => {
+                return this._processQueue();
+            })
+    }
+
+    _processQueueItem(state)
+    {
+        this._logger.info("[_processQueueItem] begin");
+        var snapshot = this._produceSnapshot(state);
+        this._logger.info("[_processQueueItem] snapshot %s, item count: %s", snapshot.date.toISOString(), snapshot.getItems().length);
+
+        return this._processSnapshot(snapshot)
+            .then(() => {
+                for(var x of this._processFinishListeners)
+                {
+                    x();
+                }
+                this._processFinishListeners = [];
+            });
+    }
+
+    _addToQueue(state)
+    {
+        this._statesQueue.push(state);
+        this._statesQueue = _.takeRight(this._statesQueue, 1);
+        this.logger.info("[_addToQueue] Size: %s", this._statesQueue.length);
     }
 
     _processSnapshot(snapshot)
@@ -143,13 +218,11 @@ class HistoryProcessor
             .then(dbSnapshot => {
                 this.logger.info("[_persistSnapshot] ", dbSnapshot);
 
+                this._resetSnapshotState();
+
                 this._currentState.snapshot_id = dbSnapshot.id;
                 this._currentState.snapshot_date = dbSnapshot.date;
-                this._currentState.diff_in_snapshot = true;
-                this._currentState.diff_count = 0;
-                this._currentState.diff_item_count = 0;
             })
-           
             .then(() => {
                 return this._dbAccessor.syncSnapshotItems(this._currentState.snapshot_id, snapshot);
             })
@@ -427,11 +500,40 @@ class HistoryProcessor
                 this.debugObjectLogger.dump("history-initial-latest-snapshot-alerts-", this._interation, this._latestSnapshotAlerts);
             })
             .then(() => {
+                return this._dbAccessor.querySnapshot(this._currentState.snapshot_id)
+            })
+            .then(snapshot => {
+                if (!snapshot) {
+                    this._resetSnapshotState();
+                }
+            })
+            .then(() => {
                 this._isDbReady = true;
                 this._logger.info("[_onDbConnected] IS READY");
             })
     }
 
+    markDeletedSnapshot(snapshotId)
+    {
+        this.logger.info("[markDeletedSnapshot] to be deleted: %s, current snapshotId: %s", snapshotId, this._currentState.snapshot_id);
+        if (this._currentState.snapshot_id == snapshotId)
+        {
+            this._resetSnapshotState();
+        }
+    }
+
+    _resetSnapshotState()
+    {
+        this.logger.error('[_resetSnapshotState] BEGIN. State:', this._currentState);
+
+        this._currentState.snapshot_id = null;
+        this._currentState.snapshot_date = null;
+        this._currentState.diff_in_snapshot = true;
+        this._currentState.diff_count = 0;
+        this._currentState.diff_item_count = 0;
+
+        this.logger.error('[_resetSnapshotState] BEGIN. State:', this._currentState);
+    }
 
 }
 

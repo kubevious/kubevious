@@ -165,17 +165,18 @@ class Context
     {
         if (process.env.NODE_ENV == 'development')
         {
-            this.tracker.enablePeriodicDebugOutput(5);
+            this.tracker.enablePeriodicDebugOutput(10);
         }
         else
         {
-            this.tracker.enablePeriodicDebugOutput(10);
+            this.tracker.enablePeriodicDebugOutput(30);
         }
 
         return Promise.resolve()
             .then(() => this._database.init())
             .then(() => this._runServer())
             .then(() => this._setupWebSocket())
+            .then(() => this.historyCleanupProcessor.init())
             .catch(reason => {
                 console.log("***** ERROR *****");
                 console.log(reason);

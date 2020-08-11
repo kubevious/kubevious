@@ -34,7 +34,7 @@
     "the-logger": "^1.1.20",
     "the-promise": "^1.1.4",
     "uuid": "^7.0.2",
-    "websocket-subscription-server": "^1.0.11",
+    "websocket-subscription-server": "^1.0.23",
     "yargs": "^15.0.2"
   },
   "devDependencies": {

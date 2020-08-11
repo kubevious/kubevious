@@ -105,7 +105,7 @@ module.exports = {
         });
 
         router.post('/cleanup', function (req, res) {
-            return context.historyCleanupProcessor._retryToDelete()
+            return context.historyCleanupProcessor.processCleanup()
         })
 
     }
