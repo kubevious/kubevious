@@ -11,8 +11,8 @@ class HistoryCleanupProcessor {
         this._context = context;
         this._logger = context.logger.sublogger('HistoryCleanupProcessor');
         this._database = context.database;
-        this._days = 5
-        this._processing = false;
+        this._days = 14;
+        this._isProcessing = false;
 
         context.database.onConnect(this._onDbConnected.bind(this));
     }
@@ -76,11 +76,11 @@ class HistoryCleanupProcessor {
     processCleanup()
     {
         this._logger.info('[processCleanup] Begin');
-        if (this._processing) {
+        if (this._isProcessing) {
             this._logger.warn('[processCleanup] Skipped');
             return;
         }
-        this._processing = true;
+        this._isProcessing = true;
 
         this._currentConfigHashes = [];
         this._usedHashesDict = {};
@@ -90,25 +90,44 @@ class HistoryCleanupProcessor {
 
         return this._process(this._context.tracker)
             .then(() => {
-                this._processing = false;
                 this._logger.info('[processCleanup] End');
             })
             .catch(reason => {
-                this._processing = false;
                 this._logger.error('[processCleanup] FAILED: ', reason);
+            })
+            .finally(() => {
+                this._isProcessing = false;
             })
     }
 
     _process(tracker)
     {
-        return tracker.scope("HistoryCleanupProcessor::_process", (childTracker) => {
-            return Promise.resolve()
-                .then(() => this._countDB('pre-cleanup'))
-                .then(() => this._cleanupSnapshots(childTracker))
-                .then(() => this._cleanupHashes(childTracker))
-                .then(() => this._countDB('post-cleanup'))
-                .then(() => this._optimizeTables(childTracker))
-                .then(() => this._countDB('finish'))
+        return new Promise((resolve, reject) => {
+
+            this._context.historyProcessor.lockForCleanup(historyLock => {
+
+                return tracker.scope("HistoryCleanupProcessor::_process", (childTracker) => {
+                    return Promise.resolve()
+                        .then(() => this._countDB('pre-cleanup'))
+                        .then(() => this._cleanupSnapshots(childTracker))
+                        .then(() => this._cleanupHashes(childTracker))
+                        .then(() => this._countDB('post-cleanup'))
+                        .then(() => this._optimizeTables(childTracker))
+                        .then(() => this._countDB('finish'))
+                        .finally(() => {
+                            historyLock.finish();
+                        })
+                })
+                .then(() => {
+                    resolve();
+                })
+                .catch(reason => {
+                    reject(reason);
+                })
+                ;
+
+            });
+
         });
     }
 
@@ -145,6 +164,7 @@ class HistoryCleanupProcessor {
 
     _cleanupSnapshot(snapshot)
     {
+        this._context.historyProcessor.markDeletedSnapshot(snapshot.id);
         return this._cleanupDiffs(snapshot.id)
             .then(() => this._execute('DELETE_SNAP_ITEMS_BY_SNAPSHOT_ID', [snapshot.id]))
             .then(() => this._execute('DELETE_SNAPSHOT_BY_ID', [snapshot.id]))
