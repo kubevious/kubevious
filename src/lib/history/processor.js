@@ -16,7 +16,7 @@ class HistoryProcessor
         this._currentState = null;
         this._interation = 0;
         this._isDbReady = false;
-        this._usedHashes = {};
+        this._usedHashesDict = {};
         this._statesQueue = [];
 
         this._isLocked = false;
@@ -195,7 +195,7 @@ class HistoryProcessor
 
     _persistConfigHashes(configHashes)
     {
-        var newHashes = configHashes.filter(x => !this._usedHashes[x.config_hash]);
+        var newHashes = configHashes.filter(x => !this._usedHashesDict[x.config_hash]);
         return Promise.resolve()
             .then(() => {
                 return this._dbAccessor.persistConfigHashes(newHashes);
@@ -203,7 +203,7 @@ class HistoryProcessor
             .then(() => {
                 for(var x of newHashes)
                 {
-                    this._usedHashes[x.config_hash] = true;
+                    this._usedHashesDict[x.config_hash] = true;
                 }
             });
     }
@@ -213,7 +213,7 @@ class HistoryProcessor
         if (!this._shouldCreateNewDbSnapshot(snapshot)) {
             return;
         }
-        this.logger.info("[_persistSnapshot] BEGIN. Item Count: %s", snapshot.count);
+        this.logger.info("[_persistSnapshot] BEGIN. Item Count: %s", snapshot.count, this._currentState);
         return this._dbAccessor.fetchSnapshot(snapshot.date)
             .then(dbSnapshot => {
                 this.logger.info("[_persistSnapshot] ", dbSnapshot);
@@ -222,8 +222,13 @@ class HistoryProcessor
 
                 this._currentState.snapshot_id = dbSnapshot.id;
                 this._currentState.snapshot_date = dbSnapshot.date;
+
+                this.logger.info("[_persistSnapshot] MID: ", this._currentState);
+                this.logger.info("[_persistSnapshot] MID DB SNAPSHOT: ", dbSnapshot);
             })
             .then(() => {
+                this.logger.info("[_persistSnapshot] END", this._currentState);
+
                 return this._dbAccessor.syncSnapshotItems(this._currentState.snapshot_id, snapshot);
             })
             .then(() => {
@@ -518,8 +523,19 @@ class HistoryProcessor
         this.logger.info("[markDeletedSnapshot] to be deleted: %s, current snapshotId: %s", snapshotId, this._currentState.snapshot_id);
         if (this._currentState.snapshot_id == snapshotId)
         {
+            this.logger.info("[markDeletedSnapshot] resetting: %s", snapshotId);
             this._resetSnapshotState();
         }
+        else
+        {
+            this.logger.info("[markDeletedSnapshot] Not Resetting: %s", snapshotId, this._currentState);
+        }
+    }
+
+    setUsedHashesDict(dict)
+    {
+        this.logger.info("[setUsedHashesDict] size: %s", _.keys(dict).length);
+        this._usedHashesDict = dict;
     }
 
     _resetSnapshotState()
@@ -532,7 +548,7 @@ class HistoryProcessor
         this._currentState.diff_count = 0;
         this._currentState.diff_item_count = 0;
 
-        this.logger.error('[_resetSnapshotState] BEGIN. State:', this._currentState);
+        this.logger.error('[_resetSnapshotState] END. State:', this._currentState);
     }
 
 }

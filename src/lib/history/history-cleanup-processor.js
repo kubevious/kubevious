@@ -11,7 +11,7 @@ class HistoryCleanupProcessor {
         this._context = context;
         this._logger = context.logger.sublogger('HistoryCleanupProcessor');
         this._database = context.database;
-        this._days = 14;
+        this._days = -1;
         this._isProcessing = false;
 
         context.database.onConnect(this._onDbConnected.bind(this));
@@ -114,9 +114,11 @@ class HistoryCleanupProcessor {
                         .then(() => this._countDB('post-cleanup'))
                         .then(() => this._optimizeTables(childTracker))
                         .then(() => this._countDB('finish'))
-                        .finally(() => {
-                            historyLock.finish();
-                        })
+                        
+                })
+                .finally(() => {
+                    this._context.historyProcessor.setUsedHashesDict(this._usedHashesDict);
+                    historyLock.finish();
                 })
                 .then(() => {
                     resolve();
