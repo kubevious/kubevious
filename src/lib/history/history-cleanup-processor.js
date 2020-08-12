@@ -6,23 +6,28 @@ const CronJob = require('cron').CronJob
 const MY_TABLES_TO_PROCESS = [
     {
         name: 'snapshots',
-        id: 'id'
+        id: 'id',
+        shouldCount: true
     },
     {
         name: 'diffs',
-        id: 'id'
-    },
-    {
-        name: 'snap_items',
-        id: 'id'
+        id: 'id',
+        shouldCount: true
     },
     {
         name: 'diff_items',
-        id: 'id'
+        id: 'id',
+        shouldCount: false
+    },
+    {
+        name: 'snap_items',
+        id: 'id',
+        shouldCount: false
     },
     {
         name: 'config_hashes',
-        id: 'key'
+        id: 'key',
+        shouldCount: false
     }
 ];
 
@@ -339,9 +344,12 @@ class HistoryCleanupProcessor {
 
     _outputDBUsage(stage, tracker)
     {
+        var tablesToCount = MY_TABLES_TO_PROCESS.filter(x => x.shouldCount);
         return tracker.scope("_outputDBUsage", (childTracker) => {
             return this._outputDbSize(stage)
-                .then(() => Promise.serial(MY_TABLES_TO_PROCESS, x => this._countTable(x.name, x.id, stage)))
+                .then(() => Promise.serial(tablesToCount, x => {
+                    return this._countTable(x.name, x.id, stage);
+                }))
         });
     }
 
