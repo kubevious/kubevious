@@ -6,28 +6,23 @@ const CronJob = require('cron').CronJob
 const MY_TABLES_TO_PROCESS = [
     {
         name: 'snapshots',
-        id: 'id',
-        shouldCount: true
+        id: 'id'
     },
     {
         name: 'diffs',
-        id: 'id',
-        shouldCount: true
+        id: 'id'
     },
     {
         name: 'diff_items',
-        id: 'id',
-        shouldCount: false
+        id: 'id'
     },
     {
         name: 'snap_items',
-        id: 'id',
-        shouldCount: false
+        id: 'id'
     },
     {
         name: 'config_hashes',
-        id: 'key',
-        shouldCount: false
+        id: 'key'
     }
 ];
 
@@ -346,12 +341,8 @@ class HistoryCleanupProcessor {
 
     _outputDBUsage(stage, tracker)
     {
-        var tablesToCount = MY_TABLES_TO_PROCESS.filter(x => x.shouldCount);
         return tracker.scope("_outputDBUsage", (childTracker) => {
             return this._outputDbSize(stage)
-                .then(() => Promise.serial(tablesToCount, x => {
-                    return this._countTable(x.name, x.id, stage);
-                }))
         });
     }
 
@@ -370,13 +361,13 @@ class HistoryCleanupProcessor {
 
     _outputDbSize(stage)
     {
-        var sql = `SELECT TABLE_NAME, ((data_length + index_length) / 1024 / 1024 ) AS size FROM information_schema.TABLES WHERE table_schema = "${process.env.MYSQL_DB}"`
+        var sql = `SELECT \`TABLE_NAME\`, \`TABLE_ROWS\`, ((data_length + index_length) / 1024 / 1024 ) AS size FROM information_schema.TABLES WHERE table_schema = "${process.env.MYSQL_DB}"`
         return this._executeSql(sql)
             .then(result => {
                 result = _.orderBy(result, ['size'], ['desc']);
                 for(var x of result)
                 {
-                    this._logger.info('[_outputDbSize] %s, Table: %s, Size: %s MB', stage, x.TABLE_NAME, x.size);
+                    this._logger.info('[_outputDbSize] %s, Table: %s, Rows: %s, Size: %s MB', stage, x.TABLE_NAME, x.TABLE_ROWS, x.size);
                 }
             })
     }
