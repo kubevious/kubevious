@@ -108,12 +108,12 @@ class HistoryCleanupProcessor {
 
                 return tracker.scope("HistoryCleanupProcessor::_process", (childTracker) => {
                     return Promise.resolve()
-                        .then(() => this._countDB('pre-cleanup'))
+                        .then(() => this._outputDBUsage('pre-cleanup'))
                         .then(() => this._cleanupSnapshots(childTracker))
                         .then(() => this._cleanupHashes(childTracker))
-                        .then(() => this._countDB('post-cleanup'))
+                        .then(() => this._outputDBUsage('post-cleanup'))
                         .then(() => this._optimizeTables(childTracker))
-                        .then(() => this._countDB('finish'))
+                        .then(() => this._outputDBUsage('finish'))
                         
                 })
                 .finally(() => {
@@ -276,9 +276,10 @@ class HistoryCleanupProcessor {
         });
     }
 
-    _countDB(stage)
+    _outputDBUsage(stage)
     {
-        return Promise.serial(MY_TABLES_TO_PROCESS, x => this._countTable(x, stage));
+        return this._outputDbSize(stage)
+            .then(() => Promise.serial(MY_TABLES_TO_PROCESS, x => this._countTable(x, stage)))
     }
 
     _countTable(tableName, stage)
@@ -291,6 +292,19 @@ class HistoryCleanupProcessor {
                 var count = result[0].count;
                 this._logger.info('[_countTable] %s, Table: %s, Row Count: %s ', stage, tableName, count);
                 return count;
+            })
+    }
+
+    _outputDbSize(stage)
+    {
+        var sql = `SELECT TABLE_NAME, ((data_length + index_length) / 1024 / 1024 ) AS size FROM information_schema.TABLES WHERE table_schema = "${process.env.MYSQL_DB}"`
+        return this._executeSql(sql)
+            .then(result => {
+                result = _.orderBy(result, ['size'], ['desc']);
+                for(var x of result)
+                {
+                    this._logger.info('[_outputDbSize] %s, Table: %s, Size: %s MB', stage, x.TABLE_NAME, x.size);
+                }
             })
     }
     
