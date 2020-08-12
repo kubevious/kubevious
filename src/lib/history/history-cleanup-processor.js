@@ -14,6 +14,9 @@ class HistoryCleanupProcessor {
         this._days = 15;
         this._isProcessing = false;
 
+        this._startupDate = null;
+        this._lastCleanupDate = null;
+
         context.database.onConnect(this._onDbConnected.bind(this));
     }
 
@@ -23,23 +26,8 @@ class HistoryCleanupProcessor {
 
     init()
     {
+        this._startupDate = moment();
         this._setupCronJob();
-    }
-
-    _setupCronJob()
-    {
-        // Run db cleanup every ***
-        // const cleanupJob = new CronJob('*/1 * * * *', () => {
-        //     console.log('CleanupJob has started')
-        //     this._historyCleanupProcessor.cleanDb()
-        // })
-
-        // Run table optimization every Sunday at 01:00 AM
-        // const tableOptimizeJob = new CronJob('0 1 * * SUN', () => {
-        //     console.log('TableOptimizeJob has started')
-        // })
-
-        // cleanupJob.start()
     }
 
     _onDbConnected()
@@ -73,6 +61,37 @@ class HistoryCleanupProcessor {
         this._registerStatement('DELETE_CONFIG_HASH', 'DELETE FROM `config_hashes` WHERE `key` = ?')
     }
 
+    _setupCronJob()
+    {
+        var schedule = '* 0/15 0-2 * * *';
+        // schedule = '*/1 * * * *';
+        const cleanupJob = new CronJob(schedule, () => {
+            this._processSchedule();
+        })
+        cleanupJob.start();
+    }
+
+    _processSchedule()
+    {
+        var now = moment();
+        this.logger.info('[_processSchedule] now: %s', now);
+
+        if (now.diff(this._startupDate, 'minutes') < 15) {
+            this.logger.info('[_processSchedule] skipped, waiting 15 minutes post startup');
+            return;
+        }
+        if (this._lastCleanupDate)
+        {
+            if (now.diff(this._lastCleanupDate, 'hours') < 20) {
+                this.logger.info('[_processSchedule] skipped, processed within last 20 hours');
+                return;
+            }
+        }
+
+        this.logger.info('[_processSchedule] will execute');
+        this.processCleanup();
+    }
+
     processCleanup()
     {
         this._logger.info('[processCleanup] Begin');
@@ -81,6 +100,8 @@ class HistoryCleanupProcessor {
             return;
         }
         this._isProcessing = true;
+
+        this._lastCleanupDate = moment();
 
         this._currentConfigHashes = [];
         this._usedHashesDict = {};
