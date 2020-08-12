@@ -33,26 +33,26 @@ class HistoryDbAccessor
     {
         this._registerStatement('GET_SNAPSHOTS', 'SELECT * FROM `snapshots`;');
         this._registerStatement('GET_SNAPSHOT', 'SELECT * FROM `snapshots` WHERE `id` = ?;');
-        this._registerStatement('FIND_SNAPSHOT', 'SELECT * FROM `snapshots` WHERE `date` = ? ORDER BY `id` DESC LIMIT 1;');
-        this._registerStatement('INSERT_SNAPSHOT', 'INSERT INTO `snapshots` (`date`) VALUES (?);');
+        this._registerStatement('FIND_SNAPSHOT', 'SELECT * FROM `snapshots` WHERE `part` = ? AND `date` = ? ORDER BY `id` DESC LIMIT 1;');
+        this._registerStatement('INSERT_SNAPSHOT', 'INSERT INTO `snapshots` (`part`, `date` ) VALUES (?, ?);');
 
-        this._registerStatement('INSERT_SNAPSHOT_ITEM', 'INSERT INTO `snap_items` (`snapshot_id`, `dn`, `kind`, `config_kind`, `name`, `config_hash`) VALUES (?, ?, ?, ?, ?, ?);');
-        this._registerStatement('UPDATE_SNAPSHOT_ITEM', 'UPDATE `snap_items` SET `dn` = ?, `kind` = ?, `config_kind` = ?, `name` = ?, `config_hash` = ? WHERE `id` = ?;');
-        this._registerStatement('DELETE_SNAPSHOT_ITEM', 'DELETE FROM `snap_items` WHERE `id` = ?;');
+        this._registerStatement('INSERT_SNAPSHOT_ITEM', 'INSERT INTO `snap_items` (`part`, `snapshot_id`, `dn`, `kind`, `config_kind`, `name`, `config_hash_part`, `config_hash`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);');
+        this._registerStatement('UPDATE_SNAPSHOT_ITEM', 'UPDATE `snap_items` SET `dn` = ?, `kind` = ?, `config_kind` = ?, `name` = ?, `config_hash_part` = ?, `config_hash` = ? WHERE `part` = ? && `id` = ?;');
+        this._registerStatement('DELETE_SNAPSHOT_ITEM', 'DELETE FROM `snap_items` WHERE `part` = ? && `id` = ?;');
 
-        this._registerStatement('FIND_DIFF', 'SELECT * FROM `diffs` WHERE `snapshot_id` = ? AND `date` = ? AND `in_snapshot` = ? ORDER BY `id` DESC LIMIT 1;');
-        this._registerStatement('INSERT_DIFF', 'INSERT INTO `diffs` (`snapshot_id`, `date`, `in_snapshot`, `summary`) VALUES (?, ?, ?, ?);');
+        this._registerStatement('FIND_DIFF', 'SELECT * FROM `diffs` WHERE `part` = ? AND `snapshot_id` = ? AND `date` = ? AND `in_snapshot` = ? ORDER BY `id` DESC LIMIT 1;');
+        this._registerStatement('INSERT_DIFF', 'INSERT INTO `diffs` (`part`, `snapshot_id`, `date`, `in_snapshot`, `summary`) VALUES (?, ?, ?, ?, ?);');
 
-        this._registerStatement('INSERT_DIFF_ITEM', 'INSERT INTO `diff_items` (`diff_id`, `dn`, `kind`, `config_kind`, `name`, `present`, `config_hash`) VALUES (?, ?, ?, ?, ?, ?, ?);');
-        this._registerStatement('UPDATE_DIFF_ITEM', 'UPDATE `diff_items` SET `dn` = ?, `kind` = ?, `config_kind` = ?, `name` = ?, `present` = ?, `config_hash` = ? WHERE `id` = ?;');
-        this._registerStatement('DELETE_DIFF_ITEM', 'DELETE FROM `diff_items` WHERE `id` = ?;');
+        this._registerStatement('INSERT_DIFF_ITEM', 'INSERT INTO `diff_items` (`part`, `diff_id`, `dn`, `kind`, `config_kind`, `name`, `present`, `config_hash_part`, `config_hash`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);');
+        this._registerStatement('UPDATE_DIFF_ITEM', 'UPDATE `diff_items` SET `dn` = ?, `kind` = ?, `config_kind` = ?, `name` = ?, `present` = ?, `config_hash_part` = ?, `config_hash` = ? WHERE `part` = ? && `id` = ?;');
+        this._registerStatement('DELETE_DIFF_ITEM', 'DELETE FROM `diff_items` WHERE `part` = ? && `id` = ?;');
 
         this._registerStatement('GET_DIFFS', 'SELECT * FROM `diffs`;');
 
         this._registerStatement('GET_CONFIG', 'SELECT * FROM `config` WHERE `key` = ?;');
         this._registerStatement('SET_CONFIG', 'INSERT INTO `config`(`key`, `value`) VALUES(?, ?) ON DUPLICATE KEY UPDATE `value` = ?;');
 
-        this._registerStatement('INSERT_CONFIG_HASH', 'INSERT IGNORE INTO `config_hashes`(`key`, `value`) VALUES(?, ?);');
+        this._registerStatement('INSERT_CONFIG_HASH', 'INSERT IGNORE INTO `config_hashes`(`key`, `part`, `value`) VALUES(?, ?, ?);');
     }
 
     updateConfig(key, value)
@@ -86,11 +86,11 @@ class HistoryDbAccessor
             })
     }
 
-    fetchSnapshot(date)
+    fetchSnapshot(partition, date)
     {
         date = DateUtils.makeDate(date);
 
-        var params = [ date ]; 
+        var params = [ partition, date ]; 
         return this._execute('FIND_SNAPSHOT', params)
             .then(results => {
                 if (!results.length) {
@@ -148,6 +148,7 @@ class HistoryDbAccessor
                         id: 'INSERT_CONFIG_HASH',
                         params: [
                             x.config_hash,
+                            x.config_hash_part,
                             x.config
                         ]
                     };
@@ -160,10 +161,9 @@ class HistoryDbAccessor
             });
     }
 
-    syncSnapshotItems(snapshotId, snapshot)
+    syncSnapshotItems(partition, snapshotId, snapshot)
     {
-        this.logger.info("[syncSnapshotItems] BEGIN, item count: %s", snapshot.count);
-        // this.logger.error("[syncSnapshotItems] BEGIN, SNAPSHOT!!!!!", snapshot.getDict()["root"]);
+        this.logger.info("[syncSnapshotItems] BEGIN, partition: %s, item count: %s", partition, snapshot.count);
 
         return this._snapshotReader.querySnapshotItems(snapshotId)
             .then(dbItems => {
@@ -185,11 +185,13 @@ class HistoryDbAccessor
                         return { 
                             id: 'INSERT_SNAPSHOT_ITEM',
                             params: [
+                                partition,
                                 snapshotId,
                                 x.item.dn,
                                 x.item.kind,
                                 x.item.config_kind,
                                 x.item.name,
+                                x.item.config_hash_part,
                                 x.item.config_hash
                             ]
                         };
@@ -203,7 +205,9 @@ class HistoryDbAccessor
                                 x.item.kind,
                                 x.item.config_kind,
                                 x.item.name,
+                                x.item.config_hash_part,
                                 x.item.config_hash,
+                                partition,
                                 x.oldItemId
                             ]
                         };
@@ -213,6 +217,7 @@ class HistoryDbAccessor
                         return { 
                             id: 'DELETE_SNAPSHOT_ITEM',
                             params: [
+                                partition,
                                 x.id
                             ]
                         };
@@ -233,14 +238,14 @@ class HistoryDbAccessor
 
     /* DIFF BEGIN */
 
-    fetchDiff(snapshotId, date, in_snapshot, summary)
+    fetchDiff(snapshotId, partition, date, in_snapshot, summary)
     {
         date = DateUtils.makeDate(date);
-        var params = [snapshotId, date, in_snapshot]; 
+        var params = [partition, snapshotId, date, in_snapshot]; 
         return this._execute('FIND_DIFF', params)
             .then(results => {
                 if (!results.length) {
-                    params = [snapshotId, date, in_snapshot, summary]; 
+                    params = [partition, snapshotId, date, in_snapshot, summary]; 
                     return this._execute('INSERT_DIFF', params)
                         .then(insertResult => {
                             var newObj = {
@@ -271,9 +276,9 @@ class HistoryDbAccessor
         return this._execute('DELETE_DIFF_ITEM', params);
     }
 
-    syncDiffItems(diffId, diffSnapshot)
+    syncDiffItems(partition, diffId, diffSnapshot)
     {
-        this.logger.info("[syncDiffItems] item count: %s", diffSnapshot.count);
+        this.logger.info("[syncDiffItems] partition: %s, item count: %s", partition, diffSnapshot.count);
 
         return this._snapshotReader.queryDiffItems(diffId)
             .then(dbItems => {
@@ -288,12 +293,14 @@ class HistoryDbAccessor
                         return { 
                             id: 'INSERT_DIFF_ITEM',
                             params: [
+                                partition,
                                 diffId,
                                 x.item.dn,
                                 x.item.kind,
                                 x.item.config_kind,
                                 x.item.name,
                                 x.item.present,
+                                x.item.config_hash_part,
                                 x.item.config_hash
                             ]
                         };
@@ -308,7 +315,9 @@ class HistoryDbAccessor
                                 x.item.config_kind,
                                 x.item.name,
                                 x.item.present,
+                                x.item.config_hash_part,
                                 x.item.config_hash,
+                                partition,
                                 x.oldItemId
                             ]
                         };
@@ -318,6 +327,7 @@ class HistoryDbAccessor
                         return { 
                             id: 'DELETE_DIFF_ITEM',
                             params: [
+                                partition,
                                 x.id
                             ]
                         };
