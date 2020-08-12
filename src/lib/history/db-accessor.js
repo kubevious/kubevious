@@ -32,6 +32,7 @@ class HistoryDbAccessor
     _registerStatements()
     {
         this._registerStatement('GET_SNAPSHOTS', 'SELECT * FROM `snapshots`;');
+        this._registerStatement('GET_SNAPSHOT', 'SELECT * FROM `snapshots` WHERE `id` = ?;');
         this._registerStatement('FIND_SNAPSHOT', 'SELECT * FROM `snapshots` WHERE `date` = ? ORDER BY `id` DESC LIMIT 1;');
         this._registerStatement('INSERT_SNAPSHOT', 'INSERT INTO `snapshots` (`date`) VALUES (?);');
 
@@ -46,7 +47,7 @@ class HistoryDbAccessor
         this._registerStatement('UPDATE_DIFF_ITEM', 'UPDATE `diff_items` SET `dn` = ?, `kind` = ?, `config_kind` = ?, `name` = ?, `present` = ?, `config_hash` = ? WHERE `id` = ?;');
         this._registerStatement('DELETE_DIFF_ITEM', 'DELETE FROM `diff_items` WHERE `id` = ?;');
 
-        this._registerStatement('GET_DIFFS', 'SELECT * FROM diffs;');
+        this._registerStatement('GET_DIFFS', 'SELECT * FROM `diffs`;');
 
         this._registerStatement('GET_CONFIG', 'SELECT * FROM `config` WHERE `key` = ?;');
         this._registerStatement('SET_CONFIG', 'INSERT INTO `config`(`key`, `value`) VALUES(?, ?) ON DUPLICATE KEY UPDATE `value` = ?;');
@@ -71,7 +72,20 @@ class HistoryDbAccessor
                 return _.head(results);
             });
     }
-   
+
+    querySnapshot(id)
+    {
+        var params = [id]; 
+        return this._execute('GET_SNAPSHOT', params)
+            .then(results => {
+                if (!results.length) {
+                    return null;
+                } else {
+                    return _.head(results);
+                }
+            })
+    }
+
     fetchSnapshot(date)
     {
         date = DateUtils.makeDate(date);

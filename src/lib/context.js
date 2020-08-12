@@ -4,6 +4,7 @@ const FacadeRegistry = require('./facade/registry');
 const SearchEngine = require('./search/engine');
 const Database = require('./db');
 const HistoryProcessor = require('./history/processor');
+const HistoryCleanupProcessor = require('./history/history-cleanup-processor');
 const Registry = require('./registry/registry');
 const Collector = require('./collector/collector');
 const ClusterLeaderElector = require('./cluster/leader-elector')
@@ -46,6 +47,8 @@ class Context
         this._websocket = new WebSocketServer(this);
 
         this._snapshotProcessor = new SnapshotProcessor(this);
+
+        this._historyCleanupProcessor = new HistoryCleanupProcessor(this);
 
         this._server = null;
         this._k8sClient = null;
@@ -124,6 +127,10 @@ class Context
         return this._snapshotProcessor;
     }
 
+    get historyCleanupProcessor() {
+        return this._historyCleanupProcessor;
+    }
+
     setupServer()
     {
         const Server = require("./server");
@@ -143,17 +150,18 @@ class Context
     {
         if (process.env.NODE_ENV == 'development')
         {
-            this.tracker.enablePeriodicDebugOutput(5);
+            this.tracker.enablePeriodicDebugOutput(10);
         }
         else
         {
-            this.tracker.enablePeriodicDebugOutput(10);
+            this.tracker.enablePeriodicDebugOutput(30);
         }
 
         return Promise.resolve()
             .then(() => this._database.init())
             .then(() => this._runServer())
             .then(() => this._setupWebSocket())
+            .then(() => this.historyCleanupProcessor.init())
             .catch(reason => {
                 console.log("***** ERROR *****");
                 console.log(reason);

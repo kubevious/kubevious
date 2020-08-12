@@ -4,7 +4,7 @@ const DateUtils = require("kubevious-helpers").DateUtils;
 module.exports = {
     url: '/api/v1/history',
 
-    setup: ({ router, logger, history, reportUserError }) => {
+    setup: ({ router, context, logger, history, reportUserError }) => {
 
         router.get('/range', function(req, res) {
             return history.queryTimelineRange()
@@ -103,7 +103,11 @@ module.exports = {
                     return result;
                 })
         });
-    
+
+        router.post('/cleanup', function (req, res) {
+            return context.historyCleanupProcessor.processCleanup()
+        })
+
     }
 
 }

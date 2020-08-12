@@ -16,10 +16,12 @@ class HistoryProcessor
         this._currentState = null;
         this._interation = 0;
         this._isDbReady = false;
-        this._usedHashes = {};
+        this._usedHashesDict = {};
+        this._statesQueue = [];
 
-        // TODO: Temporary
-        // this._skipProduceHistory = true;
+        this._isLocked = false;
+        this._isProcessing = false;
+        this._processFinishListeners = [];
 
         context.database.onConnect(this._onDbConnected.bind(this));
     }
@@ -32,17 +34,90 @@ class HistoryProcessor
         return this._context.debugObjectLogger;
     }
 
+    lockForCleanup(cb)
+    {
+        var handler = {
+            finish: () => {
+                this._resumeProcessing();
+            }
+        }
+
+        this._isLocked = true;
+        if (!this._isProcessing) {
+            cb(handler);
+        } else {
+            this._processFinishListeners.push(() => {
+                cb(handler);
+            });
+        }
+    }
+
     accept(state)
     {
-        if (this._skipProduceHistory) {
+        this._addToQueue(state);
+        return this._safeProcessQueue();
+    }
+
+    _resumeProcessing()
+    {
+        this._isLocked = false;
+        this._safeProcessQueue();
+    }
+
+    _safeProcessQueue()
+    {
+        return Promise.resolve()
+            .then(() => this._processQueue())
+            .catch(reason => {
+                this.logger.error(reason);
+            });
+    }
+
+    _processQueue() 
+    {
+        if (this._statesQueue.length == 0) {
             return;
         }
-        
-        this._logger.info("[accept] begin");
-        var snapshot = this._produceSnapshot(state);
-        this._logger.info("[accept] snapshot %s, item count: %s", snapshot.date.toISOString(), snapshot.getItems().length);
+        if (this._isLocked) {
+            return Promise.resolve(30 * 1000);
+        }
 
-        return this._processSnapshot(snapshot);
+        if (this._isProcessing) {
+            return;
+        }
+        this._isProcessing = true;
+
+        var state = this._statesQueue.shift();
+        return this._processQueueItem(state)
+            .finally(() => {
+                this._isProcessing = false;
+            })
+            .then(() => {
+                return this._processQueue();
+            })
+    }
+
+    _processQueueItem(state)
+    {
+        this._logger.info("[_processQueueItem] begin");
+        var snapshot = this._produceSnapshot(state);
+        this._logger.info("[_processQueueItem] snapshot %s, item count: %s", snapshot.date.toISOString(), snapshot.getItems().length);
+
+        return this._processSnapshot(snapshot)
+            .then(() => {
+                for(var x of this._processFinishListeners)
+                {
+                    x();
+                }
+                this._processFinishListeners = [];
+            });
+    }
+
+    _addToQueue(state)
+    {
+        this._statesQueue.push(state);
+        this._statesQueue = _.takeRight(this._statesQueue, 1);
+        this.logger.info("[_addToQueue] Size: %s", this._statesQueue.length);
     }
 
     _processSnapshot(snapshot)
@@ -120,7 +195,7 @@ class HistoryProcessor
 
     _persistConfigHashes(configHashes)
     {
-        var newHashes = configHashes.filter(x => !this._usedHashes[x.config_hash]);
+        var newHashes = configHashes.filter(x => !this._usedHashesDict[x.config_hash]);
         return Promise.resolve()
             .then(() => {
                 return this._dbAccessor.persistConfigHashes(newHashes);
@@ -128,7 +203,7 @@ class HistoryProcessor
             .then(() => {
                 for(var x of newHashes)
                 {
-                    this._usedHashes[x.config_hash] = true;
+                    this._usedHashesDict[x.config_hash] = true;
                 }
             });
     }
@@ -138,18 +213,16 @@ class HistoryProcessor
         if (!this._shouldCreateNewDbSnapshot(snapshot)) {
             return;
         }
-        this.logger.info("[_persistSnapshot] BEGIN. Item Count: %s", snapshot.count);
+        this.logger.info("[_persistSnapshot] BEGIN. Item Count: %s", snapshot.count, this._currentState);
         return this._dbAccessor.fetchSnapshot(snapshot.date)
             .then(dbSnapshot => {
                 this.logger.info("[_persistSnapshot] ", dbSnapshot);
 
+                this._resetSnapshotState();
+
                 this._currentState.snapshot_id = dbSnapshot.id;
                 this._currentState.snapshot_date = dbSnapshot.date;
-                this._currentState.diff_in_snapshot = true;
-                this._currentState.diff_count = 0;
-                this._currentState.diff_item_count = 0;
             })
-           
             .then(() => {
                 return this._dbAccessor.syncSnapshotItems(this._currentState.snapshot_id, snapshot);
             })
@@ -427,11 +500,43 @@ class HistoryProcessor
                 this.debugObjectLogger.dump("history-initial-latest-snapshot-alerts-", this._interation, this._latestSnapshotAlerts);
             })
             .then(() => {
+                return this._dbAccessor.querySnapshot(this._currentState.snapshot_id)
+            })
+            .then(snapshot => {
+                if (!snapshot) {
+                    this._resetSnapshotState();
+                }
+            })
+            .then(() => {
                 this._isDbReady = true;
                 this._logger.info("[_onDbConnected] IS READY");
             })
     }
 
+    markDeletedSnapshot(snapshotId)
+    {
+        if (this._currentState.snapshot_id == snapshotId)
+        {
+            this._resetSnapshotState();
+        }
+    }
+
+    setUsedHashesDict(dict)
+    {
+        this.logger.info("[setUsedHashesDict] size: %s", _.keys(dict).length);
+        this._usedHashesDict = dict;
+    }
+
+    _resetSnapshotState()
+    {
+        this.logger.info('[_resetSnapshotState] ');
+
+        this._currentState.snapshot_id = null;
+        this._currentState.snapshot_date = null;
+        this._currentState.diff_in_snapshot = true;
+        this._currentState.diff_count = 0;
+        this._currentState.diff_item_count = 0;
+    }
 
 }
 

@@ -43,12 +43,7 @@ class Server
         });
 
         this._app.use((error, req, res, next) => {
-            var status = 500
-            res.status(status).json({
-                status: status,
-                message: error.message || 'Internal Server Error',
-                stack: this._isDev ? error.stack : ''
-            });
+            this._handleError(res, error);
         });
 
         this._httpServer = this._app.listen(this._port, () => {
@@ -140,14 +135,17 @@ class Server
     }
 
     _handleError(res, reason)
-    {
+    {        
         if (reason instanceof RouterError) {
             if (this._isDev) {
+                this.logger.warn("[_handleError] ", reason);
                 res.status(reason.statusCode).json({ message: reason.message, stack: reason.stack });
             } else {
                 res.status(reason.statusCode).json({ message: reason.message });
             }
         } else {
+            this.logger.error("[_handleError] ", reason);
+
             var status = 500;
             if (this._isDev) {
                 res.status(status).json({ message: reason.message, stack: reason.stack })

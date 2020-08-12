@@ -2,7 +2,6 @@ const Promise = require('the-promise');
 const _ = require('lodash');
 const { v4: uuidv4 } = require('uuid');
 
-
 class Collector
 {
     constructor(context)
@@ -52,7 +51,7 @@ class Collector
 
     activateSnapshot(snapshotId)
     {
-        return this._context.tracker.scope("collector::activateDiff", (tracker) => {
+        return this._context.tracker.scope("collector::activateSnapshot", (tracker) => {
             var snapshotInfo = this._snapshots[snapshotId];
             if (!snapshotInfo) {
                 return RESPONSE_NEED_NEW_SNAPSHOT;
