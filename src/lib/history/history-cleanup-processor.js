@@ -47,6 +47,7 @@ class HistoryCleanupProcessor {
 
     init()
     {
+        return;
         this._startupDate = moment();
         this._setupCronJob();
     }
