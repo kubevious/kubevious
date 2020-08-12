@@ -89,6 +89,8 @@ class HistoryCleanupProcessor {
 
     _setupCronJob()
     {
+        // TODO: Temporarity disabled cleanup scheduling.
+        return;
         var schedule = '* 0/15 0-2 * * *';
         // schedule = '*/1 * * * *';
         const cleanupJob = new CronJob(schedule, () => {
