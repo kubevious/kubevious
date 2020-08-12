@@ -3,7 +3,28 @@ const moment = require('moment')
 const Promise = require('the-promise')
 const CronJob = require('cron').CronJob
 
-const MY_TABLES_TO_PROCESS = ['snapshots', 'diffs', 'snap_items', 'diff_items', 'config_hashes'];
+const MY_TABLES_TO_PROCESS = [
+    {
+        name: 'snapshots',
+        id: 'id'
+    },
+    {
+        name: 'diffs',
+        id: 'id'
+    },
+    {
+        name: 'snap_items',
+        id: 'id'
+    },
+    {
+        name: 'diff_items',
+        id: 'id'
+    },
+    {
+        name: 'config_hashes',
+        id: 'key'
+    }
+];
 
 class HistoryCleanupProcessor {
     constructor(context)
@@ -129,12 +150,12 @@ class HistoryCleanupProcessor {
 
                 return tracker.scope("HistoryCleanupProcessor::_process", (childTracker) => {
                     return Promise.resolve()
-                        .then(() => this._outputDBUsage('pre-cleanup'))
+                        .then(() => this._outputDBUsage('pre-cleanup', childTracker))
                         .then(() => this._cleanupSnapshots(childTracker))
                         .then(() => this._cleanupHashes(childTracker))
-                        .then(() => this._outputDBUsage('post-cleanup'))
+                        .then(() => this._outputDBUsage('post-cleanup', childTracker))
                         .then(() => this._optimizeTables(childTracker))
-                        .then(() => this._outputDBUsage('finish'))
+                        .then(() => this._outputDBUsage('finish', childTracker))
                         
                 })
                 .finally(() => {
@@ -200,7 +221,7 @@ class HistoryCleanupProcessor {
         return Promise.resolve()
             .then(() => this._execute('FIND_DIFFS_FOR_SNAPSHOT', [snapshotId]))
             .then(diffs => {
-                return Promise.serial(diffs, diff => this._deleteDiffItems(diff.id))
+                return Promise.parallel(diffs, diff => this._deleteDiffItems(diff.id))
             })
             .then(() => this._execute('DELETE_DIFFS_FOR_SNAPSHOT', [snapshotId]))
     }
@@ -217,31 +238,35 @@ class HistoryCleanupProcessor {
         });
     }
 
-    _queryConfigHashes()
+    _queryConfigHashes(tracker)
     {
-        return this._execute('FIND_CONFIG_HASHES')
-            .then(hashes => {
-                this._currentConfigHashes = hashes;
-            })
+        return tracker.scope("_queryConfigHashes", (childTracker) => {
+            return this._execute('FIND_CONFIG_HASHES')
+                .then(hashes => {
+                    this._currentConfigHashes = hashes;
+                })
+        });
     }
 
-    _queryUsedHashes()
+    _queryUsedHashes(tracker)
     {
-        this._usedHashesDict = {};
-        return this._execute('FIND_SNAP_ITEMS_CONFIG_HASHES')
-            .then(hashes => {
-                for(var hash of hashes)
-                {
-                    this._usedHashesDict[hash.config_hash] = true;
-                }
-            })
-            .then(() => this._execute('FIND_DIFF_ITEMS_CONFIG_HASHES'))
-            .then(hashes => {
-                for(var hash of hashes)
-                {
-                    this._usedHashesDict[hash.config_hash] = true;
-                }
-            })
+        return tracker.scope("_queryUsedHashes", (childTracker) => {
+            this._usedHashesDict = {};
+            return this._execute('FIND_SNAP_ITEMS_CONFIG_HASHES')
+                .then(hashes => {
+                    for(var hash of hashes)
+                    {
+                        this._usedHashesDict[hash.config_hash] = true;
+                    }
+                })
+                .then(() => this._execute('FIND_DIFF_ITEMS_CONFIG_HASHES'))
+                .then(hashes => {
+                    for(var hash of hashes)
+                    {
+                        this._usedHashesDict[hash.config_hash] = true;
+                    }
+                })
+        });
     }
 
     _cleanupConfigHashes(tracker)
@@ -252,12 +277,27 @@ class HistoryCleanupProcessor {
         var hashesToDelete = this._currentConfigHashes.filter(x => !this._usedHashesDict[x.key]);
         this.logger.info('[_cleanupConfigHashes] hashes to delete: %s', hashesToDelete.length);
 
+        var hashTransactionGroups = this._chunkArrayInGroups(hashesToDelete, 10 * 1000);
+        var deleteIteration = 0;
+
         return tracker.scope("delete", () => {
-            return this._executeInTransaction(() => {
-                return Promise.serial(hashesToDelete, x => {
-                    return this._execute('DELETE_CONFIG_HASH', [x.key]);
+
+            return Promise.serial(hashTransactionGroups, hashesInTx => {
+
+                return this._executeInTransaction(() => {
+                    this.logger.info('[_cleanupConfigHashes] tx iteration: %s...', deleteIteration);
+                    deleteIteration++;
+
+                    var hashGroups = this._chunkArrayInGroups(hashesInTx, 100);
+
+                    return Promise.serial(hashGroups, hashGroup => {
+                        return Promise.parallel(hashGroup, x => {
+                            return this._execute('DELETE_CONFIG_HASH', [x.key]);
+                        })
+                    })
                 })
-            })
+
+            });
         });
     }
 
@@ -275,7 +315,7 @@ class HistoryCleanupProcessor {
     {
         this._logger.info('[_optimizeTables] Begin');
         return tracker.scope("optimize", (childTracker) => {
-            return Promise.serial(MY_TABLES_TO_PROCESS, x => this._optimizeTable(x, childTracker));
+            return Promise.serial(MY_TABLES_TO_PROCESS, x => this._optimizeTable(x.name, childTracker));
         });
     }
 
@@ -297,18 +337,20 @@ class HistoryCleanupProcessor {
         });
     }
 
-    _outputDBUsage(stage)
+    _outputDBUsage(stage, tracker)
     {
-        return this._outputDbSize(stage)
-            .then(() => Promise.serial(MY_TABLES_TO_PROCESS, x => this._countTable(x, stage)))
+        return tracker.scope("_outputDBUsage", (childTracker) => {
+            return this._outputDbSize(stage)
+                .then(() => Promise.serial(MY_TABLES_TO_PROCESS, x => this._countTable(x.name, x.id, stage)))
+        });
     }
 
-    _countTable(tableName, stage)
+    _countTable(tableName, keyColumn, stage)
     {
         if (!stage) {
             stage = '';
         }
-        return this._executeSql(`SELECT COUNT(*) as count FROM ${tableName}`)
+        return this._executeSql(`SELECT COUNT(\`${keyColumn}\`) as count FROM ${tableName}`)
             .then(result => {
                 var count = result[0].count;
                 this._logger.info('[_countTable] %s, Table: %s, Row Count: %s ', stage, tableName, count);
@@ -347,6 +389,14 @@ class HistoryCleanupProcessor {
     _executeInTransaction(cb)
     {
         return this._database.executeInTransaction(cb);
+    }
+
+    _chunkArrayInGroups(arr, size) {
+        var myArray = [];
+        for(var i = 0; i < arr.length; i += size) {
+          myArray.push(arr.slice(i, i+size));
+        }
+        return myArray;
     }
 }
 
