@@ -11,7 +11,7 @@ class HistoryCleanupProcessor {
         this._context = context;
         this._logger = context.logger.sublogger('HistoryCleanupProcessor');
         this._database = context.database;
-        this._days = -1;
+        this._days = 15;
         this._isProcessing = false;
 
         context.database.onConnect(this._onDbConnected.bind(this));
@@ -86,7 +86,7 @@ class HistoryCleanupProcessor {
         this._usedHashesDict = {};
 
         this._cutoffDate = [moment().subtract(this._days, 'days').format()];
-        this._logger.info('[_cleanupSnapshots] Cutoff Date=%s', this._cutoffDate);
+        this._logger.info('[processCleanup] Cutoff Date=%s', this._cutoffDate);
 
         return this._process(this._context.tracker)
             .then(() => {
@@ -157,7 +157,9 @@ class HistoryCleanupProcessor {
                 if (hasSnapshots) {
                     this._logger.info('[_cleanupSomeSnapshots] Top Snapshot ID: %s', snapshots[0].id);
                 }
-                return Promise.serial(snapshots, snapshot => this._cleanupSnapshot(snapshot))
+                return this._executeInTransaction(() => {
+                    return Promise.serial(snapshots, snapshot => this._cleanupSnapshot(snapshot))
+                });
             })
             .then(() => {
                 return hasSnapshots;  
@@ -230,8 +232,10 @@ class HistoryCleanupProcessor {
         this.logger.info('[_cleanupConfigHashes] hashes to delete: %s', hashesToDelete.length);
 
         return tracker.scope("delete", () => {
-            return Promise.serial(hashesToDelete, x => {
-                return this._execute('DELETE_CONFIG_HASH', [x.key]);
+            return this._executeInTransaction(() => {
+                return Promise.serial(hashesToDelete, x => {
+                    return this._execute('DELETE_CONFIG_HASH', [x.key]);
+                })
             })
         });
     }
@@ -303,6 +307,11 @@ class HistoryCleanupProcessor {
     _executeSql(sql)
     {
         return this._database.executeSql(sql);
+    }
+
+    _executeInTransaction(cb)
+    {
+        return this._database.executeInTransaction(cb);
     }
 }
 

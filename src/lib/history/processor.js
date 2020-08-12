@@ -222,13 +222,8 @@ class HistoryProcessor
 
                 this._currentState.snapshot_id = dbSnapshot.id;
                 this._currentState.snapshot_date = dbSnapshot.date;
-
-                this.logger.info("[_persistSnapshot] MID: ", this._currentState);
-                this.logger.info("[_persistSnapshot] MID DB SNAPSHOT: ", dbSnapshot);
             })
             .then(() => {
-                this.logger.info("[_persistSnapshot] END", this._currentState);
-
                 return this._dbAccessor.syncSnapshotItems(this._currentState.snapshot_id, snapshot);
             })
             .then(() => {
@@ -520,15 +515,9 @@ class HistoryProcessor
 
     markDeletedSnapshot(snapshotId)
     {
-        this.logger.info("[markDeletedSnapshot] to be deleted: %s, current snapshotId: %s", snapshotId, this._currentState.snapshot_id);
         if (this._currentState.snapshot_id == snapshotId)
         {
-            this.logger.info("[markDeletedSnapshot] resetting: %s", snapshotId);
             this._resetSnapshotState();
-        }
-        else
-        {
-            this.logger.info("[markDeletedSnapshot] Not Resetting: %s", snapshotId, this._currentState);
         }
     }
 
@@ -540,15 +529,13 @@ class HistoryProcessor
 
     _resetSnapshotState()
     {
-        this.logger.error('[_resetSnapshotState] BEGIN. State:', this._currentState);
+        this.logger.info('[_resetSnapshotState] ');
 
         this._currentState.snapshot_id = null;
         this._currentState.snapshot_date = null;
         this._currentState.diff_in_snapshot = true;
         this._currentState.diff_count = 0;
         this._currentState.diff_item_count = 0;
-
-        this.logger.error('[_resetSnapshotState] END. State:', this._currentState);
     }
 
 }
