@@ -1,7 +1,6 @@
 const _ = require('the-lodash');
-const moment = require('moment')
 const Promise = require('the-promise');
-const { partition } = require('the-lodash');
+const moment = require('moment')
 const CronJob = require('cron').CronJob
 const HistoryPartitioning = require("kubevious-helpers").History.Partitioning;
 
@@ -25,11 +24,6 @@ const MY_TABLES_TO_PROCESS = [
         name: 'snap_items',
         id: 'id',
         isSnapshot: true
-    },
-    {
-        name: 'config_hashes',
-        id: 'key',
-        isSnapshot: false
     }
 ];
 
@@ -39,7 +33,7 @@ class HistoryCleanupProcessor {
         this._context = context;
         this._logger = context.logger.sublogger('HistoryCleanupProcessor');
         this._database = context.database;
-        this._days = -15;
+        this._days = 15;
         this._isProcessing = false;
 
         this._startupDate = null;
