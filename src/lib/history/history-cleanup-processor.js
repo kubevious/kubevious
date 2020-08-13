@@ -1,28 +1,29 @@
 const _ = require('the-lodash');
+const Promise = require('the-promise');
 const moment = require('moment')
-const Promise = require('the-promise')
 const CronJob = require('cron').CronJob
+const HistoryPartitioning = require("kubevious-helpers").History.Partitioning;
 
 const MY_TABLES_TO_PROCESS = [
     {
         name: 'snapshots',
-        id: 'id'
+        id: 'id',
+        isSnapshot: true
     },
     {
         name: 'diffs',
-        id: 'id'
+        id: 'id',
+        isSnapshot: true
     },
     {
         name: 'diff_items',
-        id: 'id'
+        id: 'id',
+        isSnapshot: true
     },
     {
         name: 'snap_items',
-        id: 'id'
-    },
-    {
-        name: 'config_hashes',
-        id: 'key'
+        id: 'id',
+        isSnapshot: true
     }
 ];
 
@@ -62,25 +63,11 @@ class HistoryCleanupProcessor {
 
     _registerStatements()
     {
-        this._registerStatement('FIND_CONFIG_HASHES', 'SELECT `key` FROM `config_hashes`')
+        this._registerStatement('FIND_SNAP_ITEMS_CONFIG_HASHES', 'SELECT DISTINCT `config_hash` FROM `snap_items` WHERE `config_hash_part` = ?')
 
-        this._registerStatement('FIND_OLDEST_SNAPSHOTS', 'SELECT `id` FROM `snapshots` WHERE `date` < ? ORDER BY `date` LIMIT 100')
+        this._registerStatement('FIND_DIFF_ITEMS_CONFIG_HASHES', 'SELECT DISTINCT `config_hash` FROM `diff_items` WHERE `config_hash_part` = ?')
 
-        this._registerStatement('FIND_DIFFS_FOR_SNAPSHOT', 'SELECT `id` FROM `diffs` WHERE `snapshot_id` = ?')
-
-        this._registerStatement('FIND_DIFF_ITEMS_CONFIG_HASHES', 'SELECT `config_hash` FROM `diff_items`')
-
-        this._registerStatement('DELETE_DIFF_ITEMS_FOR_DIFF', 'DELETE FROM `diff_items` WHERE `diff_id` = ?')
-
-        this._registerStatement('DELETE_DIFFS_FOR_SNAPSHOT', 'DELETE FROM `diffs` WHERE `snapshot_id` = ?')
-
-        this._registerStatement('FIND_SNAP_ITEMS_CONFIG_HASHES', 'SELECT `config_hash` FROM `snap_items`')
-
-        this._registerStatement('DELETE_SNAP_ITEMS_BY_SNAPSHOT_ID', 'DELETE FROM `snap_items` WHERE `snapshot_id` = ?')
-
-        this._registerStatement('DELETE_SNAPSHOT_BY_ID', 'DELETE FROM `snapshots` WHERE `id` = ?')
-
-        this._registerStatement('DELETE_CONFIG_HASH', 'DELETE FROM `config_hashes` WHERE `key` = ?')
+        this._registerStatement('DELETE_CONFIG_HASH', 'DELETE FROM `config_hashes` WHERE `key` = ? AND `part` = ?')
     }
 
     _setupCronJob()
@@ -130,7 +117,7 @@ class HistoryCleanupProcessor {
         this._currentConfigHashes = [];
         this._usedHashesDict = {};
 
-        this._cutoffDate = [moment().subtract(this._days, 'days').format()];
+        this._cutoffDate = moment().subtract(this._days, 'days');
         this._logger.info('[processCleanup] Cutoff Date=%s', this._cutoffDate);
 
         return this._process(this._context.tracker)
@@ -162,7 +149,7 @@ class HistoryCleanupProcessor {
                         
                 })
                 .finally(() => {
-                    this._context.historyProcessor.setUsedHashesDict(this._usedHashesDict);
+                    this._context.historyProcessor.setUsedHashesDict({});
                     historyLock.finish();
                 })
                 .then(() => {
@@ -182,51 +169,40 @@ class HistoryCleanupProcessor {
     {
         this._logger.info('[_cleanupSnapshots] Running...');
 
+        var tables = MY_TABLES_TO_PROCESS.filter(x => x.isSnapshot);
+
         return tracker.scope("_cleanupSnapshots", (childTracker) => {
-            return this._cleanupSomeSnapshots()
-                .then(hasSnapshotsToDelete => {
-                    if (hasSnapshotsToDelete) {
-                        return this._cleanupSnapshots(tracker);
-                    }
-                })
+            return Promise.serial(tables, x => this._cleanupSnapshotTables(x.name));
         });
     }
 
-    _cleanupSomeSnapshots()
+    _cleanupSnapshotTables(tableName)
     {
-        var hasSnapshots = false;
-        return this._fetchSnapshots(this._cutoffDate)
-            .then(snapshots => {
-                this._logger.info('[_cleanupSomeSnapshots] Snapshot count: %s', snapshots.length);
-                hasSnapshots = (snapshots.length > 0);
-                if (hasSnapshots) {
-                    this._logger.info('[_cleanupSomeSnapshots] Top Snapshot ID: %s', snapshots[0].id);
+        this._logger.info('[_cleanupSnapshotTables] Table: %s', tableName);
+        return this._database.queryPartitions(tableName)
+            .then(partitions => {
+                this._logger.info('[_cleanupSnapshotTables] Table: %s, Current Partitions: ', tableName, partitions);
+
+                var cutoffPartition = HistoryPartitioning.calculateDatePartition(this._cutoffDate);
+                this._logger.info('[_cleanupSnapshotTables] CutoffPartition=%s', cutoffPartition);
+
+                for(var x of partitions)
+                {
+                    x.id = (x.value - 1);
                 }
-                return this._executeInTransaction(() => {
-                    return Promise.serial(snapshots, snapshot => this._cleanupSnapshot(snapshot))
-                });
-            })
-            .then(() => {
-                return hasSnapshots;  
-            })
+
+                var partitionsToDelete = partitions.filter(x => (x.id <= cutoffPartition));
+                this._logger.info('[_cleanupSnapshotTables] partitionsToDelete:', partitionsToDelete);
+
+                return Promise.serial(partitionsToDelete, x => this._deletePartition(tableName, x));
+            });
     }
 
-    _cleanupSnapshot(snapshot)
+    _deletePartition(tableName, partitionInfo)
     {
-        this._context.historyProcessor.markDeletedSnapshot(snapshot.id);
-        return this._cleanupDiffs(snapshot.id)
-            .then(() => this._execute('DELETE_SNAP_ITEMS_BY_SNAPSHOT_ID', [snapshot.id]))
-            .then(() => this._execute('DELETE_SNAPSHOT_BY_ID', [snapshot.id]))
-    }
-
-    _cleanupDiffs(snapshotId)
-    {
-        return Promise.resolve()
-            .then(() => this._execute('FIND_DIFFS_FOR_SNAPSHOT', [snapshotId]))
-            .then(diffs => {
-                return Promise.parallel(diffs, diff => this._deleteDiffItems(diff.id))
-            })
-            .then(() => this._execute('DELETE_DIFFS_FOR_SNAPSHOT', [snapshotId]))
+        this._logger.info('[_deletePartition] Table: %s, Partition: %s, Id: %s', tableName, partitionInfo.name, partitionInfo.id);
+        this._context.historyProcessor.markDeletedPartition(partitionInfo.id);
+        return this._database.dropPartition(tableName, partitionInfo.name);
     }
 
     _cleanupHashes(tracker)
@@ -234,51 +210,79 @@ class HistoryCleanupProcessor {
         this._logger.info('[_cleanupHashes] Begin');
 
         return tracker.scope("_cleanupHashes", (childTracker) => {
-            return Promise.resolve()
-                .then(() => this._queryConfigHashes(childTracker))
-                .then(() => this._queryUsedHashes(childTracker))
-                .then(() => this._cleanupConfigHashes(childTracker))
+
+            var ids = _.range(1, HistoryPartitioning.CONFIG_HASH_PARTITION_COUNT + 1);
+            return Promise.serial(ids, x => this._cleanupHashPartition(x, childTracker));
+
         });
     }
 
-    _queryConfigHashes(tracker)
+    _cleanupHashPartition(partition, tracker)
+    {
+        this._logger.info('[_cleanupHashPartition] Partition: %s', partition);
+
+        var hashes = null;
+        var usedHashesDict = null;
+        return Promise.resolve()
+            .then(() => this._queryConfigHashes(partition, tracker))
+            .then(result => {
+                hashes = result;
+            })
+            .then(() => this._queryUsedHashes(partition, tracker))
+            .then(result => {
+                usedHashesDict = result;
+            })
+            .then(() => this._cleanupConfigHashes(partition, hashes, usedHashesDict, tracker))
+    }
+
+    _queryConfigHashes(partition, tracker)
     {
         return tracker.scope("_queryConfigHashes", (childTracker) => {
-            return this._execute('FIND_CONFIG_HASHES')
+            var sql = `SELECT \`key\` FROM \`config_hashes\` PARTITION (${this._partitionName(partition)})`;
+            return this._executeSql(sql)
                 .then(hashes => {
-                    this._currentConfigHashes = hashes;
+                    this.logger.info("[_queryConfigHashes] Partition: %s, Count: %s", partition, hashes.length);
+                    return hashes;
                 })
         });
     }
 
-    _queryUsedHashes(tracker)
+    _queryUsedHashes(partition, tracker)
     {
         return tracker.scope("_queryUsedHashes", (childTracker) => {
-            this._usedHashesDict = {};
-            return this._execute('FIND_SNAP_ITEMS_CONFIG_HASHES')
+            var usedHashesDict = {};
+            return this._execute('FIND_SNAP_ITEMS_CONFIG_HASHES', [partition])
                 .then(hashes => {
                     for(var hash of hashes)
                     {
-                        this._usedHashesDict[hash.config_hash] = true;
+                        usedHashesDict[hash.config_hash] = true;
                     }
                 })
-                .then(() => this._execute('FIND_DIFF_ITEMS_CONFIG_HASHES'))
+                .then(() => this._execute('FIND_DIFF_ITEMS_CONFIG_HASHES', [partition]))
                 .then(hashes => {
                     for(var hash of hashes)
                     {
-                        this._usedHashesDict[hash.config_hash] = true;
+                        usedHashesDict[hash.config_hash] = true;
                     }
+                })
+                .then(() => {
+                    this.logger.info("[_queryUsedHashes] Partition: %s, Count: %s", partition, _.keys(usedHashesDict).length);
+                    return usedHashesDict;
                 })
         });
     }
 
-    _cleanupConfigHashes(tracker)
+    _partitionName(partition)
     {
-        this.logger.info('[_cleanupConfigHashes] used hash count: %s', _.keys(this._usedHashesDict).length);
-        this.logger.info('[_cleanupConfigHashes] current hash count: %s', this._currentConfigHashes.length);
+        return 'p' + partition;
+    }
 
-        var hashesToDelete = this._currentConfigHashes.filter(x => !this._usedHashesDict[x.key]);
-        this.logger.info('[_cleanupConfigHashes] hashes to delete: %s', hashesToDelete.length);
+    _cleanupConfigHashes(partition, hashes, usedHashesDict, tracker)
+    {
+        this.logger.info('[_cleanupConfigHashes] partition: %s, usedCount: %s, currentCount: %s', partition, _.keys(usedHashesDict).length, hashes.length);
+
+        var hashesToDelete = hashes.filter(x => !usedHashesDict[x.key]);
+        this.logger.info('[_cleanupConfigHashes] partition: %s, hashes to delete: %s', partition, hashesToDelete.length);
 
         var hashTransactionGroups = this._chunkArrayInGroups(hashesToDelete, 10 * 1000);
         var deleteIteration = 0;
@@ -295,7 +299,7 @@ class HistoryCleanupProcessor {
 
                     return Promise.serial(hashGroups, hashGroup => {
                         return Promise.parallel(hashGroup, x => {
-                            return this._execute('DELETE_CONFIG_HASH', [x.key]);
+                            return this._execute('DELETE_CONFIG_HASH', [x.key, partition]);
                         })
                     })
                 })
@@ -304,40 +308,29 @@ class HistoryCleanupProcessor {
         });
     }
 
-    _fetchSnapshots(date)
-    {
-        return this._execute('FIND_OLDEST_SNAPSHOTS', date)
-    }
-
-    _deleteDiffItems(diffId)
-    {
-        return this._execute('DELETE_DIFF_ITEMS_FOR_DIFF', [diffId]);
-    }
-
     _optimizeTables(tracker)
     {
         this._logger.info('[_optimizeTables] Begin');
         return tracker.scope("optimize", (childTracker) => {
-            return Promise.serial(MY_TABLES_TO_PROCESS, x => this._optimizeTable(x.name, childTracker));
+            return this._optimizeTable('config_hashes');
         });
     }
 
-    _optimizeTable(tableName, tracker)
+    _optimizeTable(tableName)
     {
         this._logger.info('[_optimizeTable] Optimize Begin, Table: %s', tableName);
 
-        return tracker.scope(tableName, (childTracker) => {
-            return Promise.resolve()
-                .then(() => this._executeSql(`OPTIMIZE TABLE ${tableName}`))
-                .then(logs => {
-                    logs.forEach(log => {
-                        this._logger.info('[_optimizeTable] Table: %s, %s :: %s', log.Table, log.Msg_type, log.Msg_text)
-                    })
+        // TODO: Optimize in transaction one table at a time.
+        return Promise.resolve()
+            .then(() => this._executeSql(`OPTIMIZE TABLE ${tableName}`))
+            .then(logs => {
+                logs.forEach(log => {
+                    this._logger.info('[_optimizeTable] Table: %s, %s :: %s', log.Table, log.Msg_type, log.Msg_text)
                 })
-                .then(() => {
-                    this._logger.info('[_optimizeTable] Optimize End, Table: %s', tableName);
-                })
-        });
+            })
+            .then(() => {
+                this._logger.info('[_optimizeTable] Optimize End, Table: %s', tableName);
+            })
     }
 
     _outputDBUsage(stage, tracker)

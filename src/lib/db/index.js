@@ -2,7 +2,7 @@ const Promise = require('the-promise');
 const _ = require('the-lodash');
 const DataStore = require("kubevious-helpers").DataStore;
 
-const TARGET_DB_VERSION = 3;
+const TARGET_DB_VERSION = 4;
 
 class Database
 {
@@ -77,6 +77,47 @@ class Database
         return this.driver.executeSql(sql);
     }
 
+    queryPartitions(tableName)
+    {
+        var sql = 
+            "SELECT PARTITION_NAME, PARTITION_DESCRIPTION " +
+            "FROM information_schema.partitions " +
+            `WHERE TABLE_SCHEMA='${process.env.MYSQL_DB}' ` +
+            `AND TABLE_NAME = '${tableName}' ` +
+            'AND PARTITION_NAME IS NOT NULL ' +
+            'AND PARTITION_DESCRIPTION != 0;';
+        
+        return this.executeSql(sql)
+            .then(results => {
+                return results.map(x => ({
+                    name: x.PARTITION_NAME,
+                    value: parseInt(x.PARTITION_DESCRIPTION)
+                }));
+            })
+    }
+
+    createPartition(tableName, name, value)
+    {
+        this._logger.info("[createPartition] Table: %s, %s -> %s", tableName, name, value);
+
+        var sql = 
+            `ALTER TABLE \`${tableName}\` ` +
+            `ADD PARTITION (PARTITION ${name} VALUES LESS THAN (${value}))`;
+        
+        return this.executeSql(sql);
+    }
+
+    dropPartition(tableName, name)
+    {
+        this._logger.info("[dropPartition] Table: %s, %s", tableName, name);
+
+        var sql = 
+            `ALTER TABLE \`${tableName}\` ` +
+            `DROP PARTITION ${name}`;
+        
+        return this.executeSql(sql);
+    }
+
     init()
     {
         this._logger.info("[init]")
@@ -118,9 +159,19 @@ class Database
 
         var migrator = require('./migrators/' + targetVersion);
         return Promise.resolve()
-            .then(() => migrator(this.logger, this.driver))
+            .then(() => migrator(this.logger, this.driver, this._migratorExecuteSql.bind(this)))
             .then(() => {
                 return this._setDbVersion(targetVersion);
+            })
+    }
+
+    _migratorExecuteSql(sql)
+    {
+        this.logger.info("[_migratorExecuteSql] Executing: %s", sql);
+        return this.driver.executeSql(sql)
+            .catch(reason => {
+                this.logger.info("[_migratorExecuteSql] Failed. Reason: ", reason);
+                throw reason;
             })
     }
 

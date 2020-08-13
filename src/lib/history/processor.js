@@ -4,14 +4,16 @@ const _ = require('the-lodash');
 const HistoryAccessor = require("./db-accessor");
 const Snapshot = require("kubevious-helpers").History.Snapshot;
 const BufferUtils = require("kubevious-helpers").BufferUtils;
+const HistoryPartitioning = require("kubevious-helpers").History.Partitioning;
 
 class HistoryProcessor
 {
     constructor(context)
     {
         this._context = context;
+        this._database = context.database;
         this._logger = context.logger.sublogger('HistoryProcessor');
-        this._dbAccessor = new HistoryAccessor(context, context.database);
+        this._dbAccessor = new HistoryAccessor(context, this._database);
         this._latestSnapshot = null;
         this._currentState = null;
         this._interation = 0;
@@ -23,7 +25,7 @@ class HistoryProcessor
         this._isProcessing = false;
         this._processFinishListeners = [];
 
-        context.database.onConnect(this._onDbConnected.bind(this));
+        this._database.onConnect(this._onDbConnected.bind(this));
     }
 
     get logger() {
@@ -36,8 +38,10 @@ class HistoryProcessor
 
     lockForCleanup(cb)
     {
+        this._logger.info("[lockForCleanup] BEGIN");
         var handler = {
             finish: () => {
+                this._logger.info("[lockForCleanup] FINISH");
                 this._resumeProcessing();
             }
         }
@@ -129,11 +133,13 @@ class HistoryProcessor
             .then(() => {
 
                 this._interation += 1;
-
+                var partition = HistoryPartitioning.calculateDatePartition(snapshot.date);
                 var configHashes = this._produceConfigHashes(snapshot);
                 var itemsDelta = this._produceDelta(snapshot, this._latestSnapshot);
                 var deltaSummary = this._constructDeltaSummary(snapshot, itemsDelta);
                 this._cleanupSnapshot(snapshot);
+
+                this.logger.info("[_processSnapshot] Date: %s, Partition: %s", snapshot.date, partition);
 
                 return Promise.resolve()
                     .then(() => this.debugObjectLogger.dump("history-diff-snapshot-", this._interation, snapshot))
@@ -142,9 +148,10 @@ class HistoryProcessor
                     .then(() => {
                         return this._dbAccessor.executeInTransaction(() => {
                             return Promise.resolve()
+                                .then(() => this._prepareSnapshotPartitions(partition))
                                 .then(() => this._persistConfigHashes(configHashes))
-                                .then(() => this._persistSnapshot(snapshot))
-                                .then(() => this._persistDiff(snapshot, itemsDelta, deltaSummary))
+                                .then(() => this._persistSnapshot(snapshot, partition))
+                                .then(() => this._persistDiff(snapshot, partition, itemsDelta, deltaSummary))
                                 .then(() => this._persistConfig())
                         });
                     })
@@ -165,8 +172,14 @@ class HistoryProcessor
         for(var item of snapshot.getItems())
         {
             var hash = this._calculateObjectHash(item.config);
-            configHashes.push({ config_hash: hash, config: item.config })
+            var hashPartition = HistoryPartitioning.calculateConfigHashPartition(hash);
+            configHashes.push({ 
+                config_hash: hash,
+                config_hash_part: hashPartition,
+                config: item.config
+            })
             item.config_hash = hash;
+            item.config_hash_part = hashPartition;
         }
         return configHashes;
     }
@@ -196,6 +209,7 @@ class HistoryProcessor
     _persistConfigHashes(configHashes)
     {
         var newHashes = configHashes.filter(x => !this._usedHashesDict[x.config_hash]);
+        this.logger.info('[_persistConfigHashes] new hash count: %s', newHashes.length);
         return Promise.resolve()
             .then(() => {
                 return this._dbAccessor.persistConfigHashes(newHashes);
@@ -208,32 +222,102 @@ class HistoryProcessor
             });
     }
 
-    _persistSnapshot(snapshot)
+    _persistSnapshot(snapshot, partition)
     {
-        if (!this._shouldCreateNewDbSnapshot(snapshot)) {
+        if (!this._shouldCreateNewDbSnapshot(snapshot, partition)) {
             return;
         }
         this.logger.info("[_persistSnapshot] BEGIN. Item Count: %s", snapshot.count, this._currentState);
-        return this._dbAccessor.fetchSnapshot(snapshot.date)
+        return Promise.resolve()
+            .then(() => this._dbAccessor.fetchSnapshot(partition, snapshot.date))
             .then(dbSnapshot => {
                 this.logger.info("[_persistSnapshot] ", dbSnapshot);
 
                 this._resetSnapshotState();
 
                 this._currentState.snapshot_id = dbSnapshot.id;
+                this._currentState.snapshot_part = dbSnapshot.part;
                 this._currentState.snapshot_date = dbSnapshot.date;
             })
             .then(() => {
-                return this._dbAccessor.syncSnapshotItems(this._currentState.snapshot_id, snapshot);
+                return this._dbAccessor.syncSnapshotItems(partition, this._currentState.snapshot_id, snapshot);
             })
             .then(() => {
                 this.logger.info("[_persistSnapshot] END");
             });
     }
 
-    _shouldCreateNewDbSnapshot(snapshot)
+    _prepareSnapshotPartitions(partition)
+    {
+        var tables = [
+            'snapshots',
+            'snap_items',
+            'diffs',
+            'diff_items'
+        ]
+        return Promise.serial(tables, x => this._prepareTablePartitions(x, partition));
+    }
+
+    _prepareTablePartitions(tableName, partition)
+    {
+        this.logger.info("[_prepareTablePartitions] %s :: %s", tableName, partition)
+        return this._database.queryPartitions(tableName)
+            .then(partitions => {
+                // this.logger.info("[_prepareTablePartitions] %s partitions: ", tableName, partitions)
+
+                var value = partition + 1;
+                // this.logger.info("[_prepareTablePartitions] %s value: %s", tableName, value)
+
+                var myPartition = _.find(partitions, x => x.value == value);
+                if (myPartition) {
+                    return;
+                }
+
+                return this._database.createPartition(tableName, 
+                    this._partitionName(partition),
+                    value);
+            });
+    }
+
+    _prepareConfigHashPartitions()
+    {
+        this.logger.info("[_prepareConfigHashPartitions]");
+
+        var tableName = 'config_hashes';
+        var ids = _.range(1, HistoryPartitioning.CONFIG_HASH_PARTITION_COUNT + 1);
+        return this._database.queryPartitions(tableName)
+            .then(partitions => {
+
+                var partitionDict = _.makeDict(partitions, x => x.value, x => true);
+
+                return Promise.serial(ids, id => {
+
+                    var value = id + 1;
+                    if (!partitionDict[value])
+                    {
+                        return this._database.createPartition(tableName, 
+                            this._partitionName(id),
+                            value);
+                    }
+
+                });
+
+            });
+
+    }
+
+    _partitionName(partition)
+    {
+        return 'p' + partition;
+    }
+
+    _shouldCreateNewDbSnapshot(snapshot, partition)
     {
         if (!this._currentState.snapshot_id) {
+            return true;
+        }
+
+        if (partition != this._currentState.snapshot_part) {
             return true;
         }
 
@@ -244,13 +328,14 @@ class HistoryProcessor
         return false;
     }
 
-    _persistDiff(snapshot, itemsDelta, deltaSummary)
+    _persistDiff(snapshot, partition, itemsDelta, deltaSummary)
     {
         this.logger.info('[_persistDiff] BEGIN. ', this._currentState);
 
         return Promise.resolve()
             .then(() => {
                 return this._dbAccessor.fetchDiff(this._currentState.snapshot_id,
+                    partition,
                     snapshot.date,
                     this._currentState.diff_in_snapshot,
                     deltaSummary)
@@ -270,7 +355,7 @@ class HistoryProcessor
                     diffSnapshot.addItem(newItem);
                 }
 
-                return this._dbAccessor.syncDiffItems(dbDiff.id, diffSnapshot);
+                return this._dbAccessor.syncDiffItems(partition, dbDiff.id, diffSnapshot);
             })
             .then(() => {
                 this.logger.info('[_persistDiff] END.');
@@ -383,7 +468,8 @@ class HistoryProcessor
                     config_kind: targetItem.config_kind,
                     name: targetItem.name,
                     config: targetItem.config,
-                    config_hash: targetItem.config_hash
+                    config_hash: targetItem.config_hash,
+                    config_hash_part: targetItem.config_hash_part
                 });
             }
         }
@@ -407,11 +493,16 @@ class HistoryProcessor
         if (!item) {
             return null;
         }
+        if (!item.config_hash_part) {
+            this.logger.error("[_sanitizeSnapshotItem] missing config_hash_part", item);
+            throw new Error("missing config_hash_part")
+        }
         var config = {
             dn: item.dn,
             kind: item.kind,
             config_kind: item.config_kind,
-            config_hash: item.config_hash
+            config_hash: item.config_hash,
+            config_hash_part: item.config_hash_part
         }
         if (item.name) {
             config.name = item.name;
@@ -481,6 +572,9 @@ class HistoryProcessor
                 this._currentState = config.value || {};
                 this._logger.info("[_onDbConnected] state: ", this._currentState);
             })
+            .then(() => {
+                return this._prepareConfigHashPartitions();
+            })
             .then(() => this._dbAccessor.snapshotReader.reconstructRecentShaphot(true))
             .then(snapshot => {
                 this._logger.info("[_onDbConnected] reconstructed snapshot item count: %s",
@@ -513,9 +607,9 @@ class HistoryProcessor
             })
     }
 
-    markDeletedSnapshot(snapshotId)
+    markDeletedPartition(partition)
     {
-        if (this._currentState.snapshot_id == snapshotId)
+        if (this._currentState.snapshot_part == partition)
         {
             this._resetSnapshotState();
         }
@@ -531,6 +625,7 @@ class HistoryProcessor
     {
         this.logger.info('[_resetSnapshotState] ');
 
+        this._currentState.snapshot_part = null;
         this._currentState.snapshot_id = null;
         this._currentState.snapshot_date = null;
         this._currentState.diff_in_snapshot = true;
