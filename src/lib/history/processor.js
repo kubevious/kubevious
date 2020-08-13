@@ -1,12 +1,10 @@
 const crypto = require('crypto');
 const Promise = require('the-promise');
 const _ = require('the-lodash');
-const moment = require('moment');
 const HistoryAccessor = require("./db-accessor");
 const Snapshot = require("kubevious-helpers").History.Snapshot;
 const BufferUtils = require("kubevious-helpers").BufferUtils;
-
-const CONFIG_HASH_PARTITION_COUNT = 20;
+const HistoryPartitioning = require("kubevious-helpers").History.Partitioning;
 
 class HistoryProcessor
 {
@@ -133,7 +131,7 @@ class HistoryProcessor
             .then(() => {
 
                 this._interation += 1;
-                var partition = this._determineDatePartition(snapshot.date);
+                var partition = HistoryPartitioning.calculateDatePartition(snapshot.date);
                 var configHashes = this._produceConfigHashes(snapshot);
                 var itemsDelta = this._produceDelta(snapshot, this._latestSnapshot);
                 var deltaSummary = this._constructDeltaSummary(snapshot, itemsDelta);
@@ -172,25 +170,16 @@ class HistoryProcessor
         for(var item of snapshot.getItems())
         {
             var hash = this._calculateObjectHash(item.config);
-            var hashPartition = this._calculateConfigHashPartition(hash);
+            var hashPartition = HistoryPartitioning.calculateConfigHashPartition(hash);
             configHashes.push({ 
                 config_hash: hash,
                 config_hash_part: hashPartition,
                 config: item.config
             })
             item.config_hash = hash;
-            item.config_hash_part = this._calculateConfigHashPartition(hash);
+            item.config_hash_part = hashPartition;
         }
         return configHashes;
-    }
-
-    _calculateConfigHashPartition(hash)
-    {
-        var sum = 0;
-        for (const value of hash.values()) {
-            sum += value;
-        }
-        return sum % CONFIG_HASH_PARTITION_COUNT + 1;
     }
 
     _cleanupSnapshot(snapshot)
@@ -255,13 +244,6 @@ class HistoryProcessor
             });
     }
 
-    _determineDatePartition(date)
-    {
-        var date = moment(date);
-        var part = ((date.year()) * 100 + date.month() ) * 100 + date.date();
-        return part;
-    }
-
     _prepareSnapshotPartitions(partition)
     {
         var tables = [
@@ -299,7 +281,7 @@ class HistoryProcessor
         this.logger.info("[_prepareConfigHashPartitions]");
 
         var tableName = 'config_hashes';
-        var ids = _.range(1, CONFIG_HASH_PARTITION_COUNT + 1);
+        var ids = _.range(1, HistoryPartitioning.CONFIG_HASH_PARTITION_COUNT + 1);
         return this._database.queryPartitions(tableName)
             .then(partitions => {
 
@@ -365,10 +347,6 @@ class HistoryProcessor
                     var newItem = _.clone(x);
                     diffSnapshot.addItem(newItem);
                 }
-
-                this.logger.info('[_persistDiff] SAMPLE: ', diffSnapshot[0]);
-                this.logger.info('[_persistDiff] SAMPLE: ', diffSnapshot[1]);
-                this.logger.info('[_persistDiff] SAMPLE: ', diffSnapshot[2]);
 
                 return this._dbAccessor.syncDiffItems(partition, dbDiff.id, diffSnapshot);
             })
@@ -508,11 +486,16 @@ class HistoryProcessor
         if (!item) {
             return null;
         }
+        if (!item.config_hash_part) {
+            this.logger.error("[_sanitizeSnapshotItem] missing config_hash_part", item);
+            throw new Error("missing config_hash_part")
+        }
         var config = {
             dn: item.dn,
             kind: item.kind,
             config_kind: item.config_kind,
-            config_hash: item.config_hash
+            config_hash: item.config_hash,
+            config_hash_part: item.config_hash_part
         }
         if (item.name) {
             config.name = item.name;

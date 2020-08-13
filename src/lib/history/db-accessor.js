@@ -109,17 +109,6 @@ class HistoryDbAccessor
     }
 
     /* SNAPSHOT ITEMS BEGIN */
-    insertSnapshotItem(snapshotId, dn, kind, configKind, name, config)
-    {
-        var params = [snapshotId, dn, kind, configKind, name, config]; 
-        return this._execute('INSERT_SNAPSHOT_ITEM', params);
-    }
-
-    deleteSnapshotItem(snapshotId)
-    {
-        var params = [snapshotId]; 
-        return this._execute('DELETE_SNAPSHOT_ITEM', params);
-    }
 
     _makeDbSnapshotFromItems(items)
     {
@@ -177,7 +166,6 @@ class HistoryDbAccessor
                 this.logger.info("[syncSnapshotItems] itemsDelta count: %s", itemsDelta.length);
 
                 this.debugObjectLogger.dump("history-items-delta", 0, itemsDelta);
-                // this.logger.info("[syncSnapshotItems] ", itemsDelta);
 
                 var statements = itemsDelta.map(x => {
                     if (x.action == 'C')
@@ -264,17 +252,6 @@ class HistoryDbAccessor
     /* DIFF END */
 
     /* DIFF ITEMS BEGIN */
-    insertDiffItem(diffId, dn, kind, configKind, name, isPresent, config)
-    {
-        var params = [diffId, dn, kind, configKind, name, isPresent, config]; 
-        return this._execute('INSERT_DIFF_ITEM', params);
-    }
-
-    deleteDiffItem(diffId)
-    {
-        var params = [diffId]; 
-        return this._execute('DELETE_DIFF_ITEM', params);
-    }
 
     syncDiffItems(partition, diffId, diffSnapshot)
     {
