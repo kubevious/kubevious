@@ -607,9 +607,9 @@ class HistoryProcessor
             })
     }
 
-    markDeletedSnapshot(snapshotId)
+    markDeletedPartition(partition)
     {
-        if (this._currentState.snapshot_id == snapshotId)
+        if (this._currentState.snapshot_part == partition)
         {
             this._resetSnapshotState();
         }
@@ -625,6 +625,7 @@ class HistoryProcessor
     {
         this.logger.info('[_resetSnapshotState] ');
 
+        this._currentState.snapshot_part = null;
         this._currentState.snapshot_id = null;
         this._currentState.snapshot_date = null;
         this._currentState.diff_in_snapshot = true;

@@ -1,6 +1,7 @@
 const _ = require('the-lodash');
 const moment = require('moment')
-const Promise = require('the-promise')
+const Promise = require('the-promise');
+const { partition } = require('the-lodash');
 const CronJob = require('cron').CronJob
 const HistoryPartitioning = require("kubevious-helpers").History.Partitioning;
 
@@ -191,7 +192,12 @@ class HistoryCleanupProcessor {
                 var cutoffPartition = HistoryPartitioning.calculateDatePartition(this._cutoffDate);
                 this._logger.info('[_cleanupSnapshotTables] CutoffPartition=%s', cutoffPartition);
 
-                var partitionsToDelete = partitions.filter(x => (x.value - 1) <= cutoffPartition);
+                for(var x of partitions)
+                {
+                    x.id = (x.value - 1);
+                }
+
+                var partitionsToDelete = partitions.filter(x => (x.id <= cutoffPartition));
                 this._logger.info('[_cleanupSnapshotTables] partitionsToDelete:', partitionsToDelete);
 
                 return Promise.serial(partitionsToDelete, x => this._deletePartition(tableName, x));
@@ -200,7 +206,8 @@ class HistoryCleanupProcessor {
 
     _deletePartition(tableName, partitionInfo)
     {
-        this._logger.info('[_deletePartition] Table: %s, Partition: %s', tableName, partitionInfo.name);
+        this._logger.info('[_deletePartition] Table: %s, Partition: %s, Id: %s', tableName, partitionInfo.name, partitionInfo.id);
+        this._context.historyProcessor.markDeletedPartition(partitionInfo.id);
         return this._database.dropPartition(tableName, partitionInfo.name);
     }
 
