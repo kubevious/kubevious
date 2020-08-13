@@ -12,8 +12,8 @@ module.exports = {
 
         function processNode(dn)
         {
-            var assets = state.getAssets(dn);
-            for(var alert of assets.alerts)
+            var alerts = state.getAlerts(dn);
+            for(var alert of alerts)
             {
                 alert.source = {
                     kind: 'parser'

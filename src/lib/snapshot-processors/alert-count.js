@@ -16,8 +16,8 @@ module.exports = {
             node.selfAlertCount = {
             };
     
-            var assets = state.getAssets(dn);
-            for(var alert of assets.alerts)
+            var alerts = state.getAlerts(dn);
+            for(var alert of alerts)
             {
                 if (!node.selfAlertCount[alert.severity]) {
                     node.selfAlertCount[alert.severity] = 0;

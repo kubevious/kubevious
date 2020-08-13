@@ -532,11 +532,11 @@ class HistoryProcessor
                 });
             }
             
-            var assets = state.getAssets(node.dn);
             {
-                if (_.keys(assets.props).length > 0)
+                var props = state.getProperties(node.dn);
+                if (_.keys(props).length > 0)
                 {
-                    for(var props of _.values(assets.props))
+                    for(var props of _.values(props))
                     {
                         snapshot.addItem({
                             config_kind: 'props',
@@ -547,13 +547,17 @@ class HistoryProcessor
                         });
                     }
                 }
-                if (assets.alerts.length > 0)
+            }
+
+            {
+                var alerts = state.getAlerts(node.dn);
+                if (alerts.length > 0)
                 {
                     snapshot.addItem({
                         config_kind: 'alerts',
                         dn: node.dn,
                         kind: node.config.kind,
-                        config: assets.alerts
+                        config: alerts
                     });
                 }
             }

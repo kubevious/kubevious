@@ -123,7 +123,7 @@ class FacadeRegistry
 
         {
             var items = [];
-            for(var x of bundle.assets)
+            for(var x of bundle.properties)
             {
                 items.push({
                     target: { dn: x.dn },
@@ -131,7 +131,20 @@ class FacadeRegistry
                     value_hash: x.config_hash,
                 });
             }
-            this._context.websocket.updateScope({ kind: 'assets' }, items);
+            this._context.websocket.updateScope({ kind: 'props' }, items);
+        }
+
+        {
+            var items = [];
+            for(var x of bundle.alerts)
+            {
+                items.push({
+                    target: { dn: x.dn },
+                    value: _.cloneDeep(x.config),
+                    value_hash: x.config_hash,
+                });
+            }
+            this._context.websocket.updateScope({ kind: 'alerts' }, items);
         }
     }
 

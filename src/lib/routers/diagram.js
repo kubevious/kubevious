@@ -26,15 +26,26 @@ module.exports = {
             return state.getChildren(req.query.dn, req.query['inc-children'])
         })
 
-        router.get('/assets', function (req, res) {
+        router.get('/props', function (req, res) {
             if (!req.query.dn) {
                 reportUserError('Missing dn.');
             }
             var state = context.registry.getCurrentState();
-            var assets = state.getAssets(req.query.dn);
-            assets.props = _.values(assets.props);
-            return assets;
+            var props = state.getProperties(req.query.dn);
+            props = _.values(props);
+            return props;
         })
+
+
+        router.get('/alerts', function (req, res) {
+            if (!req.query.dn) {
+                reportUserError('Missing dn.');
+            }
+            var state = context.registry.getCurrentState();
+            var alerts = state.getAlerts(req.query.dn);
+            return alerts;
+        })
+
 
         /*************************/
 
