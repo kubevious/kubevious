@@ -159,9 +159,19 @@ class Database
 
         var migrator = require('./migrators/' + targetVersion);
         return Promise.resolve()
-            .then(() => migrator(this.logger, this.driver))
+            .then(() => migrator(this.logger, this.driver, this._migratorExecuteSql.bind(this)))
             .then(() => {
                 return this._setDbVersion(targetVersion);
+            })
+    }
+
+    _migratorExecuteSql(sql)
+    {
+        this.logger.info("[_migratorExecuteSql] Executing: %s", sql);
+        return this.driver.executeSql(sql)
+            .catch(reason => {
+                this.logger.info("[_migratorExecuteSql] Failed. Reason: ", reason);
+                throw reason;
             })
     }
 

@@ -1,6 +1,6 @@
 const Promise = require('the-promise');
 
-module.exports = function(logger, driver) {
+module.exports = function(logger, driver, executeSql) {
     logger.info("MIGRATING v3");
 
     var queryies = [
@@ -75,5 +75,5 @@ module.exports = function(logger, driver) {
 
     ];
 
-    return Promise.serial(queryies, x => driver.executeSql(x));
+    return Promise.serial(queryies, x => executeSql(x));
 }
