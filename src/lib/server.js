@@ -100,8 +100,6 @@ class Server
             app: this._app,
             websocket: this._context.websocket,
             context: this._context,
-            collector: this._context.collector,
-            history: this._context.historySnapshotReader,
             reportError: (statusCode, message) => {
                 throw new RouterError(message, statusCode);
             },

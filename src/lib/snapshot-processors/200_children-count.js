@@ -2,7 +2,7 @@ const _ = require('lodash');
 
 
 module.exports = {
-    order: 230,
+    order: 200,
 
     handler: ({logger, state}) => {
 

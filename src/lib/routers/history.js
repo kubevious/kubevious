@@ -4,10 +4,10 @@ const DateUtils = require("kubevious-helpers").DateUtils;
 module.exports = {
     url: '/api/v1/history',
 
-    setup: ({ router, context, logger, history, reportUserError }) => {
+    setup: ({ router, context, logger, reportUserError }) => {
 
         router.get('/range', function(req, res) {
-            return history.queryTimelineRange()
+            return context.historySnapshotReader.queryTimelineRange()
                 .then(data => {
                     var info = _.head(data);
                     if (!info) {
@@ -38,7 +38,7 @@ module.exports = {
                 dateTo = DateUtils.makeDate(req.query.to);
             }
     
-            return history.queryTimeline(dateFrom, dateTo)
+            return context.historySnapshotReader.queryTimeline(dateFrom, dateTo)
                 .then(data => {
                     var result = data.map(x => {
                         return {
@@ -59,7 +59,7 @@ module.exports = {
     
             var date = DateUtils.makeDate(req.query.date); 
     
-            return history.querySnapshotForDate(date, 'node')
+            return context.historySnapshotReader.querySnapshotForDate(date, 'node')
                 .then(snapshot => {
                     if (!snapshot) {
                         return {};
@@ -67,36 +67,27 @@ module.exports = {
                     return snapshot.generateTree();
                 })
         });
-    
-        router.get('/assets', function(req, res) {
+
+        router.get('/props', function(req, res) {
     
             if (!req.query.dn) {
                 reportUserError('Missing dn');
             }
-    
             if (!req.query.date) {
                 reportUserError('Missing date');
             }
     
             var date = DateUtils.makeDate(req.query.date); 
-            return history.queryDnSnapshotForDate(req.query.dn, date, ['props', 'alerts'])
+            return context.historySnapshotReader.queryDnSnapshotForDate(req.query.dn, date, ['props'])
                 .then(snapshot => {
-                    var result = {
-                        alerts: [],
-                        props: []
-                    }
-    
+                    var result = [];
                     if (snapshot) 
                     {
                         for(var item of snapshot.getItems())
                         {
                             if (item.config_kind == 'props')
                             {
-                                result.props.push(item.config);
-                            } 
-                            else if (item.config_kind == 'alerts')
-                            {
-                                result.alerts = item.config;
+                                result.push(item.config);
                             }
                         }
                     }
@@ -104,6 +95,33 @@ module.exports = {
                 })
         });
 
+        router.get('/alerts', function(req, res) {
+    
+            if (!req.query.dn) {
+                reportUserError('Missing dn');
+            }
+            if (!req.query.date) {
+                reportUserError('Missing date');
+            }
+    
+            var date = DateUtils.makeDate(req.query.date); 
+            return context.historySnapshotReader.queryScopedSnapshotForDate(req.query.dn, date, ['alerts'])
+                .then(snapshot => {
+                    var result = {};
+                    if (snapshot) 
+                    {
+                        for(var item of snapshot.getItems())
+                        {
+                            if (item.config_kind == 'alerts')
+                            {
+                                result[item.dn] = item.config;
+                            }
+                        }
+                    }
+                    return result;
+                });
+        });
+    
         router.post('/cleanup', function (req, res) {
             return context.historyCleanupProcessor.processCleanup()
         })
