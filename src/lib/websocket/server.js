@@ -6,27 +6,16 @@ class Server
     {
         this._context = context;
         this._logger = context.logger.sublogger("WebSocketServer");
-
-        this.database.onConnect(this._onDbConnected.bind(this));
     }
 
     get logger() {
         return this._logger;
     }
 
-    get database() {
-        return this._context.database;
-    }
-
     run(httpServer)
     {
         this._socket = new WebSocketServer(this._logger.sublogger('WebSocket'), httpServer, '/socket');
         this._socket.run();
-    }
-
-    _onDbConnected()
-    {
-        this.logger.info("[onDbConnected]");
     }
 
     update(key, value)
@@ -42,7 +31,7 @@ class Server
     updateScope(key, value)
     {
         this.logger.debug("[updateScope] ", key, value);
-        
+
         if (!this._socket) {
             return;
         }
