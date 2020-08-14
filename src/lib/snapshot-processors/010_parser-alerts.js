@@ -3,15 +3,8 @@ module.exports = {
 
     handler: ({logger, state}) => {
 
-        for(var dn of state.getNodeDns())
-        {
-            processNode(dn);
-        }
+        state.traverseNodes((dn, node) => {
 
-        /************/
-
-        function processNode(dn)
-        {
             var alerts = state.getAlerts(dn);
             for(var alert of alerts)
             {
@@ -19,6 +12,8 @@ module.exports = {
                     kind: 'parser'
                 };
             }
-        }
+
+        })
+
     }
 }

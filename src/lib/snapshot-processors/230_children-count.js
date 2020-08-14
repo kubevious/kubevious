@@ -6,18 +6,13 @@ module.exports = {
 
     handler: ({logger, state}) => {
 
-        for(var dn of state.getNodeDns())
-        {
-            processNode(dn);
-        }
 
-        /************/
+        state.traverseNodes((dn, node) => {
 
-        function processNode(dn)
-        {
-            var node = state.editableNode(dn);
             var childrenDns = state.getChildrenDns(dn);
             node.childrenCount = childrenDns.length;
-        }
+
+        })
+
     }
 }

@@ -42,7 +42,7 @@ module.exports = {
                 reportUserError('Missing dn.');
             }
             var state = context.registry.getCurrentState();
-            var alerts = state.getAlerts(req.query.dn);
+            var alerts = state.getHierarchyAlerts(req.query.dn);
             return alerts;
         })
 

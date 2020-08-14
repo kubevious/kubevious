@@ -32,11 +32,14 @@ class SnapshotProcessor
             const pa = './' + location + '/' + x;
             const procModule = require(pa);
 
-            this._processors.push({
-                name: Path.parse(x).name,
-                order: procModule.order,
-                handler: procModule.handler
-            });
+            if (!procModule.disabled)
+            {
+                this._processors.push({
+                    name: Path.parse(x).name,
+                    order: procModule.order,
+                    handler: procModule.handler
+                });
+            }
         }
         this._processors = _.orderBy(this._processors, x => x.order);
 
@@ -64,6 +67,11 @@ class SnapshotProcessor
                     registryState = result;
                 })
                 .then(() => this._runProcessors(registryState, tracker))
+                .then(() => {
+                    return tracker.scope("finalizeState", () => {
+                        registryState.finalizeState();
+                    });
+                })
                 .then(() => {
                     return tracker.scope("buildBundle", () => {
                         bundle = registryState.buildBundle();
