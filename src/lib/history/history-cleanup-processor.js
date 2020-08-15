@@ -7,23 +7,28 @@ const HistoryPartitioning = require("kubevious-helpers").History.Partitioning;
 const MY_TABLES_TO_PROCESS = [
     {
         name: 'snapshots',
-        id: 'id'
+        id: 'id',
+        isSnapshot: true
     },
     {
         name: 'diffs',
-        id: 'id'
+        id: 'id',
+        isSnapshot: true
     },
     {
         name: 'diff_items',
-        id: 'id'
+        id: 'id',
+        isSnapshot: true
     },
     {
         name: 'snap_items',
-        id: 'id'
+        id: 'id',
+        isSnapshot: true
     },
     {
         name: 'config_hashes',
-        id: 'key'
+        id: 'key',
+        isSnapshot: false
     }
 ];
 
@@ -144,7 +149,7 @@ class HistoryCleanupProcessor {
                         .then(() => this._cleanupSnapshots(childTracker))
                         .then(() => this._cleanupHashes(childTracker))
                         .then(() => this._outputDBUsage('post-cleanup', childTracker))
-                        // .then(() => this._optimizeTables(childTracker))
+                        .then(() => this._optimizeTables(childTracker))
                         .then(() => this._outputDBUsage('finish', childTracker))
                         
                 })
@@ -169,15 +174,10 @@ class HistoryCleanupProcessor {
     {
         this._logger.info('[_cleanupSnapshots] Running...');
 
-        var tables = [
-            'snapshots',
-            'diffs',
-            'snap_items',
-            'diff_items'
-        ]
+        var tables = MY_TABLES_TO_PROCESS.filter(x => x.isSnapshot);
 
         return tracker.scope("_cleanupSnapshots", (childTracker) => {
-            return Promise.serial(tables, x => this._cleanupSnapshotTables(x));
+            return Promise.serial(tables, x => this._cleanupSnapshotTables(x.name));
         });
     }
 
@@ -311,26 +311,25 @@ class HistoryCleanupProcessor {
     {
         this._logger.info('[_optimizeTables] Begin');
         return tracker.scope("optimize", (childTracker) => {
-            return Promise.serial(MY_TABLES_TO_PROCESS, x => this._optimizeTable(x.name, childTracker));
+            return this._optimizeTable('config_hashes');
         });
     }
 
-    _optimizeTable(tableName, tracker)
+    _optimizeTable(tableName)
     {
         this._logger.info('[_optimizeTable] Optimize Begin, Table: %s', tableName);
 
-        return tracker.scope(tableName, (childTracker) => {
-            return Promise.resolve()
-                .then(() => this._executeSql(`OPTIMIZE TABLE ${tableName}`))
-                .then(logs => {
-                    logs.forEach(log => {
-                        this._logger.info('[_optimizeTable] Table: %s, %s :: %s', log.Table, log.Msg_type, log.Msg_text)
-                    })
+        // TODO: Optimize in transaction one table at a time.
+        return Promise.resolve()
+            .then(() => this._executeSql(`OPTIMIZE TABLE ${tableName}`))
+            .then(logs => {
+                logs.forEach(log => {
+                    this._logger.info('[_optimizeTable] Table: %s, %s :: %s', log.Table, log.Msg_type, log.Msg_text)
                 })
-                .then(() => {
-                    this._logger.info('[_optimizeTable] Optimize End, Table: %s', tableName);
-                })
-        });
+            })
+            .then(() => {
+                this._logger.info('[_optimizeTable] Optimize End, Table: %s', tableName);
+            })
     }
 
     _outputDBUsage(stage, tracker)
