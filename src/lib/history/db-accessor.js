@@ -98,6 +98,7 @@ class HistoryDbAccessor
                         .then(insertResult => {
                             var newObj = {
                                 id: insertResult.insertId,
+                                part: partition,
                                 date: date.toISOString()
                             };
                             return newObj;

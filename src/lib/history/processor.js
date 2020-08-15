@@ -222,7 +222,7 @@ class HistoryProcessor
 
     _persistSnapshot(snapshot, partition)
     {
-        if (!this._shouldCreateNewDbSnapshot(snapshot)) {
+        if (!this._shouldCreateNewDbSnapshot(snapshot, partition)) {
             return;
         }
         this.logger.info("[_persistSnapshot] BEGIN. Item Count: %s", snapshot.count, this._currentState);
@@ -234,6 +234,7 @@ class HistoryProcessor
                 this._resetSnapshotState();
 
                 this._currentState.snapshot_id = dbSnapshot.id;
+                this._currentState.snapshot_part = dbSnapshot.part;
                 this._currentState.snapshot_date = dbSnapshot.date;
             })
             .then(() => {
@@ -308,9 +309,13 @@ class HistoryProcessor
         return 'p' + partition;
     }
 
-    _shouldCreateNewDbSnapshot(snapshot)
+    _shouldCreateNewDbSnapshot(snapshot, partition)
     {
         if (!this._currentState.snapshot_id) {
+            return true;
+        }
+
+        if (partition != this._currentState.snapshot_part) {
             return true;
         }
 
