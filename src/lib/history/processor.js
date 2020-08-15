@@ -38,8 +38,10 @@ class HistoryProcessor
 
     lockForCleanup(cb)
     {
+        this._logger.info("[lockForCleanup] BEGIN");
         var handler = {
             finish: () => {
+                this._logger.info("[lockForCleanup] FINISH");
                 this._resumeProcessing();
             }
         }
