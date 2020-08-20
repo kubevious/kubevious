@@ -8,6 +8,7 @@
 * [Intro Video](#intro-video)
 * [Live Demo](#live-demo)
 * [Running Kubevious](#running-kubevious)
+* [Running Kubevious Outside the Cluster](#running-kubevious-outside-the-cluster)
 * [Capabilities](#capabilities)
 
 # What is Kubevious?
@@ -41,6 +42,11 @@ kubectl port-forward $(kubectl get pod -l k8s-app=kubevious-ui -n kubevious -o j
 Access from browser: http://localhost:3000
 
 For more details on installation options visit [Deployment Repository].
+
+# Running Kubevious Outside the Cluster
+While **Kubevious** was made to run inside the cluster and monitor the cluster it lives in, [** Kubevious Portable**](https://github.com/kubevious/portable) version runs outside the cluster. Usually, that would happen on development machines from where operators would run *kubectl* commands. Kubevious Portable runs inside a single docker container. Kubevious Portable does not have Rule Executing and Time Machine capabilities and is meant for quick sanity check and visualization of Kubernetes clusters and applications. Kubevious Portable connects to clusters defined in kube-config files.
+
+See instructions on [running Kubevious Portable here](https://github.com/kubevious/portable#running-kubevious-portable).
 
 # Capabilities
 
