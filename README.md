@@ -10,6 +10,7 @@
 * [Running Kubevious](#running-kubevious)
 * [Running Kubevious Outside the Cluster](#running-kubevious-outside-the-cluster)
 * [Capabilities](#capabilities)
+* [Community Posts](#community-posts)
 
 # What is Kubevious?
 **Kubevious** (pronounced [kju:bvi:əs]) is open-source software that provides a usable and highly graphical interface for Kubernetes. Kubevious renders all configurations relevant to the application in one place. That saves a lot of time from operators, eliminating the need for looking up settings and digging within selectors and labels. Kubevious works with any Kubernetes distributions. Kubevious and can be used at any stage of the project.
@@ -138,6 +139,15 @@ Kubevious provides correlated view across Roles, Bindings, ServiceAccounts and A
 ![RBAC Shared ServiceAccount](https://github.com/kubevious/media/raw/master/screens/rbac-2.png)
 
 Just like in case of ConfigMaps, the ServiceAccounts, Roles and Bindings can be marked with "Shared-By" flag. That would mean that the ServiceAccount, Role or Binding is used elsewhere, and any changes to would affect other applications as well. 
+
+
+# Community Posts
+- [Useful Interactive Terminal and Graphical UI Tools for Kubernetes](https://www.virtuallyghetto.com/2020/04/useful-interactive-terminal-and-graphical-ui-tools-for-kubernetes.html) by William Lam
+- [Обзор графических интерфейсов для Kubernetes](https://habr.com/ru/company/flant/blog/506948/) by Oleg Voznesensky
+- [Let us take a dig into Kubevious
+](https://saiyampathak.com/let-us-take-a-dig-into-kubevious-ckea9d9r700muxhs19jtr3xr8) by Saiyam Pathak
+
+*If you want your article describing the experience with Kubevious posted here, please submit a PR.*
 
 # Authors
 Everyone is welcome to contribute. See [CONTRIBUTING] for instructions on how to contribute.
