@@ -51,7 +51,7 @@ class SnapshotProcessor
         }
     }
 
-    process(snapshotInfo, tracker)
+    process(snapshotInfo, tracker, extraParams)
     {
         if (!tracker) {
             tracker = this._context.tracker;
@@ -66,7 +66,7 @@ class SnapshotProcessor
                 .then(result => {
                     registryState = result;
                 })
-                .then(() => this._runProcessors(registryState, tracker))
+                .then(() => this._runProcessors(registryState, extraParams, tracker))
                 .then(() => {
                     return tracker.scope("finalizeState", () => {
                         registryState.finalizeState();
@@ -94,18 +94,24 @@ class SnapshotProcessor
         });
     }
 
-    _runProcessors(registryState, tracker)
+    _runProcessors(registryState, extraParams, tracker)
     {
         return tracker.scope("handlers", (procTracker) => {
             return Promise.serial(this._processors, processor => {
                 return procTracker.scope(processor.name, (innerTracker) => {
 
-                    var params = {
+                    var params;
+                    if (extraParams) {
+                        params = _.clone(extraParams);
+                    } else {
+                        params = {}
+                    }
+                    params = _.defaults(params, {
                         logger: this.logger,
                         context: this._context,
                         state: registryState,
                         tracker: innerTracker
-                    }
+                    });
                     
                     return processor.handler(params);
                 })
