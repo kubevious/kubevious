@@ -1,13 +1,17 @@
-# How to Contribute
+## Communicating
+The best way to start is to join the **#contributing** Slack channel https://kubevious.io/slack
 
-Details TBD.
+## Repositories
 
-## Meanwhile
+Project consists of 4 major components and repos. 
+- **Backend**: https://github.com/kubevious/backend
+- **Frontend**: https://github.com/kubevious/ui
+- **Parser**: https://github.com/kubevious/parser
+- **Heml Charts**: https://github.com/kubevious/helm
 
-The project is its infancy. If you want to contribute please report bugs and suggestions 
-[here](https://github.com/kubevious/kubevious/issues).
+## Using and Reporting
+Another great way to contribute is by using Kubevious and reporing issues and feature requests as they arise: https://github.com/kubevious/kubevious/issues
 
-If you're interested to participate in active development of Kubevious contact me directly at 
-[ruben.hakopian@gmail.com](mailto:ruben.hakopian@gmail.com).
+You can also reach out to us at [info@kubevious.io](mailto:info@kubevious.io)
 
 
