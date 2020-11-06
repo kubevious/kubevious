@@ -9,7 +9,7 @@
 * [Running Kubevious](#running-kubevious)
 * [Running Kubevious Outside the Cluster](#running-kubevious-outside-the-cluster)
 * [Capabilities](#capabilities)
-* [Community Posts](#community-posts-reviews-and-videos)
+* [Community Posts, Reviews and Videos](#community-posts-reviews-and-videos)
 
 # What is Kubevious?
 **Kubevious** (pronounced [kju:bvi:əs]) is open-source software that provides a usable and highly graphical interface for Kubernetes. Kubevious renders all configurations relevant to the application in one place. That saves a lot of time from operators, eliminating the need for looking up settings and digging within selectors and labels. Kubevious works with any Kubernetes distributions. Kubevious and can be used at any stage of the project.
