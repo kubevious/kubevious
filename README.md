@@ -28,18 +28,18 @@ See the collection of other demo videos: https://www.youtube.com/channel/UCTjfcE
 See our live demo running on a model cluster: [https://demo.kubevious.io](https://demo.kubevious.io).
 
 # Running Kubevious
-Kubevious works with any Kubernetes distribution and runs within the cluster. Deploy using Helm v3:
+Kubevious works with any Kubernetes distribution and runs within the cluster. Deploy using Helm v3.2+:
 
 ```sh
 kubectl create namespace kubevious
 
 helm repo add kubevious https://helm.kubevious.io
 
-helm upgrade --atomic -i kubevious kubevious/kubevious --version 0.7.25 -n kubevious
+helm upgrade --atomic -i kubevious kubevious/kubevious --version 0.7.26 -n kubevious
 
-kubectl port-forward $(kubectl get pod -l k8s-app=kubevious-ui -n kubevious -o jsonpath="{.items[0].metadata.name}") 3000:80 -n kubevious
+kubectl port-forward $(kubectl get pods -n kubevious -l "app.kubernetes.io/component=kubevious-ui" -o jsonpath="{.items[0].metadata.name}") 8080:80 -n kubevious 
 ```
-Access from browser: http://localhost:3000
+Access from browser: http://localhost:8080
 
 For more details on installation options visit [Deployment Repository].
 
