@@ -156,6 +156,9 @@ Just like in case of ConfigMaps, the ServiceAccounts, Roles and Bindings can be 
 
 *If you want your article describing the experience with Kubevious posted here, please submit a PR.*
 
+# Local Development
+Learn about [Kubevious High-Level Architecture](ARCHITECTURE.md) and to set up local development environment.
+
 # Authors
 Everyone is welcome to contribute. See [CONTRIBUTING] for instructions on how to contribute.
 

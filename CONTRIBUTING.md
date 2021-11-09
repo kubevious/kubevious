@@ -6,8 +6,10 @@ The best way to start is to join the **#contributing** Slack channel https://kub
 Project consists of 4 major components and repos. 
 - **Backend**: Here is the smart and complex stuff. https://github.com/kubevious/backend
 - **Frontend**: Here is the beautiful and cool stuff. https://github.com/kubevious/ui
-- **Parser**: The thing that loads lots of configs from Kuberentes and sends to the Backend. https://github.com/kubevious/parser
-- **Helm Charts**: The stuff that allows running Kubevious on Kuberentes. https://github.com/kubevious/helm
+- **Parser**: The thing that loads lots of configs from Kubernetes and sends to the Backend. https://github.com/kubevious/parser
+- **Helm Charts**: The stuff that allows running Kubevious on Kubernetes. https://github.com/kubevious/helm
+
+Learn about ![Kubevious High-Level Architecture here](ARCHITECTURE.md).
 
 ## How else can you help?
 Another great way to contribute is by using Kubevious and reporting issues and feature requests as they arise: https://github.com/kubevious/kubevious/issues
