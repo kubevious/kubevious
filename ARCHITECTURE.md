@@ -1,4 +1,4 @@
-## Kubevious Archictecture
+## Kubevious Architecture
 
 Kubevious consists of 3 executable components. 
 
