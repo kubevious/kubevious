@@ -1,0 +1,18 @@
+@startuml
+actor user
+
+component "Frontend" as frontend
+component "Backend" as backend 
+component "Parser" as parser
+database "MySQL" as mysql
+
+cloud "K8s Api Server" as k8s
+
+user -> frontend
+frontend -> backend
+backend <- parser
+
+parser -> k8s
+
+backend --> mysql
+@enduml
