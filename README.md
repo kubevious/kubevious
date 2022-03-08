@@ -68,7 +68,7 @@ See instructions on [running Kubevious Portable here](https://github.com/kubevio
 
 Even a simple Hello World app in Kubernetes produces dozens of objects. It takes a lot of time to fetch application relevant configurations.
 
-Kubeviuos renders the entire Kubernetes cluster configuration in an application-centric graphical way. Kubevious identifies relevant Deployments, ReplicaSets, Pods, Services, Ingresses, Volumes, ConfigMaps, etc. and renders withing the application boxes.
+Kubevious renders the entire Kubernetes cluster configuration in an application-centric graphical way. Kubevious identifies relevant Deployments, ReplicaSets, Pods, Services, Ingresses, Volumes, ConfigMaps, etc. and renders withing the application boxes.
 
 The main screen is rendered using boxes. Every box is expandable (using double-click) and selectable. The right side panel includes properties and configurations associated with each box. 
 
@@ -120,7 +120,7 @@ Kubevious renders not only absolute resource request values, but also relative u
 
 With ever changing configuration it is hard to keep track and identify the source of the problem. 
 
-Kubvious allows you to travel back in time and navigate configuration as well as errors. See time machine in action here: https://youtu.be/Zb5ZIJEHONU
+Kubevious allows you to travel back in time and navigate configuration as well as errors. See time machine in action here: https://youtu.be/Zb5ZIJEHONU
 
 ## Radioactive & Overprivileged Workloads
 ![Radioactive & Overprivileged Workloads](https://github.com/kubevious/media/raw/master/screens/radioactive-1.png)
