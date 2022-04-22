@@ -23,6 +23,8 @@ Kubevious also provides hints to operators to avoid and identify configurational
 <img src="https://github.com/kubevious/media/raw/master/videos/intro.gif" />
 </a>
 
+_This is a recording of the older version. We'll get the new one recorded soon!_
+
 See the collection of other demo videos: https://www.youtube.com/channel/UCTjfcEFrGjqtSGtry4ySUzQ
 
 # Live Demo
