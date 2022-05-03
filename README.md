@@ -15,7 +15,7 @@
 - [License](#license)
 
 # What is Kubevious?
-**Kubevious** (pronounced [kju:bvi:əs]) helps running modern Kubernetes applications without disasters. Kubevious continuously validates application manifests and cluster states for misconfigurations, conflicts, typos, and violations of cloud-native best practices. Kubevious provides unique app-centric insights to introspect and troubleshoot applications right out of the box when issues arise. Kubevious operates inside the cluster and is accessible as a web app. Kubevious only a couple of minutes to get up and running for existing production applications.
+**Kubevious** (pronounced [kju:bvi:əs]) helps running modern Kubernetes applications without disasters. Kubevious continuously validates application manifests and cluster states for misconfigurations, conflicts, typos, and violations of cloud-native best practices. Kubevious provides unique app-centric insights to introspect and troubleshoot applications right out of the box when issues arise. Kubevious operates inside the cluster and is accessible as a web app. It only takes a couple of minutes to get Kubevious up and running for existing production applications.
 
 # Intro Video
 <!-- ![Kubevious Intro Video](https://github.com/kubevious/media/raw/master/videos/intro.gif) -->
