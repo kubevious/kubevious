@@ -1,18 +1,30 @@
 @startuml
+!include <logos/mysql>
+!include <logos/redis>
+!include <kubernetes/k8s-sprites-unlabeled-50pct.puml>
+
 actor user
 
 component "Frontend" as frontend
 component "Backend" as backend 
+component "Collector" as collector 
 component "Parser" as parser
-database "MySQL" as mysql
 
-cloud "K8s Api Server" as k8s
+database "MySQL \n <$mysql>" as mysql
+database "Redis \n <$redis>" as redis
+
+cloud "K8s Api Server \n <$node>\nmaster" as k8s
 
 user -> frontend
 frontend -> backend
-backend <- parser
+collector <- parser
 
 parser -> k8s
 
+collector --> mysql
+collector --> redis
+
 backend --> mysql
+backend --> redis
+
 @enduml
