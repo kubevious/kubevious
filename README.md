@@ -11,11 +11,11 @@
 - [Capabilities](#capabilities)
 - [Community Posts, Reviews and Videos](#community-posts-reviews-and-videos)
 - [Local Development](#local-development)
+- [Authors](#authors)
+- [License](#license)
 
 # What is Kubevious?
-**Kubevious** (pronounced [kju:bvi:əs]) is open-source software that provides a usable and highly graphical interface for Kubernetes. Kubevious renders all configurations relevant to the application in one place. That saves a lot of time from operators, eliminating the need for looking up settings and digging within selectors and labels. Kubevious works with any Kubernetes distributions. Kubevious and can be used at any stage of the project.
-
-Kubevious also provides hints to operators to avoid and identify configurational and operational errors.
+**Kubevious** (pronounced [kju:bvi:əs]) helps running modern Kubernetes applications without disasters. Kubevious continuously validates application manifests and cluster states for misconfigurations, conflicts, typos, and violations of cloud-native best practices. Kubevious provides unique app-centric insights to introspect and troubleshoot applications right out of the box when issues arise. Kubevious operates inside the cluster and is accessible as a web app. Kubevious only a couple of minutes to get up and running for existing production applications.
 
 # Intro Video
 <!-- ![Kubevious Intro Video](https://github.com/kubevious/media/raw/master/videos/intro.gif) -->
@@ -53,15 +53,25 @@ See instructions on [running Kubevious Portable here](https://github.com/kubevio
 
 # Capabilities
 
-* [Cluster and Configs in an Application Centric View](#cluster-and-configs-in-an-application-centric-view)
-* [Detects Configuration Errors](#detect-configuration-errors)
-* [Write Your Own Validation Rules](#write-your-own-validation-rules)
-* [Identifies Blast Radius](#identify-blast-radius)
-* [Full Text Search](#full-text-search)
-* [Perform Capacity Planning and Optimize Resource Usage](#perform-capacity-planning-and-optimize-resource-usage)
-* [Time Machine](#time-machine)
-* [Radioactive & Overprivileged Workloads](#radioactive--overprivileged-workloads)
-* [Correlated RBAC](#correlated-rbac)
+- [What is Kubevious?](#what-is-kubevious)
+- [Intro Video](#intro-video)
+- [Live Demo](#live-demo)
+- [Running Kubevious](#running-kubevious)
+- [Running Kubevious Outside the Cluster](#running-kubevious-outside-the-cluster)
+- [Capabilities](#capabilities)
+  - [Cluster and Configs in an Application Centric View](#cluster-and-configs-in-an-application-centric-view)
+  - [Detect Configuration Errors](#detect-configuration-errors)
+  - [Write Your Own Validation Rules](#write-your-own-validation-rules)
+  - [Identify Blast Radius](#identify-blast-radius)
+  - [Full Text Search](#full-text-search)
+  - [Perform Capacity Planning and Optimize Resource Usage](#perform-capacity-planning-and-optimize-resource-usage)
+  - [Time Machine](#time-machine)
+  - [Radioactive & Overprivileged Workloads](#radioactive--overprivileged-workloads)
+  - [Correlated RBAC](#correlated-rbac)
+- [Community Posts, Reviews and Videos](#community-posts-reviews-and-videos)
+- [Local Development](#local-development)
+- [Authors](#authors)
+- [License](#license)
 
 
 ## Cluster and Configs in an Application Centric View
