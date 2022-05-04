@@ -1,35 +1,21 @@
-<!-- [![Gitter](https://badges.gitter.im/kubevious/community.svg)](https://gitter.im/kubevious/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) -->
-[![Slack](https://img.shields.io/badge/chat-on%20slack-ff69b4)](https://kubevious.io/slack)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-<a href="https://www.f6s.com/kubevious?follow=1" target="_blank" title="Follow Kubevious on F6S"><img src="https://www.f6s.com/images/f6s-follow-green.png" border="0" width="78" height="22 " alt="Follow Kubevious on F6S" style="width: 78px; height: 22px; padding: 0px; margin: 0px;" /></a>
-
+[![Release](https://img.shields.io/github/v/release/kubevious/kubevious?label=version&color=2ec4b6)](https://github.com/kubevious/kubevious/releases) [![DockerPulls](https://img.shields.io/docker/pulls/kubevious/kubevious?color=ade8f4)](https://hub.docker.com/u/kubevious) [![Issues](https://img.shields.io/github/issues/kubevious/kubevious?color=red)](https://github.com/kubevious/kubevious/issues) [![Slack](https://img.shields.io/badge/chat-on%20slack-7b2cbf)](https://kubevious.io/slack) [![Twitter](https://img.shields.io/twitter/url?color=0096c7&logoColor=white&label=Follow&logo=twitter&style=flat&url=https%3A%2F%2Ftwitter.com%2Fkubevious)](https://twitter.com/kubevious)  [![License](https://img.shields.io/badge/License-Apache%202.0-cb997e.svg)](https://opensource.org/licenses/Apache-2.0)
 
 # What is Kubevious?
 **Kubevious** (pronounced [kju:bvi:əs]) helps running modern Kubernetes applications without disasters. Kubevious continuously validates application manifests and cluster states for misconfigurations, conflicts, typos, and violations of cloud-native best practices. Kubevious provides unique app-centric insights to introspect and troubleshoot applications right out of the box when issues arise. Kubevious operates inside the cluster and is accessible as a web app. It only takes a couple of minutes to get Kubevious up and running for existing production applications.
 
-- [Intro Video](#intro-video)
+![Kubevious Intro](https://github.com/kubevious/media/raw/master/screens/intro.png)
+
 - [Live Demo](#live-demo)
 - [Running Kubevious](#running-kubevious)
 - [What can you do with Kubevious?](#what-can-you-do-with-kubevious)
-- [Contributing](#contributing)
-- [Governance](#governance)
-- [Roadmap](#roadmap)
+- [Community](#community)
 - [License](#license)
-- [Community Posts, Reviews and Videos](#community-posts-reviews-and-videos)
-
-
-# Intro Video
-<!-- ![Kubevious Intro Video](https://github.com/kubevious/media/raw/master/videos/intro.gif) -->
-<a href="https://youtu.be/YVBjt-9ugTg" target="_blank">
-<img src="https://github.com/kubevious/media/raw/master/videos/intro.gif" />
-</a>
-
-_This is a recording of the older version. We'll get the new one recorded soon!_
-
-See the collection of other demo videos: https://www.youtube.com/channel/UCTjfcEFrGjqtSGtry4ySUzQ
+- [What people say about Kubevious](#what-people-say-about-kubevious)
 
 # Live Demo
-See our live demo running on a model cluster: [https://demo.kubevious.io](https://demo.kubevious.io).
+Try Kubevious live demo running on a model cluster: <a href="https://demo.kubevious.io" target="_blank">https://demo.kubevious.io</a>.
+
+See the collection of demo videos: <a href="https://www.youtube.com/channel/UCTjfcEFrGjqtSGtry4ySUzQ" target="_blank">https://www.youtube.com/channel/UCTjfcEFrGjqtSGtry4ySUzQ</a>
 
 # Running Kubevious
 Kubevious works with any Kubernetes distribution and runs within the cluster. Deploy using Helm v3.2+:
@@ -45,14 +31,16 @@ kubectl port-forward $(kubectl get pods -n kubevious -l "app.kubernetes.io/compo
 ```
 Access from browser: http://localhost:8080
 
-For more details on installation options visit [Deployment Repository](https://github.com/kubevious/helm).
+For more details on installation options, visit [Deployment Repository](https://github.com/kubevious/helm).
 
 ## Running Kubevious Outside the Cluster
 While **Kubevious** was made to run inside the cluster and monitor the cluster it lives in, **[Kubevious Portable](https://github.com/kubevious/portable)** version runs outside the cluster. Usually, that would happen on development machines from where operators would run *kubectl* commands. Kubevious Portable runs inside a single docker container. Kubevious Portable does not have Rule Executing and Time Machine capabilities and is meant for quick sanity check and visualization of Kubernetes clusters and applications. Kubevious Portable connects to clusters defined in kube-config files. See instructions on [running Kubevious Portable here](https://github.com/kubevious/portable#running-kubevious-portable).
 
 # What can you do with Kubevious?
 ## Observe
-Kubevious processes Kubernetes cluster configuration and state into several domain focused views. Learn more about Kubevious UI [here](https://kubevious.io/docs/features/application-centric-ui/).
+Kubevious processes Kubernetes cluster configuration and state into several domain-focused views. Learn more about Kubevious UI <a href="https://kubevious.io/docs/features/application-centric-ui/" target="_blank">
+here
+</a>.
 
 - **Logic View** is focused on app-centricity, where container, compute, networking, storage, and RBAC related manifests correlated and grouped under Application nodes.
 - **Image View** is focused on container images and container image repositories used in the cluster.
@@ -65,40 +53,52 @@ Kubevious processes Kubernetes cluster configuration and state into several doma
 ## Analyze
 Kubevious provides correlated insights to the following areas:
 
-- [Correlated Network Policies](https://kubevious.io/docs/features/cloud-native-tools/correlated-network-policies/)
-- [Correlated RBAC](https://kubevious.io/docs/features/cloud-native-tools/correlated-rbac/)
-- [Identifying Blast Radius](https://kubevious.io/docs/features/cloud-native-tools/identifying-blast-radius/)
-- [Radioactive Workloads](https://kubevious.io/docs/features/cloud-native-tools/radioactive-workloads/)
-- [Capacity Planning and Resource Usage Optimization](https://kubevious.io/docs/features/cloud-native-tools/capacity-planning-and-resource-usage-optimization/)
+- <a href="https://kubevious.io/docs/features/cloud-native-tools/correlated-network-policies/" target="_blank">Correlated Network Policies</a>
+
+- <a href="https://kubevious.io/docs/features/cloud-native-tools/correlated-rbac/" target="_blank">Correlated RBAC</a>
+
+- <a href="https://kubevious.io/docs/features/cloud-native-tools/identifying-blast-radius/" target="_blank">Identifying Blast Radius</a>
+
+- <a href="https://kubevious.io/docs/features/cloud-native-tools/radioactive-workloads/" target="_blank">Radioactive Workloads</a>
+
+- <a href="https://kubevious.io/docs/features/cloud-native-tools/capacity-planning-and-resource-usage-optimization/" target="_blank">Capacity Planning and Resource Usage Optimization</a>
 
 ## Validate
-Kubevious continuously validates cluster configuration and state for misconfigurations, typos and violations to best practices. 
+Kubevious continuously validates cluster configuration and states for misconfigurations, typos, and violations of best practices. 
 
-- [Built-in Validations](https://kubevious.io/docs/built-in-validators/) include 32-rules that validates configution across multiple manifests.
-- [Rules Engine](https://kubevious.io/docs/features/rules-engine/) allows extension of validation logic using a JavaScript like if-then-else syntax.
+- <a href="https://kubevious.io/docs/built-in-validators/" target="_blank">Built-in Validations</a> include 32-rules that validate configuration across multiple manifests.
+
+- <a href="https://kubevious.io/docs/features/rules-engine/" target="_blank">Rules Engine</a> allows extension of validation logic using a JavaScript-like if-then-else syntax.
 
 ## Investigate
-- [Time Machine](https://kubevious.io/docs/features/time-machine/) lets you travel back in time and see why did the application break, at which point of time and extract working manifests to recover. Time Machine also keeps track of changes that are intrinsically happening by k8s operators.
-![Kubevious Search Engine](https://kubevious.io/static/452c7f6c9960b3dedfd41baea7567ee6/3f20e/time-machine-active.png)
-- [Search Engine](https://kubevious.io/docs/features/search-engine/) implements a “Google” like a full-text search engine to find and return Kubernetes manifests matching various search criteria.
+- <a href="https://kubevious.io/docs/features/time-machine/" target="_blank">Time Machine</a> lets you travel back in time and see why the application broke, at which point of time and extract working manifests to recover. Time Machine also keeps track of changes that are intrinsically happening by k8s operators. 
+![Kubevious Time Machine](https://kubevious.io/static/452c7f6c9960b3dedfd41baea7567ee6/3f20e/time-machine-active.png)
+
+- <a href="https://kubevious.io/docs/features/search-engine/" target="_blank">Search Engine</a>  implements a “Google” like a full-text search engine to find and return Kubernetes manifests matching various search criteria.
 ![Kubevious Search Engine](https://kubevious.io/static/d2f0c37d574441032aa8dfb57332d17f/3f20e/search-simple.png)
+
 ## Troubleshoot
-- [App & Pod Health Monitoring](https://kubevious.io/docs/features/health-monitoring/) helps troubleshooting Application health degradation from a birds eye view and then guides to a fauly Pod.
+- <a href="https://kubevious.io/docs/features/health-monitoring/" target="_blank">App & Pod Health Monitoring</a> helps troubleshoot Application health degradation from a birds-eye view and then guides to a faulty Pod. 
 ![Kubevious Application and Pod Health Monitoring](https://kubevious.io/static/0a863383915cf7de91a2c641eacb82c0/3f20e/app-health.png)
 
-# Contributing
-Learn about [Kubevious High-Level Architecture](ARCHITECTURE.md) and to set up local development environment.
+# Community
 
-# Governance
+## Slack
+Join the [Kubevious Slack channel](https://kubevious.io/slack) to chat with Kubevious developers and other Kubevious users. This is a good place to learn about Kubevious, ask questions, and share your experiences.
+
+## Contributing
+We invite your participation through issues and pull requests! You can peruse the [contributing guidelines](CONTRIBUTING.md).
+
+## Governance
 The Kubevious project is created by [AUTHORS](AUTHORS.md). Governance policy is yet to be defined.
 
-# Roadmap
+## Roadmap
 Kubevious maintains a public [roadmap](ROADMAP.md), which provides priorities and future capabilities we are planning on adding to Kubevious.
 
 # License
-Kubevious is an open source project licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0). 
+Kubevious is an open-source project licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0). 
 
-# Community Posts, Reviews and Videos
+# What people say about Kubevious
 
 - [YAKD: Yet Another Kubernetes Dashboard](https://medium.com/geekculture/yakd-yet-another-kubernetes-dashboard-7766bd071f30) by KumoMind
 - [A Tour of Kubernetes Dashboards](https://youtu.be/CQZCRMUQynw) by Kostis Kapelonis @ Codefresh
