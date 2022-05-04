@@ -1,18 +1,20 @@
+# Contributing
+
+## How can you help?
+See list of open issues and new feature requests here: https://github.com/kubevious/kubevious/issues
+
 ## How to get started?
-The best way to start is to join the **#contributing** Slack channel https://kubevious.io/slack
+The best way to start is to join the **#contributing** Slack channel at https://kubevious.io/slack
 
 ## Where is the stuff?
-
-Project consists of 4 major components and repos. 
-- **Backend**: Here is the smart and complex stuff. https://github.com/kubevious/backend
-- **Frontend**: Here is the beautiful and cool stuff. https://github.com/kubevious/ui
-- **Parser**: The thing that loads lots of configs from Kubernetes and sends to the Backend. https://github.com/kubevious/parser
-- **Helm Charts**: The stuff that allows running Kubevious on Kubernetes. https://github.com/kubevious/helm
-
-Learn about ![Kubevious High-Level Architecture here](ARCHITECTURE.md).
+Project consists of 4 executables and multiple shared modules spread across separate repositories. See the list of all [Artifacts here](ARTIFACTS.md). Learn about [Kubevious Architecture here](ARCHITECTURE.md).
 
 ## How else can you help?
-Another great way to contribute is by using Kubevious and reporting issues and feature requests as they arise: https://github.com/kubevious/kubevious/issues
-
+If you like what with do with Kubevious and are proficient with any of:
+- Kubernetes
+- Node.js, Typescript
+- React
+- Technical Writing
+please let us know. 
 ## Not sure?
-You can also reach out to us at [info@kubevious.io](mailto:info@kubevious.io)
+Talk to us at [info@kubevious.io](mailto:info@kubevious.io)
