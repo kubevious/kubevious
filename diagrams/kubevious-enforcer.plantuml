@@ -1,0 +1,34 @@
+@startuml
+
+cloud "CI/CD" as cicd {
+
+queue "Pipeline" as pipeline
+
+agent "Kubevious CLI" as KubeviousCLI
+
+}
+
+
+cloud "Kubernetes Cluster" as k8s {
+
+agent "Kubevious" as Kubevious
+
+component "API Server" as apiServer
+
+rectangle "Admission Controller" as admissionController
+
+}
+
+
+pipeline --> KubeviousCLI : 1. CLI::\n Validate Package
+
+KubeviousCLI --> Kubevious : 2. Validate Package
+
+pipeline -> apiServer : 3. apply using helm, kubectl, etc
+
+apiServer --> admissionController : 4. validate single YAML
+
+admissionController --> Kubevious : 5. WebHook::\nvalidate single YAML
+
+
+@enduml
