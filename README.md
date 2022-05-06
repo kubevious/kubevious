@@ -53,15 +53,17 @@ here
 ## Analyze
 Kubevious provides correlated insights to the following areas:
 
-- <a href="https://kubevious.io/docs/features/cloud-native-tools/correlated-network-policies/" target="_blank">Correlated Network Policies</a>
+- <a href="https://kubevious.io/docs/features/cloud-native-tools/correlated-rbac/" target="_blank">Correlated RBAC</a>. Understand which permissions are grante to Applications though ServiceAccounts, RoleBindings and Roles.
+![Kubevious Correlated RBAC](https://kubevious.io/static/553c48aa1fb6426d57c9d51996a4a371/3f20e/selected-service-account.png)
 
-- <a href="https://kubevious.io/docs/features/cloud-native-tools/correlated-rbac/" target="_blank">Correlated RBAC</a>
+- <a href="https://kubevious.io/docs/features/cloud-native-tools/correlated-network-policies/" target="_blank">Correlated Network Policies</a>. Understand how NetworkPolicies are affecting applications and which traffic is allowed.
+![Kubevious Network Policies Correlated](https://kubevious.io/static/ca9090ba03b8fd0b4d73fe1b7466cf29/3f20e/network-policies.png)
 
-- <a href="https://kubevious.io/docs/features/cloud-native-tools/identifying-blast-radius/" target="_blank">Identifying Blast Radius</a>
+- <a href="https://kubevious.io/docs/features/cloud-native-tools/identifying-blast-radius/" target="_blank">Identifying Blast Radius</a>. Identify shared resources within the cluster.
 
-- <a href="https://kubevious.io/docs/features/cloud-native-tools/radioactive-workloads/" target="_blank">Radioactive Workloads</a>
+- <a href="https://kubevious.io/docs/features/cloud-native-tools/radioactive-workloads/" target="_blank">Radioactive Workloads</a>. Identify applications that have exessive permissions.
 
-- <a href="https://kubevious.io/docs/features/cloud-native-tools/capacity-planning-and-resource-usage-optimization/" target="_blank">Capacity Planning and Resource Usage Optimization</a>
+- <a href="https://kubevious.io/docs/features/cloud-native-tools/capacity-planning-and-resource-usage-optimization/" target="_blank">Capacity Planning and Resource Usage Optimization</a>. Identify how much of cluster resources are used by Applications and Namespaces.
 
 ## Validate
 Kubevious continuously validates cluster configuration and states for misconfigurations, typos, and violations of best practices. 
