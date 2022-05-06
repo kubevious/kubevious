@@ -1,7 +1,7 @@
 [![Release](https://img.shields.io/github/v/release/kubevious/kubevious?label=version&color=2ec4b6)](https://github.com/kubevious/kubevious/releases) [![DockerPulls](https://img.shields.io/docker/pulls/kubevious/kubevious?color=ade8f4)](https://hub.docker.com/u/kubevious) [![Issues](https://img.shields.io/github/issues/kubevious/kubevious?color=red)](https://github.com/kubevious/kubevious/issues) [![Slack](https://img.shields.io/badge/chat-on%20slack-7b2cbf)](https://kubevious.io/slack) [![Twitter](https://img.shields.io/twitter/url?color=0096c7&logoColor=white&label=Follow&logo=twitter&style=flat&url=https%3A%2F%2Ftwitter.com%2Fkubevious)](https://twitter.com/kubevious)  [![License](https://img.shields.io/badge/License-Apache%202.0-cb997e.svg)](https://opensource.org/licenses/Apache-2.0)
 
 # What is Kubevious?
-**Kubevious** (pronounced [kju:bvi:əs]) helps running modern Kubernetes applications without disasters. Kubevious continuously validates application manifests and cluster states for misconfigurations, conflicts, typos, and violations of cloud-native best practices. Kubevious provides unique app-centric insights to introspect and troubleshoot applications right out of the box when issues arise. Kubevious operates inside the cluster and is accessible as a web app. It only takes a couple of minutes to get Kubevious up and running for existing production applications.
+**Kubevious** (pronounced [kju:bvi:əs]) is an app-centric assurance, validation, and introspection platform for Kubernetes. It helps running modern Kubernetes applications without disasters and costly outages by continuously validating application manifests, cluster state and configuration. Kubevious detects errors(_typos, misconfigurations, conflicts, inconsistencies_) and violations of best practices. Kubevious' unique app-centric user interface delivers intuitive insight, introspection and troubleshooting tools for cloud-native applications. Right out of the box. Kubevious operates inside the cluster with user interface accessible as a web app. It only takes a couple of minutes to get Kubevious up and running for existing production applications.
 
 ![Kubevious Intro](https://github.com/kubevious/media/raw/master/screens/intro.png)
 
@@ -38,7 +38,7 @@ While **Kubevious** was made to run inside the cluster and monitor the cluster i
 
 # What can you do with Kubevious?
 ## Observe
-Kubevious processes Kubernetes cluster configuration and state into several domain-focused views. Learn more about Kubevious UI <a href="https://kubevious.io/docs/features/application-centric-ui/" target="_blank">
+Kubevious analyses Kubernetes cluster configuration and state and presents it graphically into multiple domain-focused views. You can learn more about Kubevious UI <a href="https://kubevious.io/docs/features/application-centric-ui/" target="_blank">
 here
 </a>.
 
@@ -50,8 +50,8 @@ here
 
 ![Cluster and Configs in an Application Centric View](https://kubevious.io/static/b4e981857c1b19c3d5b6c452ff17eadb/3f20e/main-ui-hints.png)
 
-## Analyze
-Kubevious provides correlated insights to the following areas:
+## Introspect
+Kubevious provides insights optimized for specific roles and responsibilities as well as correlated app-centric views.
 
 - <a href="https://kubevious.io/docs/features/cloud-native-tools/correlated-rbac/" target="_blank">Correlated RBAC</a>. Understand which permissions are grante to Applications though ServiceAccounts, RoleBindings and Roles.
 ![Kubevious Correlated RBAC](https://kubevious.io/static/553c48aa1fb6426d57c9d51996a4a371/3f20e/selected-service-account.png)
@@ -66,21 +66,21 @@ Kubevious provides correlated insights to the following areas:
 - <a href="https://kubevious.io/docs/features/cloud-native-tools/capacity-planning-and-resource-usage-optimization/" target="_blank">Capacity Planning and Resource Usage Optimization</a>. Identify how much of cluster resources are used by Applications and Namespaces.
 
 ## Validate
-Kubevious continuously validates cluster configuration and states for misconfigurations, typos, and violations of best practices. 
+Kubevious continuously validates cluster configuration and state for misconfigurations, typos, and violations of best practices. 
 
-- <a href="https://kubevious.io/docs/built-in-validators/" target="_blank">Built-in Validations</a> include 32-rules that validate configuration across multiple manifests.
+- <a href="https://kubevious.io/docs/built-in-validators/" target="_blank">Built-in Validations</a> include a comprehensive library of rules to get you up and running fast.
 
-- <a href="https://kubevious.io/docs/features/rules-engine/" target="_blank">Rules Engine</a> allows extension of validation logic using a JavaScript-like if-then-else syntax.
+- <a href="https://kubevious.io/docs/features/rules-engine/" target="_blank">Rules Engine</a> provides an intuitive policy language for custom extensions of validation logic using a JavaScript-like if-then-else syntax.
 
 ## Investigate
 - <a href="https://kubevious.io/docs/features/time-machine/" target="_blank">Time Machine</a> lets you travel back in time and see why the application broke, at which point of time and extract working manifests to recover. Time Machine also keeps track of changes that are intrinsically happening by k8s operators. 
 ![Kubevious Time Machine](https://kubevious.io/static/452c7f6c9960b3dedfd41baea7567ee6/3f20e/time-machine-active.png)
 
-- <a href="https://kubevious.io/docs/features/search-engine/" target="_blank">Search Engine</a>  implements a “Google” like a full-text search engine to find and return Kubernetes manifests matching various search criteria.
+- <a href="https://kubevious.io/docs/features/search-engine/" target="_blank">Search Engine</a> is a like full-text search engine to find and return Kubernetes manifests matching various search criteria.
 ![Kubevious Search Engine](https://kubevious.io/static/d2f0c37d574441032aa8dfb57332d17f/3f20e/search-simple.png)
 
 ## Troubleshoot
-- <a href="https://kubevious.io/docs/features/health-monitoring/" target="_blank">App & Pod Health Monitoring</a> helps troubleshoot Application health degradation from a birds-eye view and then guides to a faulty Pod. 
+- <a href="https://kubevious.io/docs/features/health-monitoring/" target="_blank">App & Pod Health Monitoring</a> helps you troubleshoot degradations of Application health with intutitive built-in tools that direct you to the source of the problem.
 ![Kubevious Application and Pod Health Monitoring](https://kubevious.io/static/0a863383915cf7de91a2c641eacb82c0/3f20e/app-health.png)
 
 # Community
