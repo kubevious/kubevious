@@ -73,7 +73,7 @@ Kubevious continuously validates cluster configuration and state for misconfigur
 - <a href="https://kubevious.io/docs/features/rules-engine/" target="_blank">Rules Engine</a> provides an intuitive policy language for custom extensions of validation logic using a JavaScript-like if-then-else syntax.
 
 ## Investigate
-- <a href="https://kubevious.io/docs/features/time-machine/" target="_blank">Time Machine</a> lets you travel back in time and see why the application broke, at which point of time and extract working manifests to recover. Time Machine also keeps track of changes that are intrinsically happening by k8s operators. 
+- <a href="https://kubevious.io/docs/features/time-machine/" target="_blank">Time Machine</a> lets you travel back in time, investigate cluster configuration and state, audit applications, root cause outages, and recover good and working manifests. Time Machine works by extracting resources directly from the Kubernetes API server, meaning that it keeps track of all changes, including ones made by k8s operators. 
 ![Kubevious Time Machine](https://kubevious.io/static/452c7f6c9960b3dedfd41baea7567ee6/3f20e/time-machine-active.png)
 
 - <a href="https://kubevious.io/docs/features/search-engine/" target="_blank">Search Engine</a> is a like full-text search engine to find and return Kubernetes manifests matching various search criteria.
