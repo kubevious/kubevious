@@ -86,7 +86,15 @@ Kubevious continuously validates cluster configuration and state for misconfigur
 # Community
 
 ## Slack
-Join the [Kubevious Slack channel](https://kubevious.io/slack) to chat with Kubevious developers and other Kubevious users. This is a good place to learn about Kubevious, ask questions, and share your experiences.
+Join the [Kubevious Slack workspace](https://kubevious.io/slack) to chat with Kubevious developers and users. This is a good place to learn about Kubevious, ask questions, and share your experiences.
+
+## Weekly Community Meeting
+Kubevious contributors and users gather every Thursday @ 9 am PDT for a [Zoom call](https://us06web.zoom.us/j/84612326916?pwd=OWRjY21NL3RzWGd3czdEQTRuekt0Zz09). Everyone is welcome to join. During the call, we discuss:
+- The current state of Kubevious
+- Upcoming development items
+- Any other community-relevant topics during the open session
+
+If you want to discuss something during the next meeting's open session, you can let us know in the **#weekly-meeting** channel of our [Slack workspace](https://kubevious.io/slack).
 
 ## Contributing
 We invite your participation through issues and pull requests! You can peruse the [contributing guidelines](CONTRIBUTING.md).

@@ -21,4 +21,4 @@ Kubevious contributors and users gather every Thursday @ 9 am PDT for a [Zoom ca
 - Upcoming development items
 - Any other community-relevant topics during the open session
 
-If you want to discuss something during the next meeting's open session, you can let us know in the **#weekly-meeting** channel of our Slack channel.
+If you want to discuss something during the next meeting's open session, you can let us know in the **#weekly-meeting** channel of our [Slack workspace](https://kubevious.io/slack).
