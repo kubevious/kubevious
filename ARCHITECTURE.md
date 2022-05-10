@@ -26,7 +26,7 @@ The stack is based on
 
 ## Where is the code? 
 
-Kubevious is implemented using fou executables and multiple shared modules. Clone following repos to get start with.
+Kubevious is implemented using four executables and multiple shared modules. Clone following repos to get start with.
 
 | Component   | Repo                                   |
 | ----------- | -------------------------------------- |
