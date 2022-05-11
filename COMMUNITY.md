@@ -1,5 +1,5 @@
 # Community
-There are many ways you can contribute to the project. Learn more at the [CONTRIBUTING](CONTRIBUTING guidelines). 
+There are many ways you can contribute to the project. Learn more at the [CONTRIBUTING guidelines](CONTRIBUTING.md). 
 
 ## Slack
 
