@@ -1,4 +1,4 @@
-## Kubevious Architecture
+# Kubevious Architecture
 
 Kubevious consists of 4 executable components. 
 
@@ -39,4 +39,4 @@ Kubevious is implemented using four executables and multiple shared modules. Clo
 The [full list of all artifacts](ARTIFACTS.md) for all repos and their build statuses.
 
 ## Local Setup and Development 
-Refer to READMEs for corresponding repos for instructions. 
+Refer to documentation to set up the [Development Environment](DEVELOPMENT.md).

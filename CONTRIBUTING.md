@@ -29,5 +29,8 @@ Kubevious consists of 4 executables and multiple shared modules spread across se
 - MySQL
 - Redis
 
+## Local Setup and Development 
+Refer to documentation to set up the [Development Environment](DEVELOPMENT.md).
+
 ## Not sure?
 Talk to us at [info@kubevious.io](mailto:info@kubevious.io)

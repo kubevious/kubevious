@@ -1,6 +1,7 @@
-## Kubevious Artifacts
+# Kubevious Artifacts
+Refer to documentation to set up the [Development Environment](DEVELOPMENT.md).
 
-### Binary Artifacts
+## Binary Artifacts
 
 | Repository | Status | Artifact |
 |---|---|---|
@@ -9,12 +10,12 @@
 | [Collector](https://github.com/kubevious/collector) | [![Codefresh build status](https://g.codefresh.io/api/badges/pipeline/kubevious/OSS%2Fcollector?type=cf-1)](https://g.codefresh.io/public/accounts/kubevious/pipelines/new/625794886f209f70907617f5) | [DockerHub](https://hub.docker.com/r/kubevious/collector) |
 | [Parser](https://github.com/kubevious/parser) | [![Codefresh build status](https://g.codefresh.io/api/badges/pipeline/kubevious/OSS%2Fparser?type=cf-1)](https://g.codefresh.io/public/accounts/kubevious/pipelines/new/5e8024571fbc96cb6db21463) | [DockerHub](https://hub.docker.com/r/kubevious/parser) |
 
-### Packaging Artifacts
+## Packaging Artifacts
 | Repository | Status | Artifact |
 |---|---|---|
 | [Helm](https://github.com/kubevious/helm) | [![Codefresh build status](https://g.codefresh.io/api/badges/pipeline/kubevious/branch%20sanity%2Fhelm-kubevious-validate?type=cf-1)](https://g.codefresh.io/public/accounts/kubevious/pipelines/new/5faf28dc8f69c44e57a20463) | [Helm Repository](https://helm.kubevious.io) |
 
-### Module Artifacts
+## Module Artifacts
 | Repository | Status | Artifact |
 |---|---|---|
 | [UI-Framework](https://github.com/kubevious/ui-framework) | [![Codefresh build status]( https://g.codefresh.io/api/badges/pipeline/kubevious/Helper%20Libraries%2Fui-framework?type=cf-1)]( https://g.codefresh.io/public/accounts/kubevious/pipelines/new/60259c6464db8424eab14711) | [NPM Module](https://www.npmjs.com/package/@kubevious/ui-framework) |
