@@ -18,12 +18,14 @@ workspace.git/kubevious-oss-workspace-init.sh
 ```
 
 ## Install Global Tools
-**Install NVM**
+
+**Install Node.js v14**
+Install NVM
 ```sh
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
 ```
 
-**Setup Node.js Version**
+Install and activate Node.js v14
 ```sh
 nvm install 14
 nvm alias default 14
@@ -40,6 +42,38 @@ npm install -g yarn
 ```sh
 npm install -g npm-check-updates
 ```
+**Install Caddy Web Server**
+Follow instructions: https://caddyserver.com/docs/install
 
 ## Running Kubevious
 
+**Run Dependencies**
+
+It runs Mysql, Redis and Caddy Web Server
+```sh
+dependencies.git/run-dependencies.sh
+```
+
+**Collector**
+```sh
+collector.git/initialize.sh
+collector.git/run-dev.sh
+```
+
+**Backend**
+```sh
+backend.git/initialize.sh
+backend.git/run-dev.sh
+```
+
+**UI**
+```sh
+ui.git/initialize.sh
+ui.git/run-dev.sh
+```
+
+**Parser**
+```sh
+parser.git/initialize.sh
+parser.git/run-dev-mock.sh
+```
