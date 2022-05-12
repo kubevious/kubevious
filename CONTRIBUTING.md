@@ -39,4 +39,4 @@ Kubevious consists of 4 executables and multiple shared modules spread across se
 Refer to documentation to set up the [Development Environment](DEVELOPMENT.md).
 
 ## Not sure?
-Talk to us at [info@kubevious.io](mailto:info@kubevious.io)
+Talk to us at [Slack](https://kubevious.io/slack) or email at [info@kubevious.io](mailto:info@kubevious.io)
