@@ -88,13 +88,22 @@ Kubevious continuously validates cluster configuration and state for misconfigur
 ## Slack
 Join the [Kubevious Slack workspace](https://kubevious.io/slack) to chat with Kubevious developers and users. This is a good place to learn about Kubevious, ask questions, and share your experiences.
 
-## Weekly Community Meeting
-Kubevious contributors and users gather every Thursday @ 9 am PDT for a [Zoom call](https://us06web.zoom.us/j/84612326916?pwd=OWRjY21NL3RzWGd3czdEQTRuekt0Zz09). Everyone is welcome to join. During the call, we discuss:
+## Events
+Follow our virtual and in-person events on [Meetup](https://www.meetup.com/kubevious/) or [Google Calendar](https://calendar.google.com/calendar/u/0?cid=Y19ndTlkM2p1c2lxNDRkbXBnamJoMTlva2Rvb0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t).
+
+### Weekly Community Meeting
+Kubevious contributors and users gather every Thursday @ 9 am PDT for a [Zoom call](https://us06web.zoom.us/j/81673703834?pwd=WWc4bUF6RzJDQXdOM2pUSlpvZ1JYZz09). Everyone is welcome to join. During the call, we discuss:
 - The current state of Kubevious
 - Upcoming development items
 - Any other community-relevant topics during the open session
 
 If you want to discuss something during the next meeting's open session, you can let us know in the **#weekly-meeting** channel of our [Slack workspace](https://kubevious.io/slack).
+
+### Kubernetes + Espresso in Bay Area
+Stop by to have a coffee with us and discuss Kubernetes and Cloud-Native. 
+
+Next event on May 20 @ 12:30PM in Palo Alto, CA
+RSVP: https://www.meetup.com/kubevious/events/285872691/
 
 ## Contributing
 We invite your participation through issues and pull requests! You can peruse the [contributing guidelines](CONTRIBUTING.md).
