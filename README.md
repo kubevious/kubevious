@@ -53,7 +53,7 @@ here
 ## Introspect
 Kubevious provides insights optimized for specific roles and responsibilities as well as correlated app-centric views.
 
-- <a href="https://kubevious.io/docs/features/cloud-native-tools/correlated-rbac/" target="_blank">Correlated RBAC</a>. Understand which permissions are grante to Applications though ServiceAccounts, RoleBindings and Roles.
+- <a href="https://kubevious.io/docs/features/cloud-native-tools/correlated-rbac/" target="_blank">Correlated RBAC</a>. Understand which permissions are granted to Applications though ServiceAccounts, RoleBindings and Roles.
 ![Kubevious Correlated RBAC](https://kubevious.io/static/553c48aa1fb6426d57c9d51996a4a371/3f20e/selected-service-account.png)
 
 - <a href="https://kubevious.io/docs/features/cloud-native-tools/correlated-network-policies/" target="_blank">Correlated Network Policies</a>. Understand how NetworkPolicies are affecting applications and which traffic is allowed.
@@ -61,7 +61,7 @@ Kubevious provides insights optimized for specific roles and responsibilities as
 
 - <a href="https://kubevious.io/docs/features/cloud-native-tools/identifying-blast-radius/" target="_blank">Identifying Blast Radius</a>. Identify shared resources within the cluster.
 
-- <a href="https://kubevious.io/docs/features/cloud-native-tools/radioactive-workloads/" target="_blank">Radioactive Workloads</a>. Identify applications that have exessive permissions.
+- <a href="https://kubevious.io/docs/features/cloud-native-tools/radioactive-workloads/" target="_blank">Radioactive Workloads</a>. Identify applications that have excessive permissions.
 
 - <a href="https://kubevious.io/docs/features/cloud-native-tools/capacity-planning-and-resource-usage-optimization/" target="_blank">Capacity Planning and Resource Usage Optimization</a>. Identify how much of cluster resources are used by Applications and Namespaces.
 
@@ -80,7 +80,7 @@ Kubevious continuously validates cluster configuration and state for misconfigur
 ![Kubevious Search Engine](https://kubevious.io/static/d2f0c37d574441032aa8dfb57332d17f/3f20e/search-simple.png)
 
 ## Troubleshoot
-- <a href="https://kubevious.io/docs/features/health-monitoring/" target="_blank">App & Pod Health Monitoring</a> helps you troubleshoot degradations of Application health with intutitive built-in tools that direct you to the source of the problem.
+- <a href="https://kubevious.io/docs/features/health-monitoring/" target="_blank">App & Pod Health Monitoring</a> helps you troubleshoot degradations of Application health with intuitive built-in tools that direct you to the source of the problem.
 ![Kubevious Application and Pod Health Monitoring](https://kubevious.io/static/0a863383915cf7de91a2c641eacb82c0/3f20e/app-health.png)
 
 # Community
