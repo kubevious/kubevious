@@ -77,3 +77,6 @@ ui.git/run-dev.sh
 parser.git/initialize.sh
 parser.git/run-dev-mock.sh
 ```
+
+**Endpoints**
+Kubevious UI will be accessible through http://localhost:4000 URL. The port 4000 is handled by Caddy server and it redirects to UI (port 4001) or the Backend (port 4002).
