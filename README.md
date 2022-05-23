@@ -103,6 +103,7 @@ If you want to discuss something during the next meeting's open session, you can
 Stop by to have a coffee with us and discuss Kubernetes and Cloud-Native. Takes place every Friday @ 12:30pm in the Bay Area. Location will alternate between Peninsula and East Bay.
 
 Next event on May 27 @ 12:30PM in Niles, CA
+
 RSVP: https://www.meetup.com/kubevious/events/286096433/
 
 ## Contributing
