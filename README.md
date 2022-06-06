@@ -83,15 +83,15 @@ Kubevious continuously validates cluster configuration and state for misconfigur
 - <a href="https://kubevious.io/docs/features/health-monitoring/" target="_blank">App & Pod Health Monitoring</a> helps you troubleshoot degradations of Application health with intuitive built-in tools that direct you to the source of the problem.
 ![Kubevious Application and Pod Health Monitoring](https://kubevious.io/static/0a863383915cf7de91a2c641eacb82c0/3f20e/app-health.png)
 
-# Community
+# 🧑🏻‍🤝‍🧑🏿 Community
 
-## Slack
+## 💬 Slack
 Join the [Kubevious Slack workspace](https://kubevious.io/slack) to chat with Kubevious developers and users. This is a good place to learn about Kubevious, ask questions, and share your experiences.
 
-## Events
+## 🎉 Events
 Follow our virtual and in-person events on [Meetup](https://www.meetup.com/kubevious/) or [Google Calendar](https://calendar.google.com/calendar/u/0?cid=Y19ndTlkM2p1c2lxNDRkbXBnamJoMTlva2Rvb0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t).
 
-### Weekly Community Meeting
+### 🎤 Weekly Community Meeting
 Kubevious contributors and users gather every Thursday @ 9 am PDT for a [Zoom call](https://us06web.zoom.us/j/81673703834?pwd=WWc4bUF6RzJDQXdOM2pUSlpvZ1JYZz09). Everyone is welcome to join. During the call, we discuss:
 - The current state of Kubevious
 - Upcoming development items
@@ -99,26 +99,26 @@ Kubevious contributors and users gather every Thursday @ 9 am PDT for a [Zoom ca
 
 If you want to discuss something during the next meeting's open session, you can let us know in the **#weekly-meeting** channel of our [Slack workspace](https://kubevious.io/slack).
 
-### Kubernetes + Espresso in Bay Area
+### ☕ Kubernetes + Espresso in Bay Area
 Stop by to have a coffee with us and discuss Kubernetes and Cloud-Native. Takes place every Friday @ 12:30pm in the Bay Area. Location will alternate between Peninsula and East Bay.
 
 Next event on June 17 @ 12:30PM in Palo Alto, CA
 
 RSVP: https://www.meetup.com/kubevious/events/286399220/
 
-## Contributing
+## 🏗️ Contributing
 We invite your participation through issues and pull requests! You can peruse the [contributing guidelines](CONTRIBUTING.md).
 
-## Governance
+## 🏛️ Governance
 The Kubevious project is created by [AUTHORS](AUTHORS.md). Governance policy is yet to be defined.
 
-## Roadmap
+## 🚀 Roadmap
 Kubevious maintains a public [roadmap](ROADMAP.md), which provides priorities and future capabilities we are planning on adding to Kubevious.
 
-# License
+# 📜 License
 Kubevious is an open-source project licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0). 
 
-# What people say about Kubevious
+# 📢 What people say about Kubevious
 
 - [YAKD: Yet Another Kubernetes Dashboard](https://medium.com/geekculture/yakd-yet-another-kubernetes-dashboard-7766bd071f30) by KumoMind
 - [A Tour of Kubernetes Dashboards](https://youtu.be/CQZCRMUQynw) by Kostis Kapelonis @ Codefresh
