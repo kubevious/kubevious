@@ -12,12 +12,12 @@
 - [License](#license)
 - [What people say about Kubevious](#what-people-say-about-kubevious)
 
-# Live Demo
+# ✨ Live Demo
 Try Kubevious live demo running on a model cluster: <a href="https://demo.kubevious.io" target="_blank">https://demo.kubevious.io</a>.
 
 See the collection of demo videos: <a href="https://www.youtube.com/channel/UCTjfcEFrGjqtSGtry4ySUzQ" target="_blank">https://www.youtube.com/channel/UCTjfcEFrGjqtSGtry4ySUzQ</a>
 
-# Running Kubevious
+# 🏃‍♀️ Running Kubevious
 Kubevious works with any Kubernetes distribution and runs within the cluster. Deploy using Helm v3.2+:
 
 ```sh
@@ -36,8 +36,9 @@ For more details on installation options, visit [Deployment Repository](https://
 ## Running Kubevious Outside the Cluster
 While **Kubevious** was made to run inside the cluster and monitor the cluster it lives in, **[Kubevious Portable](https://github.com/kubevious/portable)** version runs outside the cluster. Usually, that would happen on development machines from where operators would run *kubectl* commands. Kubevious Portable runs inside a single docker container. Kubevious Portable does not have Rule Executing and Time Machine capabilities and is meant for quick sanity check and visualization of Kubernetes clusters and applications. Kubevious Portable connects to clusters defined in kube-config files. See instructions on [running Kubevious Portable here](https://github.com/kubevious/portable#running-kubevious-portable).
 
-# What can you do with Kubevious?
-## Observe
+# ℹ️ What can you do with Kubevious?
+
+## 👁️ Observe
 Kubevious analyses Kubernetes cluster configuration and state and presents it graphically into multiple domain-focused views. You can learn more about Kubevious UI <a href="https://kubevious.io/docs/features/application-centric-ui/" target="_blank">
 here
 </a>.
@@ -50,7 +51,7 @@ here
 
 ![Cluster and Configs in an Application Centric View](https://kubevious.io/static/b4e981857c1b19c3d5b6c452ff17eadb/3f20e/main-ui-hints.png)
 
-## Introspect
+## 🔬 Introspect
 Kubevious provides insights optimized for specific roles and responsibilities as well as correlated app-centric views.
 
 - <a href="https://kubevious.io/docs/features/cloud-native-tools/correlated-rbac/" target="_blank">Correlated RBAC</a>. Understand which permissions are granted to Applications though ServiceAccounts, RoleBindings and Roles.
@@ -65,21 +66,21 @@ Kubevious provides insights optimized for specific roles and responsibilities as
 
 - <a href="https://kubevious.io/docs/features/cloud-native-tools/capacity-planning-and-resource-usage-optimization/" target="_blank">Capacity Planning and Resource Usage Optimization</a>. Identify how much of cluster resources are used by Applications and Namespaces.
 
-## Validate
+## ✅ Validate
 Kubevious continuously validates cluster configuration and state for misconfigurations, typos, and violations of best practices. 
 
 - <a href="https://kubevious.io/docs/built-in-validators/" target="_blank">Built-in Validations</a> include a comprehensive library of rules to get you up and running fast.
 
 - <a href="https://kubevious.io/docs/features/rules-engine/" target="_blank">Rules Engine</a> provides an intuitive policy language for custom extensions of validation logic using a JavaScript-like if-then-else syntax.
 
-## Investigate
+## 🕵️‍♂️ Investigate
 - <a href="https://kubevious.io/docs/features/time-machine/" target="_blank">Time Machine</a> lets you travel back in time, investigate cluster configuration and state, audit applications, root cause outages, and recover good and working manifests. Time Machine works by extracting resources directly from the Kubernetes API server, meaning that it keeps track of all changes, including ones made by k8s operators. 
 ![Kubevious Time Machine](https://kubevious.io/static/452c7f6c9960b3dedfd41baea7567ee6/3f20e/time-machine-active.png)
 
 - <a href="https://kubevious.io/docs/features/search-engine/" target="_blank">Search Engine</a> is a like full-text search engine to find and return Kubernetes manifests matching various search criteria.
 ![Kubevious Search Engine](https://kubevious.io/static/d2f0c37d574441032aa8dfb57332d17f/3f20e/search-simple.png)
 
-## Troubleshoot
+## 🔨 Troubleshoot
 - <a href="https://kubevious.io/docs/features/health-monitoring/" target="_blank">App & Pod Health Monitoring</a> helps you troubleshoot degradations of Application health with intuitive built-in tools that direct you to the source of the problem.
 ![Kubevious Application and Pod Health Monitoring](https://kubevious.io/static/0a863383915cf7de91a2c641eacb82c0/3f20e/app-health.png)
 
