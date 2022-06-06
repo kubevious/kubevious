@@ -102,9 +102,9 @@ If you want to discuss something during the next meeting's open session, you can
 ### Kubernetes + Espresso in Bay Area
 Stop by to have a coffee with us and discuss Kubernetes and Cloud-Native. Takes place every Friday @ 12:30pm in the Bay Area. Location will alternate between Peninsula and East Bay.
 
-Next event on May 27 @ 12:30PM in Niles, CA
+Next event on June 17 @ 12:30PM in Palo Alto, CA
 
-RSVP: https://www.meetup.com/kubevious/events/286096433/
+RSVP: https://www.meetup.com/kubevious/events/286399220/
 
 ## Contributing
 We invite your participation through issues and pull requests! You can peruse the [contributing guidelines](CONTRIBUTING.md).
