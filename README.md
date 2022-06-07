@@ -5,12 +5,17 @@
 
 ![Kubevious Intro](https://github.com/kubevious/media/raw/master/screens/intro.png)
 
-- [Live Demo](#-live-demo)
-- [Running Kubevious](#%EF%B8%8F-running-kubevious)
-- [What can you do with Kubevious?](#ℹ%EF%B8%8F-what-can-you-do-with-kubevious)
-- [Community](#-community)
-- [License](#-license)
-- [What people say about Kubevious](#-what-people-say-about-kubevious)
+- [✨ Live Demo](#-live-demo)
+- [🏃‍♀️ Running Kubevious](#%EF%B8%8F-running-kubevious)
+- [ℹ️ What can you do with Kubevious?](#ℹ%EF%B8%8F-what-can-you-do-with-kubevious)
+  - [👁️ Observe](#%EF%B8%8F-observe) 
+  - [🔬 Introspect](#-introspect)
+  - [✅ Validate](#-validate)
+  - [🕵️‍♂️ Investigate](#%EF%B8%8F%EF%B8%8F-investigate)
+  - [🔨 Troubleshoot](#-troubleshoot)
+- [🧑🏻‍🤝‍🧑🏿 Community](#-community)
+- [📜  License](#-license)
+- [📢  What people say about Kubevious](#-what-people-say-about-kubevious)
 
 # ✨ Live Demo
 Try Kubevious live demo running on a model cluster: <a href="https://demo.kubevious.io" target="_blank">https://demo.kubevious.io</a>.
