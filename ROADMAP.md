@@ -7,7 +7,7 @@ Our vision of Kubevious is to become a full-fledged assurance and validation pla
 ## Major Focus Areas
 For a finer-granularity view, and insight into detailed enhancements and fixes, please refer to [issues on GitHub](https://github.com/kubevious/kubevious/issues).
 
-### Kubeivous Guard
+### Kubevious Guard
 [Kubevious Guard](https://github.com/kubevious/kubevious/issues/65) is a proposal to implement validation enforcement based on the build-in validations and rules engine used in Kubevious.
 
 ### Community-Driven Rules Library
