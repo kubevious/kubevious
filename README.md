@@ -8,6 +8,7 @@
 - [✨ Live Demo](#-live-demo)
 - [🏃‍♀️ Running Kubevious](#%EF%B8%8F-running-kubevious)
 - [ℹ️ What can you do with Kubevious?](#ℹ%EF%B8%8F-what-can-you-do-with-kubevious)
+	- [💂 Guard](#guard)	 
   - [👁️ Observe](#%EF%B8%8F-observe) 
   - [🔬 Introspect](#-introspect)
   - [✅ Validate](#-validate)
@@ -42,6 +43,16 @@ For more details on installation options, visit [Deployment Repository](https://
 While **Kubevious** was made to run inside the cluster and monitor the cluster it lives in, **[Kubevious Portable](https://github.com/kubevious/portable)** version runs outside the cluster. Usually, that would happen on development machines from where operators would run *kubectl* commands. Kubevious Portable runs inside a single docker container. Kubevious Portable does not have Rule Executing and Time Machine capabilities and is meant for quick sanity check and visualization of Kubernetes clusters and applications. Kubevious Portable connects to clusters defined in kube-config files. See instructions on [running Kubevious Portable here](https://github.com/kubevious/portable#running-kubevious-portable).
 
 # ℹ️ What can you do with Kubevious?
+
+## 💂 Guard
+Kubevious Guard is a CLI extension that validates changes for conflicts, misconfigurations, typos, and violations of best practices before they are applied to Kubernetes clusters and have a chance to cause application outage or health degradation. It examines changes as a whole package, not as individual YAML manifests, allowing detection of cross-manifest violations and conflicts. Kubevious Guard follows <a href="https://kubevious.io/docs/built-in-validators/" target="_blank">Built-in Validations</a> and an extensible <a href="https://kubevious.io/docs/features/rules-engine/" target="_blank">Rules Engine</a> to execute the validation logic.
+
+Changes are validated by piping manifests YAML and easily integrated into the CI/CD pipeline testing stage. Remember that Kubevious should be deployed in the cluster.
+
+```sh
+$ cat manifests.yaml | sh <(curl -sfL https://run.kubevious.io/validate.sh)
+$ kubectl apply -f manifests.yaml
+```
 
 ## 👁️ Observe
 Kubevious analyses Kubernetes cluster configuration and state and presents it graphically into multiple domain-focused views. You can learn more about Kubevious UI <a href="https://kubevious.io/docs/features/application-centric-ui/" target="_blank">
