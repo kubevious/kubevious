@@ -8,7 +8,7 @@
 - [✨ Live Demo](#-live-demo)
 - [🏃‍♀️ Running Kubevious](#%EF%B8%8F-running-kubevious)
 - [ℹ️ What can you do with Kubevious?](#ℹ%EF%B8%8F-what-can-you-do-with-kubevious)
-	- [💂 Guard](#guard)	 
+	- [💂 Guard](#-guard)	 
   - [👁️ Observe](#%EF%B8%8F-observe) 
   - [🔬 Introspect](#-introspect)
   - [✅ Validate](#-validate)
