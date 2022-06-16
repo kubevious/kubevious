@@ -57,6 +57,8 @@ $ cat manifests.yaml | sh <(curl -sfL https://run.kubevious.io/validate.sh)
 $ kubectl apply -f manifests.yaml
 ```
 
+![Kubevious Guard Intro](https://github.com/kubevious/media/raw/master/videos/guard-intro.gif)
+
 ## 👁️ Observe
 Kubevious analyses Kubernetes cluster configuration and state and presents it graphically into multiple domain-focused views. You can learn more about Kubevious UI <a href="https://kubevious.io/docs/features/application-centric-ui/" target="_blank">
 here
