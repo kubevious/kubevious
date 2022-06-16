@@ -18,6 +18,9 @@
 - [📜  License](#-license)
 - [📢  What people say about Kubevious](#-what-people-say-about-kubevious)
 
+![Kubevious Intro](https://github.com/kubevious/media/raw/master/videos/intro.gif)
+or watch on [Youtube](https://youtu.be/oyFN2Hg8N8U)
+
 # ✨ Live Demo
 Try Kubevious live demo running on a model cluster: <a href="https://demo.kubevious.io" target="_blank">https://demo.kubevious.io</a>.
 
