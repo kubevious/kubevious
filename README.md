@@ -52,6 +52,8 @@ Kubevious Guard is a CLI extension that validates changes for conflicts, misconf
 
 Changes are validated by piping manifests YAML and can be easily integrated into the CI/CD pipeline testing stage. Remember that Kubevious should be deployed in the cluster.
 
+Learn more about Kubevious Guard in this [blog post](https://kubevious.io/blog/post/kubevious-guard-kubernetes-validation-enforcer).
+
 ```sh
 $ cat manifests.yaml | sh <(curl -sfL https://run.kubevious.io/validate.sh)
 $ kubectl apply -f manifests.yaml
