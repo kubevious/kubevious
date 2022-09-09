@@ -8,10 +8,10 @@
 - [✨ Live Demo](#-live-demo)
 - [🏃‍♀️ Running Kubevious](#%EF%B8%8F-running-kubevious)
 - [ℹ️ What can you do with Kubevious?](#ℹ%EF%B8%8F-what-can-you-do-with-kubevious)
-	- [💂 Guard](#-guard)	 
+  - [💂 Guard](#-guard)	 
+  - [✅ Validate](#-validate)
   - [👁️ Observe](#%EF%B8%8F-observe) 
   - [🔬 Introspect](#-introspect)
-  - [✅ Validate](#-validate)
   - [🕵️‍♂️ Investigate](#%EF%B8%8F%EF%B8%8F-investigate)
   - [🔨 Troubleshoot](#-troubleshoot)
 - [🧑🏻‍🤝‍🧑🏿 Community](#-community)
@@ -61,6 +61,13 @@ $ kubectl apply -f manifests.yaml
 
 ![Kubevious Guard Intro](https://github.com/kubevious/media/raw/master/videos/guard-intro.gif)
 
+## ✅ Validate
+Kubevious continuously validates cluster configuration and state for misconfigurations, typos, and violations of best practices. 
+
+- <a href="https://kubevious.io/docs/built-in-validators/" target="_blank">Built-in Validations</a> include a comprehensive library of rules to detect and prevent DevOps/SRE focused misconfigurations.
+
+- <a href="https://kubevious.io/docs/features/rules-engine/" target="_blank">Rules Engine</a> provides an intuitive policy language for custom extensions of validation logic using a JavaScript-like if-then-else syntax. **Rules Engine** allows enforecement of complex cross-manifest policies.
+
 ## 👁️ Observe
 Kubevious analyses Kubernetes cluster configuration and state and presents it graphically into multiple domain-focused views. You can learn more about Kubevious UI <a href="https://kubevious.io/docs/features/application-centric-ui/" target="_blank">
 here
@@ -88,13 +95,6 @@ Kubevious provides insights optimized for specific roles and responsibilities as
 - <a href="https://kubevious.io/docs/features/cloud-native-tools/radioactive-workloads/" target="_blank">Radioactive Workloads</a>. Identify applications that have excessive permissions.
 
 - <a href="https://kubevious.io/docs/features/cloud-native-tools/capacity-planning-and-resource-usage-optimization/" target="_blank">Capacity Planning and Resource Usage Optimization</a>. Identify how much of cluster resources are used by Applications and Namespaces.
-
-## ✅ Validate
-Kubevious continuously validates cluster configuration and state for misconfigurations, typos, and violations of best practices. 
-
-- <a href="https://kubevious.io/docs/built-in-validators/" target="_blank">Built-in Validations</a> include a comprehensive library of rules to get you up and running fast.
-
-- <a href="https://kubevious.io/docs/features/rules-engine/" target="_blank">Rules Engine</a> provides an intuitive policy language for custom extensions of validation logic using a JavaScript-like if-then-else syntax.
 
 ## 🕵️‍♂️ Investigate
 - <a href="https://kubevious.io/docs/features/time-machine/" target="_blank">Time Machine</a> lets you travel back in time, investigate cluster configuration and state, audit applications, root cause outages, and recover good and working manifests. Time Machine works by extracting resources directly from the Kubernetes API server, meaning that it keeps track of all changes, including ones made by k8s operators. 
