@@ -66,7 +66,7 @@ Kubevious continuously validates cluster configuration and state for misconfigur
 
 - <a href="https://kubevious.io/docs/built-in-validators/" target="_blank">Built-in Validations</a> include a comprehensive library of rules to detect and prevent DevOps/SRE focused misconfigurations.
 
-- <a href="https://kubevious.io/docs/features/rules-engine/" target="_blank">Rules Engine</a> provides an intuitive policy language for custom extensions of validation logic using a JavaScript-like if-then-else syntax. **Rules Engine** allows enforecement of complex cross-manifest policies.
+- <a href="https://kubevious.io/docs/features/rules-engine/" target="_blank">Rules Engine</a> provides an intuitive policy language for custom extensions of validation logic using a JavaScript-like if-then-else syntax. **Rules Engine** allows enforcement of complex cross-manifest policies.
 
 ## 👁️ Observe
 Kubevious analyses Kubernetes cluster configuration and state and presents it graphically into multiple domain-focused views. You can learn more about Kubevious UI <a href="https://kubevious.io/docs/features/application-centric-ui/" target="_blank">
