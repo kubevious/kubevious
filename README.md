@@ -34,7 +34,7 @@ kubectl create namespace kubevious
 
 helm repo add kubevious https://helm.kubevious.io
 
-helm upgrade --atomic -i kubevious kubevious/kubevious --version 1.0.15 -n kubevious
+helm upgrade --atomic -i kubevious kubevious/kubevious --version 1.1.1 -n kubevious
 
 kubectl port-forward service/kubevious-ui-clusterip 8080:80 -n kubevious
 ```
