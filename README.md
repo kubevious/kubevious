@@ -9,7 +9,7 @@
 - [🏃‍♀️ Running Kubevious](#%EF%B8%8F-running-kubevious)
   - [🔭 Running Kubevious Inside the Cluster](#-running-kubevious-inside-the-cluster)
   - [📺 Running Kubevious CLI - Standalone Tool](#-running-kubevious-cli---standalone-tool)
-  - [🛻 Running Kubevious Portable - Outside the Cluster](#ℹ%EF%B8%8F-what-can-you-do-with-kubevious)
+  - [🛻 Running Kubevious Portable - Outside the Cluster](#-running-kubevious-portable---outside-the-cluster)
 - [ℹ️ What can you do with Kubevious?](#ℹ%EF%B8%8F-what-can-you-do-with-kubevious)
   - [💂 Guard](#-guard)	 
   - [✅ Validate](#-validate)
