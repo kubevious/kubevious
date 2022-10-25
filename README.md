@@ -27,6 +27,9 @@ Try Kubevious live demo running on a model cluster: <a href="https://demo.kubevi
 See the collection of demo videos: <a href="https://www.youtube.com/channel/UCTjfcEFrGjqtSGtry4ySUzQ" target="_blank">https://www.youtube.com/channel/UCTjfcEFrGjqtSGtry4ySUzQ</a>
 
 # 🏃‍♀️ Running Kubevious
+Kubevious consists of the following three projects that can be used together as well as independently, depending on the use case.
+
+## 🔭 Running Kubevious Inside the Cluster
 Kubevious works with any Kubernetes distribution and runs within the cluster. Deploy using Helm v3.2+:
 
 ```sh
@@ -42,7 +45,10 @@ Access from browser: http://localhost:8080
 
 For more details on installation options, visit [Deployment Repository](https://github.com/kubevious/helm).
 
-## Running Kubevious Outside the Cluster
+## 📺 Running Kubevious CLI - Standalone Tool
+Kubevious CLI is a standalone tool to validate and detect manifest misconfigurations and issues. It can be easily integrated into the CI/CD pipelines and well as used during the active development of Kubernetes manifests. Learn more about [Kubevious CLI](https://github.com/kubevious/cli).
+
+## 🛻 Running Kubevious Portable - Outside the Cluster
 While **Kubevious** was made to run inside the cluster and monitor the cluster it lives in, **[Kubevious Portable](https://github.com/kubevious/portable)** version runs outside the cluster. Usually, that would happen on development machines from where operators would run *kubectl* commands. Kubevious Portable runs inside a single docker container. Kubevious Portable does not have Rule Executing and Time Machine capabilities and is meant for quick sanity check and visualization of Kubernetes clusters and applications. Kubevious Portable connects to clusters defined in kube-config files. See instructions on [running Kubevious Portable here](https://github.com/kubevious/portable#running-kubevious-portable).
 
 # ℹ️ What can you do with Kubevious?
