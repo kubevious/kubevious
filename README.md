@@ -125,7 +125,7 @@ Join the [Kubevious Slack workspace](https://kubevious.io/slack) to chat with Ku
 Follow our virtual and in-person events on [Meetup](https://www.meetup.com/kubevious/) or [Google Calendar](https://calendar.google.com/calendar/u/0?cid=Y19ndTlkM2p1c2lxNDRkbXBnamJoMTlva2Rvb0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t).
 
 ### 🎤 Weekly Community Meeting
-Kubevious contributors and users gather every Thursday @ 9 am PDT for a [Zoom call](https://us06web.zoom.us/j/81673703834?pwd=WWc4bUF6RzJDQXdOM2pUSlpvZ1JYZz09). Everyone is welcome to join. During the call, we discuss:
+Kubevious contributors and users gather every Thursday @ 9 am PDT for a [Zoom call](https://us06web.zoom.us/j/84115047636?pwd=cW1meEt4Y3puSStpVkZvTDZOeFdjZz09). Everyone is welcome to join. During the call, we discuss:
 - The current state of Kubevious
 - Upcoming development items
 - Any other community-relevant topics during the open session
