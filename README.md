@@ -22,7 +22,7 @@ Kubevious CLI is a standalone tool that validates YAML manifests for syntax, sem
 
 Learn more about securing your Kubernetes apps and clusters here: [https://github.com/kubevious/cli](https://github.com/kubevious/cli)
 
-![Kubevious CLI Video](https://raw.githubusercontent.com/kubevious/media/master/cli/intro/demo_light.svg)
+![Kubevious CLI Video](https://raw.githubusercontent.com/kubevious/media/master/cli/intro/demo_light.gif)
 
 
 
