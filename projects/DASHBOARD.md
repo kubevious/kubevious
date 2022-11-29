@@ -8,7 +8,7 @@
 - [What is Kubevious Dashboard?](#what-is-kubevious)
 - [✨ Live Demo](#-live-demo)
 - [🏃‍♀️ Running Kubevious Dashboard](#️-running-kubevious)
-  - [🔭 Running Kubevious Inside the Cluster](#-running-kubevious-inside-the-cluster)
+  - [🔭 Running Kubevious Inside the Cluster](#-running-kubevious-dashboard-inside-the-cluster)
   - [🛻 Running Kubevious Portable - Outside the Cluster](#-running-kubevious-portable---outside-the-cluster)
 - [ℹ️ What can you do with Kubevious?](#ℹ️-what-can-you-do-with-kubevious)
   - [💂 Guard](#-guard)
