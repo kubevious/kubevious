@@ -2,7 +2,7 @@
 
 Kubevious consists of 4 executable components. 
 
-![Kubevious High-Level Architecture](https://github.com/kubevious/kubevious/blob/master/diagrams/high-level-architecture.png?raw=true)
+![Kubevious High-Level Architecture](https://github.com/kubevious/kubevious/blob/main/diagrams/high-level-architecture.png)
 
 **Backend** responds to user queries, fetches objects from database, handles search queries, updates rules, etc.
 
