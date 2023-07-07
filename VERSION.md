@@ -1,1 +1,1 @@
-# Released Version: v1.1
+# Released Version: v1.2
