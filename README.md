@@ -7,9 +7,11 @@
   - [🔭 Kubevious Dashboard](#kubevious-dashboard)
 - [🧑🏻‍🤝‍🧑🏿 Community](#-community)
   - [💬 Slack](#-slack)
+<!--
   - [🎉 Events](#-events)
     - [🎤 Weekly Community Meeting](#-weekly-community-meeting)
     - [☕ Kubernetes + Espresso in Bay Area](#-kubernetes--espresso-in-bay-area)
+-->    
   - [🏗️ Contributing](#️-contributing)
   - [🏛️ Governance](#️-governance)
   - [🚀 Roadmap](#-roadmap)
@@ -40,6 +42,7 @@ Learn more about introspecting Kubernetes apps and clusters here: [https://githu
 ## 💬 Slack
 Join the [Kubevious Slack workspace](https://kubevious.io/slack) to chat with Kubevious developers and users. This is a good place to learn about Kubevious, ask questions, and share your experiences.
 
+<!--
 ## 🎉 Events
 Follow our virtual and in-person events on [Meetup](https://www.meetup.com/kubevious/) or [Google Calendar](https://calendar.google.com/calendar/u/0?cid=Y19ndTlkM2p1c2lxNDRkbXBnamJoMTlva2Rvb0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t).
 
@@ -57,6 +60,7 @@ Stop by to have a coffee with us and discuss Kubernetes and Cloud-Native. Takes 
 Next event on June 17 @ 12:30PM in Palo Alto, CA
 
 RSVP: https://www.meetup.com/kubevious/events/286399220/
+-->
 
 ## 🏗️ Contributing
 We invite your participation through issues and pull requests! You can peruse the [contributing guidelines](CONTRIBUTING.md).
