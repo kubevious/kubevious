@@ -11,7 +11,6 @@
   - [🔭 Running Kubevious Inside the Cluster](#-running-kubevious-dashboard-inside-the-cluster)
   - [🛻 Running Kubevious Portable - Outside the Cluster](#-running-kubevious-portable---outside-the-cluster)
 - [ℹ️ What can you do with Kubevious?](#ℹ️-what-can-you-do-with-kubevious)
-  - [💂 Guard](#-guard)
   - [✅ Validate](#-validate)
   - [👁️ Observe](#️-observe)
   - [🔬 Introspect](#-introspect)
@@ -49,20 +48,6 @@ For more details on installation options, visit [Deployment Repository](https://
 While **Kubevious** was made to run inside the cluster and monitor the cluster it lives in, **[Kubevious Portable](https://github.com/kubevious/portable)** version runs outside the cluster. Usually, that would happen on development machines from where operators would run *kubectl* commands. Kubevious Portable runs inside a single docker container. Kubevious Portable does not have Rule Executing and Time Machine capabilities and is meant for quick sanity check and visualization of Kubernetes clusters and applications. Kubevious Portable connects to clusters defined in kube-config files. See instructions on [running Kubevious Portable here](https://github.com/kubevious/portable#running-kubevious-portable).
 
 # ℹ️ What can you do with Kubevious?
-
-## 💂 Guard
-Kubevious Guard is a CLI extension that validates changes for conflicts, misconfigurations, typos, and violations of best practices before they are applied to Kubernetes clusters and have a chance to cause application outage or health degradation. It examines changes as a whole package, not as individual YAML manifests, allowing detection of cross-manifest violations and conflicts. Kubevious Guard follows <a href="https://kubevious.io/docs/built-in-validators/" target="_blank">Built-in Validations</a> and an extensible <a href="https://kubevious.io/docs/features/rules-engine/" target="_blank">Rules Engine</a> to execute the validation logic.
-
-Changes are validated by piping manifests YAML and can be easily integrated into the CI/CD pipeline testing stage. Remember that Kubevious should be deployed in the cluster.
-
-Learn more about Kubevious Guard in this [blog post](https://kubevious.io/blog/post/kubevious-guard-kubernetes-validation-enforcer).
-
-```sh
-$ cat manifests.yaml | sh <(curl -sfL https://run.kubevious.io/validate.sh)
-$ kubectl apply -f manifests.yaml
-```
-
-![Kubevious Guard Intro](https://github.com/kubevious/media/raw/master/videos/guard-intro.gif)
 
 ## ✅ Validate
 Kubevious continuously validates cluster configuration and state for misconfigurations, typos, and violations of best practices. 
