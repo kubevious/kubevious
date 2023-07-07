@@ -6,17 +6,19 @@
   - [📺 Kubevious CLI](#kubevious-cli)
   - [🔭 Kubevious Dashboard](#kubevious-dashboard)
 - [🧑🏻‍🤝‍🧑🏿 Community](#-community)
-  - [💬 Slack](#-slack)
-<!--
-  - [🎉 Events](#-events)
-    - [🎤 Weekly Community Meeting](#-weekly-community-meeting)
-    - [☕ Kubernetes + Espresso in Bay Area](#-kubernetes--espresso-in-bay-area)
--->    
+  - [💬 Slack](#-slack) 
   - [🏗️ Contributing](#️-contributing)
   - [🏛️ Governance](#️-governance)
   - [🚀 Roadmap](#-roadmap)
 - [📜 License](#-license)
 - [📢 What people say about Kubevious](#-what-people-say-about-kubevious)
+
+
+<!--
+  - [🎉 Events](#-events)
+    - [🎤 Weekly Community Meeting](#-weekly-community-meeting)
+    - [☕ Kubernetes + Espresso in Bay Area](#-kubernetes--espresso-in-bay-area)
+-->   
 
 # Kubevious CLI
 
