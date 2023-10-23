@@ -5,10 +5,10 @@
 
 ![Kubevious Intro](https://github.com/kubevious/media/raw/master/screens/intro.png)
 
-- [What is Kubevious Dashboard?](#what-is-kubevious)
-- [✨ Live Demo](#-live-demo)
-- [🏃‍♀️ Running Kubevious Dashboard](#️-running-kubevious)
-  - [🔭 Running Kubevious Inside the Cluster](#-running-kubevious-dashboard-inside-the-cluster)
+- [What is Kubevious Dashboard?](#what-is-kubevious-dashboard)
+- [✨ Demo](#-demo)
+- [🏃‍♀️ Running Kubevious Dashboard](#️-running-kubevious-dashboard)
+  - [🔭 Running Kubevious Dashboard Inside the Cluster](#-running-kubevious-dashboard-inside-the-cluster)
   - [🛻 Running Kubevious Portable - Outside the Cluster](#-running-kubevious-portable---outside-the-cluster)
 - [ℹ️ What can you do with Kubevious?](#ℹ️-what-can-you-do-with-kubevious)
   - [✅ Validate](#-validate)
@@ -20,9 +20,7 @@
 ![Kubevious Intro](https://github.com/kubevious/media/raw/master/videos/intro.gif)
 or watch on  <a href="https://youtu.be/oyFN2Hg8N8U" target="_blank">Youtube</a>.
 
-# ✨ Live Demo
-Try Kubevious live demo running on a model cluster: <a href="https://demo.kubevious.io" target="_blank">https://demo.kubevious.io</a>.
-
+# ✨ Demo
 See the collection of demo videos: <a href="https://www.youtube.com/channel/UCTjfcEFrGjqtSGtry4ySUzQ" target="_blank">https://www.youtube.com/channel/UCTjfcEFrGjqtSGtry4ySUzQ</a>
 
 # 🏃‍♀️ Running Kubevious Dashboard
